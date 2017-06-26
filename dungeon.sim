@@ -1,0 +1,114 @@
+# Dungeon Domain
+# Written by James Boggs to get a feel for MIDCA
+
+## Type declarations ##
+type(DIM)
+type(TILE)
+type(WALL, TILE)
+type(LOCK, TILE)
+type(DOOR, LOCK)
+type(CHEST, LOCK)
+type(KEY)
+type(AGENT)
+
+## Locational predicates ##
+predicate(agent-at, [agnt, loc], [AGENT, TILE])
+predicate(key-at, [key, loc], [KEY, TILE])
+
+## Relational predicates ##
+# Read as loc2 is DIRECTION of loc1. e.g. loc2 is north of loc1
+predicate(adjacent-north, [loc1, loc2], [TILE, TILE])
+predicate(adjacent-south, [loc1, loc2], [TILE, TILE])
+predicate(adjacent-east, [loc1, loc2], [TILE, TILE])
+predicate(adjacent-west, [loc1, loc2], [TILE, TILE])
+predicate(adjacent, [loc1, loc2], [TILE, TILE])
+
+## Key/Lock predicates ##
+predicate(closed, [loc], [TILE])
+predicate(passable, [loc], [TILE])
+predicate(opens, [key, lock], [KEY, LOCK])
+predicate(owned, [key], [KEY])
+
+## Movement operators ##
+
+# MOVE NORTH
+operator(movenorth,
+args = [(agnt, AGENT), (start, TILE), (dest, TILE)],
+preconditions = [
+	condition(passable, [dest]),
+	condition(agent-at, [agnt, start]),
+	condition(adjacent-north, [start, dest])],
+results = [
+	condition(agent-at, [agnt, start], negate = TRUE),
+	condition(agent-at, [agnt, dest])])
+
+# MOVE SOUTH
+operator(movesouth,
+args = [(agnt, AGENT), (start, TILE), (dest, TILE)],
+preconditions = [
+	condition(passable, [dest]),
+	condition(agent-at, [agnt, start]),
+	condition(adjacent-south, [start, dest])],
+results = [
+	condition(agent-at, [agnt, start], negate = TRUE),
+	condition(agent-at, [agnt, dest])])
+
+# MOVE WEST
+operator(movewest,
+args = [(agnt, AGENT), (start, TILE), (dest, TILE)],
+preconditions = [
+	condition(passable, [dest]),
+	condition(agent-at, [agnt, start]),
+	condition(adjacent-west, [start, dest])],
+results = [
+	condition(agent-at, [agnt, start], negate = TRUE),
+	condition(agent-at, [agnt, dest])])
+
+# MOVE EAST
+operator(moveeast,
+args = [(agnt, AGENT), (start, TILE), (dest, TILE)],
+preconditions = [
+	condition(passable, [dest]),
+	condition(agent-at, [agnt, start]),
+	condition(adjacent-east, [start, dest])],
+results = [
+	condition(agent-at, [agnt, start], negate = TRUE),
+	condition(agent-at, [agnt, dest])])
+
+## Other operators
+
+# TAKE KEY
+operator(takekey,
+args = [(agnt, AGENT), (agntloc, TILE), (key, KEY), (keyloc, TILE)],
+preconditions = [
+	condition(closed, [keyloc], negate = TRUE),
+  condition(key-at, [key, keyloc]),
+  condition(agent-at, [agnt, agntloc]),
+  condition(adjacent, [agntloc, keyloc])],
+results = [
+  condition(key-at, [key, keyloc], negate = TRUE),
+  condition(owned, [key])])
+
+# OPEN DOOR
+operator(opendoor,
+args = [(agnt, AGENT), (agntloc, TILE), (key, KEY), (door, DOOR)],
+preconditions = [
+  condition(passable, [door], negate = TRUE),
+  condition(agent-at, [agnt, agntloc]),
+  condition(adjacent, [agntloc, door]),
+  condition(opens, [key, door]),
+  condition(owned, [key])],
+results = [
+  condition(passable, [door])])
+
+# OPEN CHEST
+operator(openchest,
+args = [(agnt, AGENT), (agntloc, TILE), (key, KEY), (chst, CHEST)],
+preconditions = [
+  condition(closed, [chst]),
+  condition(agent-at, [agnt, agntloc]),
+  condition(adjacent, [agntloc, chst]),
+  condition(opens, [key, chst]),
+  condition(owned, [key])],
+results = [
+  condition(closed, [chst], negate = TRUE)])
