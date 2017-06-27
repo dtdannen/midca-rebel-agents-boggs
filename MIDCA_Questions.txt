@@ -1,4 +1,0 @@
-1) In the .sim language, can you use logical connectives in operator conditions?
-2) Similarly, can you create a predicate which is consists of a logical statement using other predicates?
-3) Is it necessary to translate every environment into worldsim? (I don't think so)
-4) Can you create new atoms, predicates, objects, operators, etc on the fly?

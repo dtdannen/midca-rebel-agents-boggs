@@ -1,92 +1,73 @@
 #!/usr/bin/env python
-"""MIDCA demo using a dungeon-ish environment."""
-import inspect
-import os
-
-# import MIDCA
-from MIDCA import base
-from MIDCA.modules import (act, evaluate, intend, note, perceive, planning,
-                           rebel, simulator)
-from MIDCA.worldsim import domainread, stateread
-
-# Domain Specific Imports
-import dungeon_utils
-
 """
+MIDCA demo using a dungeon-ish environment.
 Agent explores a dungeon with a limited view.
 """
 
+# import MIDCA
+from MIDCA import base
+
+# Domain Specific Imports
+import dungeon_utils
+import dungeon_operators as d_ops
+import dungeon_methods as d_mthds
+from modules import simulate, perceive, interpret, evaluate, intend
+
+
+DIMENSION = 10
+CHESTS = 3
+DOORS = 3
+WALLS = 7
+
 # Setup
-thisDir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
+dng = dungeon_utils.Dungeon(dim=DIMENSION, agent_vision=3)
+dng.generate(chests=CHESTS, doors=DOORS, walls=WALLS)
 
-### Domain Specific Variables
-DOMAIN_FILE = thisDir + "/dungeon.sim"
-DISPLAY_FUNC = dungeon_utils.draw_Dungeon_from_MIDCA
-# DECLARE_METHODS_FUNC = methods_nbeacons.declare_methods
-# DECLARE_OPERATORS_FUNC = operators_nbeacons.declare_operators
-# GOAL_GRAPH_CMP_FUNC = None
-DIMENSION = 5
-
-# Load domain
-world = domainread.load_domain(DOMAIN_FILE)
-# TODO: Make chests hold keys properly
-
-# Create Starting state
-state1 = dungeon_utils.Dungeon(dim=DIMENSION)
-state1.generate(chests=1, doors=2, walls=3)
-state1_str = state1.MIDCA_state_str()
-print(state1_str)
-print(state1)
-# Load state
-stateread.apply_state_str(world, state1_str)
+DECLARE_METHODS_FUNC = d_mthds.declare_methods
+DECLARE_OPERATORS_FUNC = d_ops.declare_operators
+DISPLAY_FUNC = dungeon_utils.draw_Dungeon
 
 # Creates a PhaseManager object, which wraps a MIDCA object
-myMidca = base.PhaseManager(world, display=DISPLAY_FUNC, verbose=2)
+myMidca = base.PhaseManager(dng, display=DISPLAY_FUNC, verbose=2)
 #
 # # Add phases by name
-for phase in ["Simulate", "Perceive", "Interpret", "Eval", "Introspect", "Intend", "Plan", "Act"]:
+for phase in ["Simulate", "Perceive", "Interpret", "Eval", "Intend", "Plan", "Act"]:
     myMidca.append_phase(phase)
 # NOTE: WORKS TO HERE...
 
 # Add the modules which instantiate basic operation
 # Simulate phase modules
-myMidca.append_module("Simulate", simulator.MidcaActionSimulator())
-myMidca.append_module("Simulate", simulator.WorldChanger())
-myMidca.append_module("Simulate", simulator.ASCIIWorldViewer(DISPLAY_FUNC))
-# NOTE: Currently, there is no need for a new Dungeon simulator module. Once we
-# do need it, look at simulator.NBeaconsActionSimulator and
-# simulator.NBeaconsSimulator for examples. Eventually we will want one, because
-# we'll be adding fog-of-war and maybe other things (sp. events?)
+myMidca.append_module("Simulate", simulate.SimulateActions())
+myMidca.append_module("Simulate", simulate.ASCIIWorldViewer())
+myMidca.append_module("Simulate", simulate.WorldChanger())
+# TODO: Add fog-of-war and maybe some events
 
 # Perceive phase modules
-myMidca.append_module("Perceive", perceive.PerfectObserver())
-# TODO: Create a fog-of-war perceiver
+myMidca.append_module("Perceive", perceive.Observer())
+myMidca.append_module("Perceive", perceive.ShowMap())
 
 # Interpret phase modules
-myMidca.append_module("Interpret", note.StateDiscrepancyDetector())
-myMidca.append_module("Interpret", rebel.UserGoalInputRebelRand())
-# NOTE: Currently we don't have any need for a fancy state discrepancy detector
-# because everything is deterministic. Once we add FoW and other things, we'll
-# need a good discrepancy detector and an explainer. Look at
-# assess.SimpleNBeaconsExplain for an example of an explainer.
+# myMidca.append_module("Interpret", note.StateDiscrepancyDetector())
+myMidca.append_module("Interpret", interpret.UserGoalInput())
+# TODO: Figure out state discrepancy testing
 
 # Eval phase modules
-myMidca.append_module("Eval", evaluate.SimpleEval2())
+myMidca.append_module("Eval", evaluate.CompletionEvaluator())
 # TODO: Look into this more, need to understand it better
 
 # Introspect phase modules (are we even keeping this?)
-myMidca.append_module("Introspect", rebel.Introspection())
+# myMidca.append_module("Introspect", rebel.Introspection())
 
 # Intend phase modules
 myMidca.append_module("Intend", intend.SimpleIntend())
 
 # Plan phase modules
-myMidca.append_module("Plan", planning.HeuristicSearchPlanner())
+# myMidca.append_module("Plan", planning.HeuristicSearchPlanner())
 # NOTE: FOr now, we're using the built in HeuristicSearchPlanner. We may want
 # or need to move to PyHop or jShop though, and I need to learn how to do that.
 
 # Act phase modules
-myMidca.append_module("Act", act.SimpleAct())
+# myMidca.append_module("Act", act.SimpleAct())
 # NOTE: Another module which I'm subsituting in for now. Once I understand more
 # this one may be the first to go.
 

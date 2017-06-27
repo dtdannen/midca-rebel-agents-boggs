@@ -1,3 +1,4 @@
+from copy import deepcopy
 from random import randint
 
 CHEST = 'CHEST'
@@ -69,6 +70,66 @@ class DungeonObject(object):
         return retStr
 
 
+class Agent(object):
+    """
+    Represents the agent, and in particular its state and knowledge.
+
+    Used for PyHop planning in conjunction with fog-of-war and limited knowledge
+    scenarios.
+    """
+    # TODO: Create a Map class and move all the goal stuff to it, so we're not
+    # checking globally whether a goal can be accomplished
+
+    def __init__(self, name, location, dungeonDim, vision=-1):
+        self.name = name
+        self.at = location
+        self.dim = dungeonDim
+        self.vision = vision
+        self.map = {}
+
+    @property
+    def known_objects(self):
+        """Return a list of all dungeon objects."""
+        objects = []
+        for loc in self.floor:
+            objects += self.floor[loc]
+        return objects
+
+    def view(self, dungeon):
+        viewedObjs = dungeon.get_objects_around(self.at, self.vision)
+        for tile in viewedObjs:
+            self.map[tile] = viewedObjs[tile]
+
+        return True
+
+    def draw_map(self):
+        ascii_board = "  "
+        ascii_board += " |".join([str(c) for c in range(self.dim)])
+        ascii_board += " |\n"
+        for y in range(self.dim):
+            ascii_board += str(y) + "|"
+            for x in range(self.dim):
+                ascii_board += self._draw_ascii_tile((x, y)) + "|"
+            ascii_board += "\n"
+        print(ascii_board)
+
+    def _draw_ascii_tile(self, loc):
+        """Draw a single tile of the board at the given location."""
+        tileStr = ''
+        # If the agent is there, draw it
+        if loc == self.at:
+            tileStr += '@'
+
+        # If the tile has contents, draw them
+        if loc in self.map.keys():
+            for obj in self.map[loc]:
+                tileStr += obj.ascii_rep
+
+        # Pad the tile and return
+        tileStr = tileStr.rjust(2, '.')
+        return tileStr
+
+
 class Dungeon(object):
     """
     Class representing an entire dungeon.
@@ -77,7 +138,7 @@ class Dungeon(object):
     environment when needed.
     """
 
-    def __init__(self, dim):
+    def __init__(self, dim, agent_vision=-1):
         """
         Initialize a blank dungeon of size `dim`x`dim`.
 
@@ -103,17 +164,93 @@ class Dungeon(object):
         self.dim = self.hgt = self.wdt = dim
         self.floor = {}
         self.agentLoc = (dim/2, dim/2)
+        self.agent = Agent('Drizzt', self.agentLoc, dim, agent_vision)
 
-    def place_object(self, obj, location):
-        if not self.__loc_valid:
-            raise Exception("{} is not a valid place for {}".format(location, obj))
-        if obj.objType in [CHEST, DOOR, WALL]:
-            if not self.loc_is_tile(location):
+    @property
+    def objects(self):
+        """Return a list of all dungeon objects."""
+        objects = []
+        for loc in self.floor:
+            objects += self.floor[loc]
+        return objects
+
+    def place_object(self, objType, location):
+        if not self.__loc_valid(dest):
+            raise Exception("{} is not a valid place for {}".format(location, objType))
+        if objType in [CHEST, DOOR, WALL]:
+            if not self.loc_is_free(location):
                 raise Exception("{} is already occupied by a large object".format(location))
+        obj = DungeonObject(objType, location)
         if location in self.floor.keys():
             self.floor[location].append(obj)
         else:
             self.floor[location] = [obj]
+
+    def remove_object_at(self, objType, loc):
+        """Remove the object at the given location."""
+        if not self.__loc_valid(dest):
+            print("{} is not a valid location".format(loc))
+            return False
+        if loc not in self.floor.keys():
+            print("There's no object at {}".format(loc))
+            return False
+        remove_index = -1
+        for obj in self.floor[loc]:
+            if obj.objType == objType:
+                remove_index = self.floor[loc].index(obj)
+        if remove_index == -1:
+            print("There's no {} at {}".format(objType, loc))
+            return False
+        del self.floor[loc][remove_index]
+        if len(self.floor[loc]) == 0:
+            del self.floor[loc]
+        return True
+
+    def teleport_agent(self, dest):
+        """Spontaneously move the agent to the dest, if possible."""
+        if not self.__loc_valid(dest):
+            print("{} is not a valid location".format(dest))
+            return False
+        if not self.check_passable(dest):
+            print("Can't move the agent to {}".format(dest))
+            return False
+        self.agentLoc = dest
+        self.agent.at = dest
+        return True
+
+    def unlock(self, target, key=None):
+        """Unlock anything locked at the target location."""
+        if not self.__loc_valid(target):
+            print("{} is not a valid location".format(target))
+            return False
+        if self.check_passable(target):
+            print("Nothing to unlock at {}".format(target))
+            return False
+
+        for obj in self.floor[target]:
+            if obj.objType in [DOOR, CHEST]:
+                if key:
+                    obj.passable = key.unlocks == obj
+                else:
+                    obj.passable = True
+
+    def get_objects_around(self, loc, vRange):
+        """Return the objects and their properties around a location."""
+        objects = {}
+        if vRange == -1:
+            return self.floor
+        northBound = max(loc[1] - vRange, 0)
+        southBound = min(loc[1] + vRange, self.dim)
+        westBound = max(loc[0] - vRange, 0)
+        eastBound = min(loc[0] + vRange, self.dim)
+
+        for x in range(westBound, eastBound+1):
+            for y in range(northBound, southBound+1):
+                vLoc = (x, y)
+                if vLoc in self.floor.keys():
+                    objects[vLoc] = self.floor[vLoc]
+
+        return objects
 
     def generate(self, chests, doors, walls):
         """
@@ -190,98 +327,12 @@ class Dungeon(object):
                 return False
         return True
 
-    def MIDCA_state_str(self):
-        """Generate a MIDCA state based on the current state of the dungeon."""
-        stateStr = "AGENT(Drizzt)\nDIM({})\n".format(self.dim)
-
-        # Establish objects
-        for loc in self.floor:
-            contents = self.floor[loc]
-            for obj in contents:
-                objType = obj.objType
-                objID = obj.id
-                stateStr += "{}({})\n".format(objType, objID)
-        for loc in [(x, y) for x in range(self.dim) for y in range(self.dim)]:
-            if loc in self.floor.keys():
-                if not self.check_passable(loc) and loc != self.agentLoc:
-                    continue
-            stateStr += "TILE(Tx{}y{})\n".format(loc[0], loc[1])
-
-        # Generate predicates
-        for loc in [(x, y) for x in range(self.dim) for y in range(self.dim)]:
-            stateStr += self.generate_loc_adjancencies(loc)
-            stateStr += self.generate_loc_misc(loc)
-
-        stateStr += "agent-at(Drizzt, Tx{}y{})".format(str(self.agentLoc[0]), str(self.agentLoc[1]))
-
-        return stateStr
-
-    def generate_loc_misc(self, loc):
-        """Generate the object-specific predicates."""
-        if loc not in self.floor.keys():
-            return ""
-
-        objPreds = ""
-        for obj in self.floor[loc]:
-            objType = obj.objType
-            if objType == KEY:
-                if len(self.floor[loc]) > 1:
-                    keyTileID = self.floor[loc][0].id
-                else:
-                    keyTileID = "Tx{}y{}".format(loc[0], loc[1])
-                objPreds += "key-at({}, {})\n".format(obj.id, keyTileID)
-                objPreds += "opens({}, {})\n".format(obj.id, obj.unlocks.id)
-            if objType == CHEST:
-                objPreds += "closed({})\n".format(obj.id)
-
-        return objPreds
-
-    def generate_loc_adjancencies(self, loc):
-        """Generate MIDCA adjacency predicates for given location."""
-        directions = ['north', 'east', 'south', 'west']
-
-        adjStr = ""
-        nNbor = (loc[0], loc[1]-1)
-        eNbor = (loc[0]+1, loc[1])
-        sNbor = (loc[0], loc[1]+1)
-        wNbor = (loc[0]-1, loc[1])
-        nbors = [nNbor, eNbor, sNbor, wNbor]
-
-        # First, generate directional adjacencies
-        for nbor in nbors:
-            if not self.__loc_valid(nbor):
-                continue
-            nDir = directions[nbors.index(nbor)]
-
-            if self.loc_is_tile(loc):
-                locID = "Tx{}y{}".format(loc[0], loc[1])
-                if self.loc_is_tile(nbor):
-                    nborID = "Tx{}y{}".format(nbor[0], nbor[1])
-                else:
-                    nborID = self.floor[nbor][0].id
-            else:
-                locID = self.floor[loc][0].id
-                if self.loc_is_tile(nbor):
-                    nborID = "Tx{}y{}".format(nbor[0], nbor[1])
-                else:
-                    nborID = self.floor[nbor][0].id
-            adjStr += "adjacent-{}({}, {})\n".format(nDir, locID,
-                                                     nborID)
-        # Now, we create all the generic adjacencies
-        existingLines = adjStr.split('\n')
-        existingLines.pop()
-        for line in existingLines:
-            args = "(" + line.split("(")[1]
-            adjStr += "adjacent" + args + "\n"
-
-        return adjStr
-
-    def loc_is_tile(self, loc):
+    def loc_is_free(self, loc):
         """
-        Indicate whether the location is a TILE or not.
+        Indicate whether the location can have a large object.
 
-        This is similar to check_passable, but more robust because DOORs can
-        change in terms of passability (by being unlocked).
+        Checks whether the tile is already occupied by a large object (chest,
+        wall, or door).
         """
         if loc not in self.floor.keys():
             return True
@@ -296,7 +347,7 @@ class Dungeon(object):
         """Draw a single tile of the board at the given location."""
         tileStr = ''
         # If the agent is there, draw it
-        if loc == self. agentLoc:
+        if loc == self.agentLoc:
             tileStr += '@'
 
         # If the tile has contents, draw them
@@ -307,6 +358,37 @@ class Dungeon(object):
         # Pad the tile and return
         tileStr = tileStr.rjust(2, '.')
         return tileStr
+
+    def valid_goal(self, goal):
+        goalLoc = goal.args[0]
+        goalAction = goal.kwargs['predicate']
+
+        if goalAction == 'agent-at':
+            return self.check_passable(goalLoc)
+
+        if goalAction == 'open':
+            if self.check_passable(goalLoc):
+                return False
+            return True
+
+    def create_goal(self, predicate, *args):
+        """
+        Given a predicate and args, create a new Dungeon which fits the goal.
+
+        This creates a new Dungeon object which is different from the current
+        one such that the given predicate is true in relation to the args. This
+        new Dungeon serves as a PyHop goal.
+        """
+        goalDungeon = deepcopy(self)
+        if predicate == "agent-at":
+            loc = args[0]
+            goalDungeon.teleport_agent(loc)
+
+        elif predicate == "open":
+            loc = args[0]
+            goalDungeon.unlock(loc)
+
+        return goalDungeon
 
     def __random_loc(self):
         x = randint(0, self.dim-1)
@@ -338,61 +420,14 @@ class Dungeon(object):
             ascii_board += "\n"
         return ascii_board
 
+    def __eq__(self, other):
+        """Check if two Dungeons are the same."""
+        return str(self) == str(other)
 
-def draw_Dungeon_from_MIDCA(midcaworld, rtn_str=False):
-    """
-    Take in the MIDCA world and return an ASCII board.
 
-    This function accepts the MIDCA world state as a string, and turns that into
-    a new Dungeon object. Then it returns the ASCII representation of that
-    Dungeon.
-    """
-    def obj_from_MIDCA(objStr):
-        """Return a DungeonObject from a valid MIDCA string."""
-        if objStr[0] not in OBJECT_ID_CODES.values():
-            return objStr
-        try:
-            objCode = objStr[0]
-            xIndex = objStr.index("x")
-            yIndex = objStr.index("y")
-            xVal = int(objStr[xIndex+1:yIndex])
-            yVal = int(objStr[yIndex+1:])
-            objLoc = (xVal, yVal)
-            objType = None
-            for objTypeLabel in OBJECT_ID_CODES:
-                if objCode in OBJECT_ID_CODES[objTypeLabel]:
-                    objType = objTypeLabel
-            newObj = DungeonObject(objType, objLoc)
-            return newObj
-        except Exception:
-            print(objStr)
-            return objStr
-
-    objectStrs = [str(o) for o in midcaworld.objects if 'T' not in str(o)]
-    useful_atoms = [str(a) for a in midcaworld.get_atoms() if 'adjacent' not in str(a)]
-    obj_atom_dict = {}
-    for objStr in objectStrs:
-        obj_atom_dict[obj_from_MIDCA(objStr)] = [atom for atom in useful_atoms if objStr in atom]
-
-    for obj in obj_atom_dict:
-        atoms = obj_atom_dict[obj]
-        for atom in atoms:
-            pred, args = atom.split('(')
-            args = args.strip(')').split(', ')
-        # TODO finish connecting atoms to
-
-    dim = 0
-    for obj in objectStrs:
-        try:
-            dim = int(obj)
-            break
-        except Exception:
-            continue
-    newDng = Dungeon(dim=dim)
-
-    print(objectStrs)
-    print(useful_atoms)
-    print(dim)
+def draw_Dungeon(dng):
+    """Print the Dungeon board."""
+    print(str(dng))
 
 
 def test():
