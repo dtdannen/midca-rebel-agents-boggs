@@ -1,3 +1,5 @@
+"""Contains the Dungeon class and related classes."""
+
 from copy import deepcopy
 from random import randint
 
@@ -69,65 +71,11 @@ class DungeonObject(object):
         retStr = retStr + ",{})".format(str(self.unlocks)) if self.unlocks else retStr + ")"
         return retStr
 
+    def __repr__(self):
+        return self.__str__()
 
-class Agent(object):
-    """
-    Represents the agent, and in particular its state and knowledge.
-
-    Used for PyHop planning in conjunction with fog-of-war and limited knowledge
-    scenarios.
-    """
-    # TODO: Create a Map class and move all the goal stuff to it, so we're not
-    # checking globally whether a goal can be accomplished
-
-    def __init__(self, name, location, dungeonDim, vision=-1):
-        self.name = name
-        self.at = location
-        self.dim = dungeonDim
-        self.vision = vision
-        self.map = {}
-
-    @property
-    def known_objects(self):
-        """Return a list of all dungeon objects."""
-        objects = []
-        for loc in self.floor:
-            objects += self.floor[loc]
-        return objects
-
-    def view(self, dungeon):
-        viewedObjs = dungeon.get_objects_around(self.at, self.vision)
-        for tile in viewedObjs:
-            self.map[tile] = viewedObjs[tile]
-
-        return True
-
-    def draw_map(self):
-        ascii_board = "  "
-        ascii_board += " |".join([str(c) for c in range(self.dim)])
-        ascii_board += " |\n"
-        for y in range(self.dim):
-            ascii_board += str(y) + "|"
-            for x in range(self.dim):
-                ascii_board += self._draw_ascii_tile((x, y)) + "|"
-            ascii_board += "\n"
-        print(ascii_board)
-
-    def _draw_ascii_tile(self, loc):
-        """Draw a single tile of the board at the given location."""
-        tileStr = ''
-        # If the agent is there, draw it
-        if loc == self.at:
-            tileStr += '@'
-
-        # If the tile has contents, draw them
-        if loc in self.map.keys():
-            for obj in self.map[loc]:
-                tileStr += obj.ascii_rep
-
-        # Pad the tile and return
-        tileStr = tileStr.rjust(2, '.')
-        return tileStr
+    def __eq__(self, other):
+        return str(self) == str(other)
 
 
 class Dungeon(object):
@@ -167,6 +115,16 @@ class Dungeon(object):
         self.agent = Agent('Drizzt', self.agentLoc, dim, agent_vision)
 
     @property
+    def all_locations(self):
+        """Return a list of all in-bounds locations."""
+        tiles = []
+        for x in range(self.dim):
+            for y in range(self.dim):
+                tiles.append((x, y))
+
+        return tiles
+
+    @property
     def objects(self):
         """Return a list of all dungeon objects."""
         objects = []
@@ -175,7 +133,8 @@ class Dungeon(object):
         return objects
 
     def place_object(self, objType, location):
-        if not self.__loc_valid(dest):
+        """Place a new object of the given type at the location, if possible."""
+        if not self.loc_valid(location):
             raise Exception("{} is not a valid place for {}".format(location, objType))
         if objType in [CHEST, DOOR, WALL]:
             if not self.loc_is_free(location):
@@ -188,7 +147,7 @@ class Dungeon(object):
 
     def remove_object_at(self, objType, loc):
         """Remove the object at the given location."""
-        if not self.__loc_valid(dest):
+        if not self.loc_valid(loc):
             print("{} is not a valid location".format(loc))
             return False
         if loc not in self.floor.keys():
@@ -208,7 +167,7 @@ class Dungeon(object):
 
     def teleport_agent(self, dest):
         """Spontaneously move the agent to the dest, if possible."""
-        if not self.__loc_valid(dest):
+        if not self.loc_valid(dest):
             print("{} is not a valid location".format(dest))
             return False
         if not self.check_passable(dest):
@@ -218,9 +177,29 @@ class Dungeon(object):
         self.agent.at = dest
         return True
 
+    def move_agent(self, moveDir):
+        """Legally move the agent in the given direction."""
+        if moveDir == 'n':
+            dest = (self.agentLoc[0], self.agentLoc[1]-1)
+        elif moveDir == 'e':
+            dest = (self.agentLoc[0]+1, self.agentLoc[1])
+        elif moveDir == 's':
+            dest = (self.agentLoc[0], self.agentLoc[1]+1)
+        elif moveDir == 'w':
+            dest = (self.agentLoc[0]-1, self.agentLoc[1])
+        else:
+            raise ValueError("{} is not a valid movement direction".format(moveDir))
+
+        if not self.loc_valid(dest) or not self.check_passable(dest):
+            return False
+
+        self.agentLoc = dest
+        self.agent.move(moveDir)
+        return True
+
     def unlock(self, target, key=None):
         """Unlock anything locked at the target location."""
-        if not self.__loc_valid(target):
+        if not self.loc_valid(target):
             print("{} is not a valid location".format(target))
             return False
         if self.check_passable(target):
@@ -248,9 +227,20 @@ class Dungeon(object):
             for y in range(northBound, southBound+1):
                 vLoc = (x, y)
                 if vLoc in self.floor.keys():
-                    objects[vLoc] = self.floor[vLoc]
+                    objects[vLoc] = deepcopy(self.floor[vLoc])
 
         return objects
+
+    def get_item_at(self, loc, objType):
+        """Return the item of `objType` at `loc`, if there is one."""
+        if not self.loc_valid(loc):
+            raise ValueError("{} is not a valid location".format(loc))
+        if loc not in self.floor.keys():
+            return False
+        for obj in self.floor[loc]:
+            if obj.objType == objType:
+                return obj
+        return None
 
     def generate(self, chests, doors, walls):
         """
@@ -280,7 +270,7 @@ class Dungeon(object):
                         self.floor[objLoc].append(obj)
                     else:
                         self.floor[objLoc] = [obj]
-                    print("Placing {}".format(str(obj)))
+                    # print("Placing {}".format(str(obj)))
                     objsPlaced += 1
                     if objType is not WALL:
                         locks.append(obj)
@@ -307,7 +297,7 @@ class Dungeon(object):
             else:
                 key = DungeonObject(KEY, keyLoc, keyLock)
                 self.floor[keyLoc] = [key]
-                print("Placing {}".format(str(key)))
+                # print("Placing {}".format(str(key)))
                 try:
                     keyLock = locks.pop()
                 except IndexError:
@@ -343,6 +333,18 @@ class Dungeon(object):
 
         return True
 
+    def loc_unlocked(self, loc):
+        """Indicate whether there is an unlocked object at the given location."""
+        if not self.loc_valid(loc):
+            raise Exception("{} is not a valid location".format(loc))
+        if loc not in self.floor.keys():
+            return True
+        unlocked = True
+        for obj in self.floor[loc]:
+            if obj.locked:
+                unlocked = False
+        return unlocked
+
     def draw_ascii_tile(self, loc):
         """Draw a single tile of the board at the given location."""
         tileStr = ''
@@ -360,16 +362,17 @@ class Dungeon(object):
         return tileStr
 
     def valid_goal(self, goal):
+        """Indicate whether a goal is valid."""
+        # TODO: make this much more robust!
         goalLoc = goal.args[0]
         goalAction = goal.kwargs['predicate']
 
-        if goalAction == 'agent-at':
-            return self.check_passable(goalLoc)
+        if goalAction == 'move-to' and not self.check_passable(goalLoc):
+            raise Exception("Invalid goal: agent can't be at {}".format(goalLoc))
 
-        if goalAction == 'open':
-            if self.check_passable(goalLoc):
-                return False
-            return True
+        if goalAction == 'open'and self.check_passable(goalLoc):
+            raise Exception("Invalid goal: nothing to open at {}".format(goalLoc))
+        return True
 
     def create_goal(self, predicate, *args):
         """
@@ -380,7 +383,7 @@ class Dungeon(object):
         new Dungeon serves as a PyHop goal.
         """
         goalDungeon = deepcopy(self)
-        if predicate == "agent-at":
+        if predicate == "move-to":
             loc = args[0]
             goalDungeon.teleport_agent(loc)
 
@@ -390,12 +393,105 @@ class Dungeon(object):
 
         return goalDungeon
 
+    def apply_action(self, action):
+        """Apply a PyHop generated action to the Dungeon."""
+        actType = action.op
+        args = action.args
+
+        if actType == 'move':
+                moveDir = args[0]
+                return self.move_agent(moveDir)
+        else:
+            raise NotImplementedError("Action type {} is not implemented".format(actType))
+
+    def adjacent(self, loc1, loc2):
+        """Indicate whether loc1 and loc2 are adjacent."""
+        return abs(loc1[0]-loc2[0]) == 1 or abs(loc1[1]-loc2[1]) == 1
+
+    def get_adjacent(self, loc):
+        """Return the 2-4 tiles adjacent to the given one and their direction."""
+        adjacentTiles = {}
+        nNbor = (loc[0], loc[1]-1)
+        sNbor = (loc[0], loc[1]+1)
+        eNbor = (loc[0]+1, loc[1])
+        wNbor = (loc[0]-1, loc[1])
+        if self.loc_valid(nNbor):
+            adjacentTiles['n'] = nNbor
+        if self.loc_valid(sNbor):
+            adjacentTiles['s'] = sNbor
+        if self.loc_valid(eNbor):
+            adjacentTiles['e'] = eNbor
+        if self.loc_valid(wNbor):
+            adjacentTiles['w'] = wNbor
+
+        return adjacentTiles
+
+    def get_path_to(self, origin, dest):
+        """
+        Return list of tiles along the linear path between origin and dest.
+
+        Important to note that the list is linear, disregards obstacles, and
+        always chooses to go east or west over north or south in a tie.
+        """
+        if not (self.loc_valid(origin) and self.loc_valid(dest)):
+            raise ValueError("Origin {} or dest {} is not valid".format(origin, dest))
+
+        path = []
+        while origin != dest:
+            orgX, orgY = origin
+            destX, destY = dest
+            horizDiff = orgX - destX
+            vertDiff = orgY - destY
+
+            if abs(horizDiff) >= abs(vertDiff):
+                if orgX > destX:
+                    nextOrigin = (origin[0] - 1, origin[1])
+                else:
+                    nextOrigin = (origin[0] + 1, origin[1])
+            else:
+                if orgY > destY:
+                    nextOrigin = (origin[0], origin[1] - 1)
+                else:
+                    nextOrigin = (origin[0], origin[1] + 1)
+            path.append(nextOrigin)
+            origin = nextOrigin
+
+        return path
+
+    def obstacles_in(self, path):
+        """Calculate and return number of obstacles in a given path."""
+        obstacles = 0
+        for tile in path:
+            if not self.check_passable(tile):
+                obstacles += 1
+        return obstacles
+
+    def diff(self, other):
+        """Return a dict of tiles which have changed."""
+        if self == other:
+            return None
+
+        diffs = {}
+
+        for tile in self.all_locations:
+            if tile in self.floor.keys():
+                if tile in other.floor.keys():
+                    if self.floor[tile] != other.floor[tile]:
+                        diffs[tile] = (self.floor[tile], other.floor[tile])
+                else:
+                    diffs[tile] = (self.floor[tile], None)
+            else:
+                if tile in other.floor.keys():
+                    diffs[tile] = (None, other.floor[tile])
+
+        return diffs
+
     def __random_loc(self):
         x = randint(0, self.dim-1)
         y = randint(0, self.dim-1)
         return (x, y)
 
-    def __loc_valid(self, loc):
+    def loc_valid(self, loc):
         x = loc[0]
         y = loc[1]
         if not 0 <= x < self.dim: return False
@@ -423,6 +519,274 @@ class Dungeon(object):
     def __eq__(self, other):
         """Check if two Dungeons are the same."""
         return str(self) == str(other)
+
+
+class DungeonMap(Dungeon):
+    """
+    Represents and allows manipulation of the Agent's knowledge of the Dungeon.
+
+    Has many of the features of its parent class Dungeon, but is limited to what
+    the Agent knows. It also doesn't have its own Agent to prevent recursion.
+    """
+
+    def __init__(self, dim, agentLoc):
+        assert type(dim) is int, "dim must be an int"
+
+        # Generate self variables
+        self.dim = self.hgt = self.wdt = dim
+        self.floor = {}
+        self.agentLoc = agentLoc
+
+    def teleport_agent(self, dest):
+        """Override a method the map shouldn't do."""
+        raise NotImplementedError("A DungeonMap can't teleport the agent!")
+
+    def generate(self, chests, doors, walls):
+        """Override a method the map shouldn't do."""
+        raise NotImplementedError("A DungeonMap can't generate itself!")
+
+    def update_map(self, view, center, vRange):
+        """Update the map based on what the Agent sees."""
+        northBound = max(center[1] - vRange, 0)
+        southBound = min(center[1] + vRange, self.dim)
+        westBound = max(center[0] - vRange, 0)
+        eastBound = min(center[0] + vRange, self.dim)
+
+        for x in range(westBound, eastBound+1):
+            for y in range(northBound, southBound+1):
+                vLoc = (x, y)
+                if vLoc in view.keys():
+                    self.floor[vLoc] = view[vLoc]
+                else:
+                    if vLoc in self.floor.keys():
+                        del self.floor[vLoc]
+
+    def navigate_to(self, origin, dest):
+        """
+        Return a list of tiles which forms a path.
+
+        The returned path should be a sequence of locations such that each
+        location is adjacent to the last and is passable, the first location is
+        adjacent to the origin, and the last location is the destination. Uses
+        A* search.
+        """
+        explored = []
+        activeTiles = [('o', origin, 0)]  # priority queue of tiles to explore
+
+        while len(activeTiles) > 0:
+            currNode = activeTiles.pop(0)
+            currPath = currNode[0]
+            currTile = currNode[1]
+
+            if currTile == dest:
+                return currPath
+
+            nbors = self.get_adjacent(currTile)
+            for nborDir in nbors:
+                nbor = nbors[nborDir]
+                if not self.check_passable(nbor):
+                    continue
+                linPath = self.get_path_to(nbor, dest)
+                obstacles = self.obstacles_in(linPath)
+                weight = len(linPath) + 5 * obstacles
+                newNode = (currPath+nborDir, nbor, weight)
+
+                exploredYet = False
+                for node in explored:
+                    if nbor == node[1]:
+                        exploredYet = True
+                        break
+                if not exploredYet:
+                    insertIndex = 0
+                    for tile in activeTiles:
+                        if tile[2] < weight:
+                            insertIndex += 1
+                        else:
+                            break
+                    activeTiles.insert(insertIndex, newNode)
+
+            explored.append(currNode)
+        return None
+
+
+class Agent(object):
+    """
+    Represents the agent, and in particular its state and knowledge.
+
+    Used for PyHop planning in conjunction with fog-of-war and limited knowledge
+    scenarios.
+    """
+
+    def __init__(self, name, location, dungeonDim, vision=-1):
+        self.__name__ = name
+        self.at = location
+        self.vision = vision
+        self.map = DungeonMap(dungeonDim, location)
+        self.keys = []
+
+    @property
+    def known_objects(self):
+        """Return a list of all dungeon objects."""
+        return self.map.objects
+
+    def view(self, dungeon):
+        viewedObjs = dungeon.get_objects_around(self.at, self.vision)
+        self.map.update_map(viewedObjs, self.at, self.vision)
+
+    def navigate_to(self, dest):
+        """Convenient wrapper for navigating."""
+        return self.map.navigate_to(self.at, dest)
+
+    def can_move(self, moveDir):
+        """Indicate whether the Agent can move a tile in the given direction."""
+        if moveDir == 'n':
+            dest = (self.at[0], self.at[1]-1)
+        elif moveDir == 'e':
+            dest = (self.at[0]+1, self.at[1])
+        elif moveDir == 's':
+            dest = (self.at[0], self.at[1]+1)
+        elif moveDir == 'w':
+            dest = (self.at[0]-1, self.at[1])
+        else:
+            raise ValueError("{} is not a valid movement direction".format(moveDir))
+
+        if not self.map.loc_valid(dest) or not self.map.check_passable(dest):
+            return False
+        return True
+
+    def move(self, moveDir):
+        """
+        Move the agent 1 tile in `moveDir` direction, if possible.
+
+        Note that this only affects the Agent and its map, this DOES NOT move
+        the Agent in the actual Dungeon.
+        """
+        if moveDir == 'n':
+            dest = (self.at[0], self.at[1]-1)
+        elif moveDir == 'e':
+            dest = (self.at[0]+1, self.at[1])
+        elif moveDir == 's':
+            dest = (self.at[0], self.at[1]+1)
+        elif moveDir == 'w':
+            dest = (self.at[0]-1, self.at[1])
+        else:
+            raise ValueError("{} is not a valid movement direction".format(moveDir))
+
+        if self.can_move(moveDir):
+            self.at = dest
+            self.map.agentLoc = dest
+        else:
+            print("Can't move {} to {}. Agent at {}".format(moveDir, dest, self.at))
+
+    def take_key(self, keyLoc):
+        """
+        Take possession of a key at `keyLoc`.
+
+        Takes a key off the floor and keeps it. This removes it from the dungeon
+        permanently, and puts it in the agent's key list. Note that this DOES
+        NOT affect the actual Dungeon, only the Agent and its Map.
+        """
+        if not self.map.loc_valid(keyLoc):
+            raise ValueError("{} is not a valid location".format(keyLoc))
+        if keyLoc not in self.map.floor.keys():
+            return False
+        if not self.map.adjacent(self.at, keyLoc):
+            return False
+
+        key = self.map.get_item_at(keyLoc, KEY)
+        if key:
+            self.map.remove_object_at(KEY, keyLoc)
+            self.keys.append(key)
+            return True
+        return False
+
+    def unlock(self, target):
+        """
+        Unlock a door or chest at `target`.
+
+        If there is a door at `target`, the door becomes unlocked and passable,
+        if there is a chest, it becomes unlocked. As per usual, this method
+        DOES NOT affect the actual Dungeon, merely this Agent and its Map.
+        """
+        if not self.map.loc_valid(target):
+            raise ValueError("{} is not a valid location".format(target))
+        if target not in self.map.floor.keys():
+            return False
+        if not self.map.adjacent(self.at, target):
+            return False
+
+        for obj in self.map.floor[target]:
+            if obj.locked and self.__can_unlock(obj):
+                obj.locked = False
+                if obj.objType == DOOR:
+                    obj.passable = True
+                return True
+        return False
+
+    def apply_action(self, action):
+        actType = action.op
+        args = action.args
+
+        if actType == 'move':
+                moveDir = args[0]
+                self.move(moveDir)
+        else:
+            raise NotImplementedError("Action type {} is not implemented".format(actType))
+
+    def draw_map(self):
+        print(str(self.map))
+
+    def valid_goal(self, goal):
+        """Wrapper to allow easier access to goal checking."""
+        return self.map.valid_goal(goal)
+
+    def create_goal(self, action, *args):
+        """Wrapper to allow easier use of goal creation."""
+        return self.map.create_goal(action, *args)
+
+    def goal_complete(self, goal):
+        """Indicate whether a MIDCA goal has been completed."""
+        if goal.kwargs['predicate'] == 'move-to':
+            return self.at == goal.args[0]
+        elif goal.kwargs['predicate'] == 'open':
+            return self.map.loc_unlocked(goal.args[0])
+        else:
+            raise NotImplementedError("Goal {} is not valid".format(goal))
+
+    def __can_unlock(self, obj):
+        return any([k.unlocks == obj for k in self.keys])
+
+    def forecast_action(self, action):
+        """Return a copy of self with the action applied."""
+        futureSelf = deepcopy(self)
+        futureSelf.apply_action(action)
+        return futureSelf
+
+    def diff(self, other):
+        """
+        Produce a dict of differences between this Agent and a different one.
+
+        Examines the vital attributes of each Agent and identifies any
+        differences between them. Then returns a dict, where each key is an
+        attribute and its value is a pair with the value of the attribute in
+        question from each Agent. This Agent's value comes first in the pair.
+        """
+        diffs = {}
+        if self.__name__ != other.__name__:
+            diffs['__name__': (self.__name, other.__name__)]
+        if self.at != other.at:
+            diffs['at': (self.at, other.at)]
+        if self.vision != other.vision:
+            diffs['vision': (self.vision, other.vision)]
+        if self.keys != other.keys:
+            diffs['keys': (self.keys, other.keys)]
+
+        mapDiffs = self.map.diff(other.map)
+        if mapDiffs:
+            for tile in mapDiffs.keys():
+                diffs[tile] = mapDiffs[tile]
+
+        return diffs
 
 
 def draw_Dungeon(dng):

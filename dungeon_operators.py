@@ -1,2 +1,41 @@
+"""
+Provides all of the PyHop operators for the Dungeon domain.
+
+All operators interact solely with the Agent as state, and never see the Dungeon as
+a whole. This ensures that the planning is completely reliant on the Agent's
+knowledge.
+"""
+from MIDCA.modules._plan import pyhop
+
+
+# Movement operator
+def move(state, moveDir):
+    """
+    Move the agent one tile in a cardinal direction, if possible.
+
+    `state` is the Agent object and `dir` is which direction to move in ('n', 'e',
+    's', 'w').
+    """
+    try:
+        state.move(moveDir)
+    except ValueError:
+        print("{} is not a valid movement direction".format(moveDir))
+    return state
+
+
+def take_key(state, keyLoc):
+    try:
+        state.take_key(keyLoc)
+    except ValueError:
+        print("{} is not a valid location in the dungeon".format(keyLoc))
+
+
+def unlock(state, target):
+    try:
+        state.unlock(target)
+    except ValueError:
+        print("{} is not a valid location in the dungeon".format(target))
+
+
 def declare_operators():
-    raise NotImplementedError("pyhop operators for Dungeon are not made yet!")
+    pyhop.declare_operators(move, take_key, unlock)

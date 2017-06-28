@@ -12,7 +12,7 @@ type(KEY)
 type(AGENT)
 
 ## Locational predicates ##
-predicate(agent-at, [agnt, loc], [AGENT, TILE])
+predicate(move-to, [agnt, loc], [AGENT, TILE])
 predicate(key-at, [key, loc], [KEY, TILE])
 
 ## Relational predicates ##
@@ -36,44 +36,44 @@ operator(movenorth,
 args = [(agnt, AGENT), (start, TILE), (dest, TILE)],
 preconditions = [
 	condition(passable, [dest]),
-	condition(agent-at, [agnt, start]),
+	condition(move-to, [agnt, start]),
 	condition(adjacent-north, [start, dest])],
 results = [
-	condition(agent-at, [agnt, start], negate = TRUE),
-	condition(agent-at, [agnt, dest])])
+	condition(move-to, [agnt, start], negate = TRUE),
+	condition(move-to, [agnt, dest])])
 
 # MOVE SOUTH
 operator(movesouth,
 args = [(agnt, AGENT), (start, TILE), (dest, TILE)],
 preconditions = [
 	condition(passable, [dest]),
-	condition(agent-at, [agnt, start]),
+	condition(move-to, [agnt, start]),
 	condition(adjacent-south, [start, dest])],
 results = [
-	condition(agent-at, [agnt, start], negate = TRUE),
-	condition(agent-at, [agnt, dest])])
+	condition(move-to, [agnt, start], negate = TRUE),
+	condition(move-to, [agnt, dest])])
 
 # MOVE WEST
 operator(movewest,
 args = [(agnt, AGENT), (start, TILE), (dest, TILE)],
 preconditions = [
 	condition(passable, [dest]),
-	condition(agent-at, [agnt, start]),
+	condition(move-to, [agnt, start]),
 	condition(adjacent-west, [start, dest])],
 results = [
-	condition(agent-at, [agnt, start], negate = TRUE),
-	condition(agent-at, [agnt, dest])])
+	condition(move-to, [agnt, start], negate = TRUE),
+	condition(move-to, [agnt, dest])])
 
 # MOVE EAST
 operator(moveeast,
 args = [(agnt, AGENT), (start, TILE), (dest, TILE)],
 preconditions = [
 	condition(passable, [dest]),
-	condition(agent-at, [agnt, start]),
+	condition(move-to, [agnt, start]),
 	condition(adjacent-east, [start, dest])],
 results = [
-	condition(agent-at, [agnt, start], negate = TRUE),
-	condition(agent-at, [agnt, dest])])
+	condition(move-to, [agnt, start], negate = TRUE),
+	condition(move-to, [agnt, dest])])
 
 ## Other operators
 
@@ -83,7 +83,7 @@ args = [(agnt, AGENT), (agntloc, TILE), (key, KEY), (keyloc, TILE)],
 preconditions = [
 	condition(closed, [keyloc], negate = TRUE),
   condition(key-at, [key, keyloc]),
-  condition(agent-at, [agnt, agntloc]),
+  condition(move-to, [agnt, agntloc]),
   condition(adjacent, [agntloc, keyloc])],
 results = [
   condition(key-at, [key, keyloc], negate = TRUE),
@@ -94,7 +94,7 @@ operator(opendoor,
 args = [(agnt, AGENT), (agntloc, TILE), (key, KEY), (door, DOOR)],
 preconditions = [
   condition(passable, [door], negate = TRUE),
-  condition(agent-at, [agnt, agntloc]),
+  condition(move-to, [agnt, agntloc]),
   condition(adjacent, [agntloc, door]),
   condition(opens, [key, door]),
   condition(owned, [key])],
@@ -106,7 +106,7 @@ operator(openchest,
 args = [(agnt, AGENT), (agntloc, TILE), (key, KEY), (chst, CHEST)],
 preconditions = [
   condition(closed, [chst]),
-  condition(agent-at, [agnt, agntloc]),
+  condition(move-to, [agnt, agntloc]),
   condition(adjacent, [agntloc, chst]),
   condition(opens, [key, chst]),
   condition(owned, [key])],

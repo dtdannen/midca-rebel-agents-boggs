@@ -16,7 +16,7 @@ class Observer(base.BaseModule):
 
     def run(self, cycle, verbose=2):
         self.observe()
-        self.mem.add(self.mem.STATES, self.world.agent)
+        self.mem.add(self.mem.STATES, copy.deepcopy(self.world.agent))
         self.mem.set(self.mem.STATE, self.world.agent)
         states = self.mem.get(self.mem.STATES)
         if len(states) > 400:

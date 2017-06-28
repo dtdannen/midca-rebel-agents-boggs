@@ -11,6 +11,7 @@ class CompletionEvaluator(base.BaseModule):
         self.world = world
 
     def run(self, cycle, verbose=2):
+        self.state = self.mem.get(self.mem.STATE)
         try:
             goals = self.mem.get(self.mem.CURRENT_GOALS)
         except KeyError:
@@ -27,7 +28,7 @@ class CompletionEvaluator(base.BaseModule):
         goals_changed = False
         if goals:
             for goal in goals:
-                if self.world == goal.kwargs['state']:
+                if self.state.goal_complete(goal):
                     print("Goal {} completed!".format(goal))
                     score = self.mem.get(self.mem.DELIVERED)
                     if score:

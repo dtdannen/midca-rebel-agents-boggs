@@ -12,15 +12,19 @@ class SimulateActions(base.BaseModule):
         self.world = world
 
     def execute_action(self, action):
-        print action
-        # TODO Actually make this do something
+        if not self.world.apply_action(action):
+            raise Exception("For some reason, action {} did not succeed".format(action))
 
-    def run(self, cycle, verbose=2):
+    def run(self, cycle, verbose=0):
         self.verbose = verbose
         if self.mem.get(self.mem.ACTIONS):
-            actions = self.mem.get(self.mem.ACTIONS)
-            for act in actions:
-                self.execute_action(act)
+            actions = self.mem.get(self.mem.ACTIONS)[-1]
+            if actions == []:
+                if verbose >= 2:
+                    print("No actions to take, continuing")
+                    return
+            for action in actions:
+                self.execute_action(action)
 
 
 class WorldChanger(base.BaseModule):
@@ -59,17 +63,19 @@ class WorldChanger(base.BaseModule):
             return False
         return True
 
-    def run(self, cycle, verbose=2):
+    def run(self, cycle, verbose=0):
         """Ask user for any changes and apply them if possible."""
 
         while True:
-            response = raw_input("""What would you like to change?
-`add loc objType` to add an object
-`rem loc objType` to remove an object
-`tele loc` to move the agent to the location
-q to quit MIDCA
-RETURN to continue with the MIDCA cycle
->> """)
+#             if verbose >= 2:
+#                 print("""Change commands:
+# `add loc objType` to add an object
+# `rem loc objType` to remove an object
+# `tele loc` to move the agent to the location
+# q to quit MIDCA
+# RETURN to continue with the MIDCA cycle
+# >> """)
+            response = raw_input("What would you like to change?  ")
             if response == '':
                 return 'continue'
             elif response == 'q':
@@ -92,5 +98,5 @@ class ASCIIWorldViewer(base.BaseModule):
         self.mem = mem
         self.world = world
 
-    def run(self, cycle, verbose=2):
+    def run(self, cycle, verbose=0):
         print(str(self.world))

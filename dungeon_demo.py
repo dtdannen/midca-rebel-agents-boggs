@@ -1,17 +1,19 @@
 #!/usr/bin/env python
 """
 MIDCA demo using a dungeon-ish environment.
+
 Agent explores a dungeon with a limited view.
 """
 
 # import MIDCA
 from MIDCA import base
+from MIDCA.modules import planning
 
 # Domain Specific Imports
 import dungeon_utils
 import dungeon_operators as d_ops
 import dungeon_methods as d_mthds
-from modules import simulate, perceive, interpret, evaluate, intend
+from modules import simulate, perceive, interpret, evaluate, intend, act
 
 
 DIMENSION = 10
@@ -25,35 +27,37 @@ dng.generate(chests=CHESTS, doors=DOORS, walls=WALLS)
 
 DECLARE_METHODS_FUNC = d_mthds.declare_methods
 DECLARE_OPERATORS_FUNC = d_ops.declare_operators
+PLAN_VALIDATOR = None
 DISPLAY_FUNC = dungeon_utils.draw_Dungeon
 
 # Creates a PhaseManager object, which wraps a MIDCA object
-myMidca = base.PhaseManager(dng, display=DISPLAY_FUNC, verbose=2)
+myMidca = base.PhaseManager(dng, display=DISPLAY_FUNC, verbose=0)
 #
 # # Add phases by name
 for phase in ["Simulate", "Perceive", "Interpret", "Eval", "Intend", "Plan", "Act"]:
     myMidca.append_phase(phase)
-# NOTE: WORKS TO HERE...
 
 # Add the modules which instantiate basic operation
 # Simulate phase modules
 myMidca.append_module("Simulate", simulate.SimulateActions())
-myMidca.append_module("Simulate", simulate.ASCIIWorldViewer())
-myMidca.append_module("Simulate", simulate.WorldChanger())
-# TODO: Add fog-of-war and maybe some events
+# myMidca.append_module("Simulate", simulate.ASCIIWorldViewer())
+# myMidca.append_module("Simulate", simulate.WorldChanger())
+# TODO: Add some events
 
 # Perceive phase modules
 myMidca.append_module("Perceive", perceive.Observer())
 myMidca.append_module("Perceive", perceive.ShowMap())
 
 # Interpret phase modules
-# myMidca.append_module("Interpret", note.StateDiscrepancyDetector())
+myMidca.append_module("Interpret", interpret.StateDiscrepancyDetector())
+myMidca.append_module("Interpret", interpret.DiscrepancyExplainer())
 myMidca.append_module("Interpret", interpret.UserGoalInput())
-# TODO: Figure out state discrepancy testing
 
 # Eval phase modules
 myMidca.append_module("Eval", evaluate.CompletionEvaluator())
-# TODO: Look into this more, need to understand it better
+# myMidca.append_module("Eval", evaluate.EvaluateGoals())
+# TODO: Implement an evaluation function able to recognize that the agent
+# needs to unlock a door, pick up a key, or open a chest.
 
 # Introspect phase modules (are we even keeping this?)
 # myMidca.append_module("Introspect", rebel.Introspection())
@@ -62,14 +66,13 @@ myMidca.append_module("Eval", evaluate.CompletionEvaluator())
 myMidca.append_module("Intend", intend.SimpleIntend())
 
 # Plan phase modules
-# myMidca.append_module("Plan", planning.HeuristicSearchPlanner())
-# NOTE: FOr now, we're using the built in HeuristicSearchPlanner. We may want
-# or need to move to PyHop or jShop though, and I need to learn how to do that.
+myMidca.append_module("Plan", planning.GenericPyhopPlanner(DECLARE_METHODS_FUNC,
+                                                           DECLARE_OPERATORS_FUNC,
+                                                           PLAN_VALIDATOR,
+                                                           verbose=0))
 
 # Act phase modules
-# myMidca.append_module("Act", act.SimpleAct())
-# NOTE: Another module which I'm subsituting in for now. Once I understand more
-# this one may be the first to go.
+myMidca.append_module("Act", act.SimpleAct())
 
 # Set world viewer to output text
 myMidca.set_display_function(DISPLAY_FUNC)
