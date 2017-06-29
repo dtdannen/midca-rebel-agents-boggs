@@ -192,11 +192,33 @@ class GoalManager(base.BaseModule):
         self.mem = mem
         self.world = world
 
-    def run(self, cycle, verbose=0):
+    def findDoorsFor(self, goal):
+        dest = goal.args[0]
+        state = self.mem.get(self.mem.STATE)
+        path = state.navigate_to(dest, doorsOpen=True)
+        currTile = state.at
+
+        doors = []
+        for moveDir in path:
+            if moveDir == 'n':
+                currTile = (currTile[0], currTile[1]-1)
+            elif moveDir == 's':
+                currTile = (currTile[0], currTile[1]+1)
+            elif moveDir == 'w':
+                currTile = (currTile[0]-1, currTile[1])
+            elif moveDir == 'e':
+                currTile = (currTile[0]+1, currTile[1])
+            if state.get_objects_at(currTile):
+                for obj in state.get_objects_at(currTile):
+                    if obj.objType == 'DOOR':
+                        doors.append(obj)
+        return doors
+
+    def run(self, cycle, verbose=2):
         """Check each explanation and if it's about a goal solve that."""
         if not self.mem.get(self.mem.EXPLANATION):
             if verbose >= 1:
-                print("No explanations to manager, continuing")
+                print("No explanations to manage, continuing")
             return
 
         goalGraph = self.mem.get(self.mem.GOAL_GRAPH)
@@ -217,11 +239,12 @@ class GoalManager(base.BaseModule):
                     if verbose >= 1:
                         print("removing invalid goal {}".format(goal))
                 if reason == 'door-blocking':
-                    doorLoc = self.findDoorFor(goal)
-                    newGoal = goals.Goal(doorLoc, predicate='open', parent=goal)
-                    goalGraph.add(newGoal)
-                    if verbose >= 1:
-                        print("added a new goal {}".format(newGoal))
+                    doors = self.findDoorsFor(goal)
+                    for door in doors:
+                        newGoal = goals.Goal(door.location, predicate='open', parent=goal)
+                        goalGraph.add(newGoal)
+                        if verbose >= 1:
+                            print("added a new goal {}".format(newGoal))
                 else:
                     raise Exception("Discrepancy reason {} shouldn't exist".format(reason))
             elif goal.kwargs['predicate'] == 'open':
@@ -231,6 +254,11 @@ class GoalManager(base.BaseModule):
                         print("removing invalid goal {}".format(goal))
                 else:
                     raise Exception("Discrepancy reason {} shouldn't exist".format(reason))
+            else:
+                raise NotImplementedError("Goal {} is not there yet".format(goal))
+
+        if verbose >= 1:
+            print("Done managing goals \n")
 
 
 class UserGoalInput(base.BaseModule):

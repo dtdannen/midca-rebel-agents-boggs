@@ -19,6 +19,13 @@ def move_to(state, dest):
     return [('move', step) for step in path[1:]]
 
 
+def open_lock(state, dest):
+    """Open a locked object at the destination."""
+    # 1) Find the locked object
+    # 2) Figure out where the key is
+    # 3) Add tasks move-to key, take key, move-to door, and unlock door
+
+
 def achieve_goals(state, goals):
     """Base method which allows us to understand different goals."""
     tasks = []

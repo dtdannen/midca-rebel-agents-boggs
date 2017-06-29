@@ -22,14 +22,15 @@ DOORS = 3
 WALLS = 7
 
 # Setup
-dng = dungeon_utils.Dungeon(dim=DIMENSION, agent_vision=2)
-dng.generate(chests=CHESTS, doors=DOORS, walls=WALLS)
+# dng = dungeon_utils.Dungeon(dim=DIMENSION, agent_vision=2)
+# dng.generate(chests=CHESTS, doors=DOORS, walls=WALLS)
+dng = dungeon_utils.build_Dungeon_from_file('testingMap.dng')
 
 DECLARE_METHODS_FUNC = d_mthds.declare_methods
 DECLARE_OPERATORS_FUNC = d_ops.declare_operators
 PLAN_VALIDATOR = plan.dungeonPlanValidator
 DISPLAY_FUNC = dungeon_utils.draw_Dungeon
-VERBOSITY = 0
+VERBOSITY = 2
 
 # Creates a PhaseManager object, which wraps a MIDCA object
 myMidca = base.PhaseManager(dng, display=DISPLAY_FUNC, verbose=VERBOSITY)
@@ -53,6 +54,7 @@ myMidca.append_module("Perceive", perceive.ShowMap())
 myMidca.append_module("Interpret", interpret.StateDiscrepancyDetector())
 myMidca.append_module("Interpret", interpret.GoalValidityChecker())
 myMidca.append_module("Interpret", interpret.DiscrepancyExplainer())
+myMidca.append_module("Interpret", interpret.GoalManager())
 myMidca.append_module("Interpret", interpret.UserGoalInput())
 
 # Eval phase modules
@@ -85,5 +87,5 @@ myMidca.mem.logEachAccess = False
 
 # Initialize and start running!
 myMidca.init()
-myMidca.initGoalGraph(goalCompareFunction=plan.dungeonGoalComparator)
+myMidca.initGoalGraph(cmpFunc=plan.dungeonGoalComparator)
 myMidca.run()

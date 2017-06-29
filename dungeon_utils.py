@@ -135,14 +135,16 @@ class Dungeon(object):
             objects += self.floor[loc]
         return objects
 
-    def place_object(self, objType, location):
+    def place_object(self, objType, location, keyUnlocks=None):
         """Place a new object of the given type at the location, if possible."""
         if not self.loc_valid(location):
             raise Exception("{} is not a valid place for {}".format(location, objType))
         if objType in [CHEST, DOOR, WALL]:
             if not self.loc_is_free(location):
                 raise Exception("{} is already occupied by a large object".format(location))
-        obj = DungeonObject(objType, location)
+            obj = DungeonObject(objType, location)
+        else:
+            obj = DungeonObject(objType, location, keyUnlocks)
         if location in self.floor.keys():
             self.floor[location].append(obj)
         else:
@@ -369,6 +371,7 @@ class Dungeon(object):
     def valid_goal(self, goal):
         """Indicate whether a goal is valid."""
         # TODO: make this much more robust!
+        # In particular, make sure the 'open' goal is checked more thoroughly.
         goalLoc = goal.args[0]
         goalAction = goal.kwargs['predicate']
 
@@ -816,6 +819,10 @@ class Agent(object):
 
         return diffs
 
+    def get_objects_at(self, loc):
+        """Quickly retrieve location information from the Map."""
+        return self.map.floor[loc] if loc in self.map.floor.keys() else None
+
 
 def draw_Dungeon(dng):
     """Print the Dungeon board."""
@@ -823,10 +830,62 @@ def draw_Dungeon(dng):
 
 
 def build_Dungeon_from_file(filename):
-    with open(filename, 'r') as worldFile:
-        worldAsText = worldFile.read()
+    """
+    Take in a text file and create a new Dungeon from it.
 
-    def p
+    The dungeon file defines the values of all the attributes which the
+    dungeon has, and the function reads each line, identifies which
+    attribute is being set, and evaluates the value into a dict which has
+    the attributes as keys. The attributes are as follows:
+
+    dim = int: The size of the Dungeon
+    agent_vision = int: The range the agent can see
+    agent_at = x,y pair: Where the agent is
+    walls_at = list of x,y pairs: Where there are walls at
+    doors_at = list of x,y pairs: Where there are doors at
+    chests_at = list of x,y pairs: Where there are chests at
+    keys_at = list of x,y pairs: Where there are keys at
+    key_pairs = list of pairs of x,y pairs and and object type:
+        Which keys unlock which objects, and what kind of objects those are
+
+    If the functions finds any line which says "END", it stops parsing.
+    """
+    dngAttribs = {}
+    with open(filename, 'r') as worldFile:
+        for line in worldFile:
+            line = line.strip()
+            if line == "":
+                continue
+            if line == "END":
+                break
+            try:
+                lineData = line.split('=')
+                attrib = lineData[0].strip()
+                value = eval(lineData[1].strip())
+            except IndexError as e:
+                print(line, lineData)
+                raise e
+            dngAttribs[attrib] = value
+
+    dim = dngAttribs['dim']
+    agent_vision = dngAttribs['agent_vision']
+    agent_at = dngAttribs['agent_at']
+    dungeon = Dungeon(dim, agent_vision, agent_at)
+
+    for wallLoc in dngAttribs['walls_at']:
+        dungeon.place_object(WALL, wallLoc)
+    for doorLoc in dngAttribs['doors_at']:
+        dungeon.place_object(DOOR, doorLoc)
+    for chestLoc in dngAttribs['chests_at']:
+        dungeon.place_object(CHEST, chestLoc)
+
+    for keyLoc in dngAttribs['keys_at']:
+        for keyPair in dngAttribs['key_pairs']:
+            if keyPair[0] == keyLoc:
+                unlocks = dungeon.get_item_at(keyPair[1], keyPair[2])
+        dungeon.place_object(KEY, keyLoc, unlocks)
+
+    return dungeon
 
 def test():
     """Function for easier testing."""
