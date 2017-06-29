@@ -14,7 +14,8 @@ def move_to(state, dest):
         dest = dest[0]
 
     path = state.navigate_to(dest)
-    print(path[1:])
+    if path is None:
+        return []
     return [('move', step) for step in path[1:]]
 
 

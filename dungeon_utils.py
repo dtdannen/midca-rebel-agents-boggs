@@ -588,7 +588,7 @@ class DungeonMap(Dungeon):
                     continue
                 linPath = self.get_path_to(nbor, dest)
                 obstacles = self.obstacles_in(linPath)
-                weight = len(linPath) + 5 * obstacles
+                weight = len(linPath) + 2 * obstacles
                 newNode = (currPath+nborDir, nbor, weight)
 
                 exploredYet = False
@@ -675,8 +675,10 @@ class Agent(object):
         if self.can_move(moveDir):
             self.at = dest
             self.map.agentLoc = dest
+            return True
         else:
             print("Can't move {} to {}. Agent at {}".format(moveDir, dest, self.at))
+            return False
 
     def take_key(self, keyLoc):
         """
@@ -729,9 +731,11 @@ class Agent(object):
 
         if actType == 'move':
                 moveDir = args[0]
-                self.move(moveDir)
+                succeeded = self.move(moveDir)
         else:
             raise NotImplementedError("Action type {} is not implemented".format(actType))
+
+        return succeeded
 
     def draw_map(self):
         print(str(self.map))

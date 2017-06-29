@@ -13,7 +13,7 @@ from MIDCA.modules import planning
 import dungeon_utils
 import dungeon_operators as d_ops
 import dungeon_methods as d_mthds
-from modules import simulate, perceive, interpret, evaluate, intend, act
+from modules import simulate, perceive, interpret, evaluate, intend, act, plan
 
 
 DIMENSION = 10
@@ -22,16 +22,17 @@ DOORS = 3
 WALLS = 7
 
 # Setup
-dng = dungeon_utils.Dungeon(dim=DIMENSION, agent_vision=3)
+dng = dungeon_utils.Dungeon(dim=DIMENSION, agent_vision=2)
 dng.generate(chests=CHESTS, doors=DOORS, walls=WALLS)
 
 DECLARE_METHODS_FUNC = d_mthds.declare_methods
 DECLARE_OPERATORS_FUNC = d_ops.declare_operators
-PLAN_VALIDATOR = None
+PLAN_VALIDATOR = plan.dungeonPlanValidator
 DISPLAY_FUNC = dungeon_utils.draw_Dungeon
+VERBOSITY = 0
 
 # Creates a PhaseManager object, which wraps a MIDCA object
-myMidca = base.PhaseManager(dng, display=DISPLAY_FUNC, verbose=0)
+myMidca = base.PhaseManager(dng, display=DISPLAY_FUNC, verbose=VERBOSITY)
 #
 # # Add phases by name
 for phase in ["Simulate", "Perceive", "Interpret", "Eval", "Intend", "Plan", "Act"]:
@@ -41,7 +42,7 @@ for phase in ["Simulate", "Perceive", "Interpret", "Eval", "Intend", "Plan", "Ac
 # Simulate phase modules
 myMidca.append_module("Simulate", simulate.SimulateActions())
 # myMidca.append_module("Simulate", simulate.ASCIIWorldViewer())
-# myMidca.append_module("Simulate", simulate.WorldChanger())
+myMidca.append_module("Simulate", simulate.WorldChanger())
 # TODO: Add some events
 
 # Perceive phase modules
@@ -69,7 +70,7 @@ myMidca.append_module("Intend", intend.SimpleIntend())
 myMidca.append_module("Plan", planning.GenericPyhopPlanner(DECLARE_METHODS_FUNC,
                                                            DECLARE_OPERATORS_FUNC,
                                                            PLAN_VALIDATOR,
-                                                           verbose=0))
+                                                           verbose=VERBOSITY))
 
 # Act phase modules
 myMidca.append_module("Act", act.SimpleAct())
