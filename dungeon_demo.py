@@ -51,12 +51,12 @@ myMidca.append_module("Perceive", perceive.ShowMap())
 
 # Interpret phase modules
 myMidca.append_module("Interpret", interpret.StateDiscrepancyDetector())
+myMidca.append_module("Interpret", interpret.GoalValidityChecker())
 myMidca.append_module("Interpret", interpret.DiscrepancyExplainer())
 myMidca.append_module("Interpret", interpret.UserGoalInput())
 
 # Eval phase modules
 myMidca.append_module("Eval", evaluate.CompletionEvaluator())
-# myMidca.append_module("Eval", evaluate.EvaluateGoals())
 # TODO: Implement an evaluation function able to recognize that the agent
 # needs to unlock a door, pick up a key, or open a chest.
 
@@ -85,5 +85,5 @@ myMidca.mem.logEachAccess = False
 
 # Initialize and start running!
 myMidca.init()
-myMidca.initGoalGraph()
+myMidca.initGoalGraph(goalCompareFunction=plan.dungeonGoalComparator)
 myMidca.run()

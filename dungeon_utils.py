@@ -86,7 +86,7 @@ class Dungeon(object):
     environment when needed.
     """
 
-    def __init__(self, dim, agent_vision=-1):
+    def __init__(self, dim, agent_vision=-1, agentLoc=None):
         """
         Initialize a blank dungeon of size `dim`x`dim`.
 
@@ -111,7 +111,10 @@ class Dungeon(object):
         # Generate self variables
         self.dim = self.hgt = self.wdt = dim
         self.floor = {}
-        self.agentLoc = (dim/2, dim/2)
+        if agentLoc:
+            self.agentLoc = agentLoc
+        else:
+            self.agentLoc = (dim/2, dim/2)
         self.agent = Agent('Drizzt', self.agentLoc, dim, agent_vision)
 
     @property
@@ -303,7 +306,7 @@ class Dungeon(object):
                 except IndexError:
                     break
 
-    def check_passable(self, loc):
+    def check_passable(self, loc, doorsOpen=False):
         """Determine whether `loc` has an impassable object in it."""
         if loc == self.agentLoc:
             return False
@@ -314,6 +317,8 @@ class Dungeon(object):
         contents = self.floor[loc]
         for obj in contents:
             if not obj.passable:
+                if obj.objType == DOOR and doorsOpen:
+                    return True
                 return False
         return True
 
@@ -458,11 +463,11 @@ class Dungeon(object):
 
         return path
 
-    def obstacles_in(self, path):
+    def obstacles_in(self, path, doorsOpen=False):
         """Calculate and return number of obstacles in a given path."""
         obstacles = 0
         for tile in path:
-            if not self.check_passable(tile):
+            if not self.check_passable(tile, doorsOpen):
                 obstacles += 1
         return obstacles
 
@@ -561,14 +566,15 @@ class DungeonMap(Dungeon):
                     if vLoc in self.floor.keys():
                         del self.floor[vLoc]
 
-    def navigate_to(self, origin, dest):
+    def navigate_to(self, origin, dest, doorsOpen=False):
         """
         Return a list of tiles which forms a path.
 
         The returned path should be a sequence of locations such that each
         location is adjacent to the last and is passable, the first location is
         adjacent to the origin, and the last location is the destination. Uses
-        A* search.
+        A* search. If doorsBlock is False, then doors are not treated as
+        obstacles.
         """
         explored = []
         activeTiles = [('o', origin, 0)]  # priority queue of tiles to explore
@@ -584,10 +590,10 @@ class DungeonMap(Dungeon):
             nbors = self.get_adjacent(currTile)
             for nborDir in nbors:
                 nbor = nbors[nborDir]
-                if not self.check_passable(nbor):
+                if not self.check_passable(nbor, doorsOpen):
                     continue
                 linPath = self.get_path_to(nbor, dest)
-                obstacles = self.obstacles_in(linPath)
+                obstacles = self.obstacles_in(linPath, doorsOpen)
                 weight = len(linPath) + 2 * obstacles
                 newNode = (currPath+nborDir, nbor, weight)
 
@@ -607,6 +613,24 @@ class DungeonMap(Dungeon):
 
             explored.append(currNode)
         return None
+
+    def valid_goal(self, goal):
+        """Indicate whether a goal is valid."""
+        # TODO: make this much more robust!
+        goalAction = goal.kwargs['predicate']
+
+        if goalAction == 'move-to':
+            goalLoc = goal.args[0]
+            if not self.check_passable(goalLoc):
+                return (False, 'unpassable')
+            if not self.navigate_to(self.agentLoc, goalLoc):
+                return (False, 'no-access')
+
+        if goalAction == 'open':
+            goalLoc = goal.args[0]
+            if self.check_passable(goalLoc):
+                return (False, 'no-object')
+        return (True, 'none')
 
 
 class Agent(object):
@@ -633,9 +657,9 @@ class Agent(object):
         viewedObjs = dungeon.get_objects_around(self.at, self.vision)
         self.map.update_map(viewedObjs, self.at, self.vision)
 
-    def navigate_to(self, dest):
+    def navigate_to(self, dest, doorsOpen=False):
         """Convenient wrapper for navigating."""
-        return self.map.navigate_to(self.at, dest)
+        return self.map.navigate_to(self.at, dest, doorsOpen)
 
     def can_move(self, moveDir):
         """Indicate whether the Agent can move a tile in the given direction."""
@@ -797,6 +821,12 @@ def draw_Dungeon(dng):
     """Print the Dungeon board."""
     print(str(dng))
 
+
+def build_Dungeon_from_file(filename):
+    with open(filename, 'r') as worldFile:
+        worldAsText = worldFile.read()
+
+    def p
 
 def test():
     """Function for easier testing."""
