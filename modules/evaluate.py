@@ -48,7 +48,7 @@ class GoalManager(base.BaseModule):
     def run(self, cycle, verbose=2):
         """Check each explanation and if it's about a goal solve that."""
         if self.mem.trace:
-            self.mem.trace.add_module(self.__class__.__name__)
+            self.mem.trace.add_module(cycle, self.__class__.__name__)
 
         if not self.mem.get(self.mem.EXPLANATION):
             if verbose >= 1:
@@ -82,7 +82,7 @@ class GoalManager(base.BaseModule):
                     if self.mem.trace:
                         self.mem.trace.add_data("REMOVED GOAL", goal)
 
-                if reason == 'door-blocking':
+                elif reason == 'door-blocking':
                     # If there's a door blocking the goal, find it and add a
                     # sub-goal to open it.
                     doors = self.findDoorsFor(goal)

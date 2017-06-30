@@ -23,11 +23,12 @@ def move(state, moveDir):
     return state
 
 
-def take_key(state, keyLoc):
+def takekey(state, keyLoc):
     try:
         state.take_key(keyLoc)
     except ValueError:
         print("{} is not a valid location in the dungeon".format(keyLoc))
+    return state
 
 
 def unlock(state, target):
@@ -35,7 +36,8 @@ def unlock(state, target):
         state.unlock(target)
     except ValueError:
         print("{} is not a valid location in the dungeon".format(target))
+    return state
 
 
 def declare_operators():
-    pyhop.declare_operators(move, take_key, unlock)
+    pyhop.declare_operators(move, takekey, unlock)

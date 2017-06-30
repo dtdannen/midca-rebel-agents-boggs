@@ -51,6 +51,7 @@ myMidca.append_module("Perceive", perceive.Observer())
 myMidca.append_module("Perceive", perceive.ShowMap())
 
 # Interpret phase modules
+myMidca.append_module("Interpret", evaluate.CompletionEvaluator())
 myMidca.append_module("Interpret", interpret.StateDiscrepancyDetector())
 myMidca.append_module("Interpret", interpret.GoalValidityChecker())
 myMidca.append_module("Interpret", interpret.DiscrepancyExplainer())
@@ -58,9 +59,6 @@ myMidca.append_module("Interpret", interpret.UserGoalInput())
 
 # Eval phase modules
 myMidca.append_module("Eval", evaluate.GoalManager())
-myMidca.append_module("Eval", evaluate.CompletionEvaluator())
-# TODO: Implement an evaluation function able to recognize that the agent
-# needs to unlock a door, pick up a key, or open a chest.
 
 # Introspect phase modules (are we even keeping this?)
 # myMidca.append_module("Introspect", rebel.Introspection())

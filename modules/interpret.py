@@ -108,12 +108,16 @@ class GoalValidityChecker(base.BaseModule):
                 print("No current goals to check validity, continuing")
             return
 
+        foundDiscs = False
         for goal in currGoals:
             goalValid = state.valid_goal(goal)
             if not goalValid[0]:
                 discrepancies[goal] = goalValid[1]
+                foundDiscs = True
                 if verbose >= 2:
                     print("Found goal discrepancy: {}={}".format(goal, goalValid[1]))
+        if not foundDiscs:
+            discrepancies = None
 
         self.mem.set(self.mem.DISCREPANCY, discrepancies)
         if self.mem.trace:
@@ -178,13 +182,17 @@ class DiscrepancyExplainer(base.BaseModule):
         discrepancies have been explained, it stores the list of explanation
         pairs in MIDCA's memory.
         """
+        self.mem.set(self.mem.EXPLANATION, None)
+        self.mem.set(self.mem.EXPLANATION_VAL, None)
         if self.mem.trace:
-            self.mem.trace.add_module(self.__name__.__class__)
+            self.mem.trace.add_module(cycle, self.__class__.__name__)
 
         discDict = self.mem.get(self.mem.DISCREPANCY)
         if not discDict:
             if verbose >= 1:
                 print("No discrepancies to explain.")
+            self.mem.set(self.mem.EXPLANATION, None)
+            self.mem.set(self.mem.EXPLANATION_VAL, None)
             return
 
         explanations = []
@@ -221,14 +229,14 @@ class UserGoalInput(base.BaseModule):
             open (x,y)
         """
         if self.mem.trace:
-            self.mem.trace.add_module()
+            self.mem.trace.add_module(cycle, self.__class__.__name__)
 
         self.state = self.mem.get(self.mem.STATES)[-1]
 
         while True:
             if verbose >= 2:
                 print("""You may enter a goal as listed below:
-                \r\r\rmove-to x y : Moves the agent to (x, y)""")
+                \r\r\rmove-to (x,y) : Moves the agent to (x, y)""")
             userInput = raw_input("Enter a goal or hit RETURN to continue.  ")
             goal = self.parse_input(userInput)
 
@@ -260,8 +268,8 @@ class UserGoalInput(base.BaseModule):
             # goalData [1] should be of form (x,y)
             x, y = goalData[1].strip('()').split(',')
             try:
-                x = int(goalData[1])
-                y = int(goalData[2])
+                x = int(x)
+                y = int(y)
             except ValueError:
                 print("x and y must be integers")
                 return False

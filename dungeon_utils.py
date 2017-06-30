@@ -202,6 +202,51 @@ class Dungeon(object):
         self.agent.move(moveDir)
         return True
 
+    def agent_take_key(self, keyLoc):
+        """If possible, have the agent actually take a key."""
+        if not self.loc_valid(keyLoc):
+            raise ValueError("{} is not a valid location".format(keyLoc))
+        if keyLoc not in self.floor.keys():
+            print("Key location {} not in floor.keys()".format(keyLoc))
+            return False
+        if not (self.adjacent(self.agentLoc, keyLoc) or self.agentLoc == keyLoc):
+            print("Agent at {} not adjacent or on key location {}".format(self.agentLoc, self.keyLoc))
+            return False
+
+        key = self.get_item_at(keyLoc, KEY)
+        if key:
+            self.remove_object_at(KEY, keyLoc)
+            self.agent.take_key(keyLoc)
+            return True
+        print("There's no key at {}".format(keyLoc))
+        return False
+
+    def agent_unlock(self, target):
+        """
+        Unlock a door or chest at `target`.
+
+        If there is a door at `target`, the door becomes unlocked and passable,
+        if there is a chest, it becomes unlocked.
+        """
+        if not self.loc_valid(target):
+            raise ValueError("{} is not a valid location".format(target))
+        if target not in self.floor.keys():
+            print("Unlock target location {} not in floor.keys()".format(keyLoc))
+            return False
+        if not self.adjacent(self.agentLoc, target):
+            print("Agent at {} not adjacent to target location {}".format(self.agentLoc, self.keyLoc))
+            return False
+
+        for obj in self.floor[target]:
+            if obj.locked and self.agent.can_unlock(obj):
+                obj.locked = False
+                if obj.objType == DOOR:
+                    obj.passable = True
+                self.agent.unlock(target)
+                return True
+        print("There's no locked object at {}".format(target))
+        return False
+
     def unlock(self, target, key=None):
         """Unlock anything locked at the target location."""
         if not self.loc_valid(target):
@@ -407,8 +452,19 @@ class Dungeon(object):
         args = action.args
 
         if actType == 'move':
-                moveDir = args[0]
-                return self.move_agent(moveDir)
+            moveDir = args[0]
+            succeeded = self.move_agent(moveDir)
+
+        elif actType == 'takekey':
+            keyLoc = args[0]
+            succeeded = self.agent_take_key(keyLoc)
+
+        elif actType == 'unlock':
+            target = args[0]
+            succeeded = self.agent_unlock(target)
+
+        if succeeded:
+            return True
         else:
             raise NotImplementedError("Action type {} is not implemented".format(actType))
 
@@ -719,7 +775,7 @@ class Agent(object):
             raise ValueError("{} is not a valid location".format(keyLoc))
         if keyLoc not in self.map.floor.keys():
             return False
-        if not self.map.adjacent(self.at, keyLoc):
+        if not (self.map.adjacent(self.at, keyLoc) or self.at == keyLoc):
             return False
 
         key = self.map.get_item_at(keyLoc, KEY)
@@ -745,7 +801,7 @@ class Agent(object):
             return False
 
         for obj in self.map.floor[target]:
-            if obj.locked and self.__can_unlock(obj):
+            if obj.locked and self.can_unlock(obj):
                 obj.locked = False
                 if obj.objType == DOOR:
                     obj.passable = True
@@ -757,8 +813,17 @@ class Agent(object):
         args = action.args
 
         if actType == 'move':
-                moveDir = args[0]
-                succeeded = self.move(moveDir)
+            moveDir = args[0]
+            succeeded = self.move(moveDir)
+
+        elif actType == 'takekey':
+            keyLoc = args[0]
+            succeeded = self.take_key(keyLoc)
+
+        elif actType == 'unlock':
+            target = args[0]
+            succeeded = self.unlock(target)
+
         else:
             raise NotImplementedError("Action type {} is not implemented".format(actType))
 
@@ -784,7 +849,7 @@ class Agent(object):
         else:
             raise NotImplementedError("Goal {} is not valid".format(goal))
 
-    def __can_unlock(self, obj):
+    def can_unlock(self, obj):
         return any([k.unlocks == obj for k in self.keys])
 
     def forecast_action(self, action):
@@ -810,7 +875,7 @@ class Agent(object):
         if self.vision != other.vision:
             diffs['vision': (self.vision, other.vision)]
         if self.keys != other.keys:
-            diffs['keys': (self.keys, other.keys)]
+            diffs['keys'] = (self.keys, other.keys)
 
         mapDiffs = self.map.diff(other.map)
         if mapDiffs:
@@ -822,6 +887,13 @@ class Agent(object):
     def get_objects_at(self, loc):
         """Quickly retrieve location information from the Map."""
         return self.map.floor[loc] if loc in self.map.floor.keys() else None
+
+    def can_reach(self, loc):
+        """Indicate whether the agent can reach the location."""
+        attemptedPath = self.navigate_to(loc)
+        if attemptedPath is None or attemptedPath == []:
+            return False
+        return True
 
 
 def draw_Dungeon(dng):

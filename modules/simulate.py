@@ -1,6 +1,7 @@
 """Collection of dungeon-specific simulator modules for MIDCA."""
 
 from MIDCA import base
+from PIL import Image
 
 
 class SimulateActions(base.BaseModule):
@@ -25,7 +26,7 @@ class SimulateActions(base.BaseModule):
         """
         self.verbose = verbose
         if self.mem.trace:
-            self.mem.trace.add_module(self.__class__.__name__)
+            self.mem.trace.add_module(cycle, self.__class__.__name__)
         if self.mem.get(self.mem.ACTIONS):
             actions = self.mem.get(self.mem.ACTIONS)[-1]
             if actions == []:
@@ -91,14 +92,14 @@ class WorldChanger(base.BaseModule):
         """Ask user for any changes and apply them if possible."""
 
         while True:
-#             if verbose >= 2:
-#                 print("""Change commands:
-# `add loc objType` to add an object
-# `rem loc objType` to remove an object
-# `tele loc` to move the agent to the location
-# q to quit MIDCA
-# RETURN to continue with the MIDCA cycle
-# >> """)
+            #             if verbose >= 2:
+            #                 print("""Change commands:
+            # `add loc objType` to add an object
+            # `rem loc objType` to remove an object
+            # `tele loc` to move the agent to the location
+            # q to quit MIDCA
+            # RETURN to continue with the MIDCA cycle
+            # >> """)
             response = raw_input("What would you like to change?  ")
             if response == '':
                 return 'continue'
@@ -124,3 +125,15 @@ class ASCIIWorldViewer(base.BaseModule):
 
     def run(self, cycle, verbose=0):
         print(str(self.world))
+
+
+class WorldChangeRecorder(base.BaseModule):
+    """Record the series of state changes as a series of images and goalgraphs."""
+
+    def __init__(self, outputDirectory='./Demos/recordings'):
+        super(WorldChangeRecorder, self).__init__()
+        self.outputDirectory = outputDirectory
+
+    def init(self, world, mem):
+        self.mem = mem
+        self.world = world

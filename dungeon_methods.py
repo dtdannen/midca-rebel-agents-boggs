@@ -21,9 +21,49 @@ def move_to(state, dest):
 
 def open_lock(state, dest):
     """Open a locked object at the destination."""
-    # 1) Find the locked object
-    # 2) Figure out where the key is
-    # 3) Add tasks move-to key, take key, move-to door, and unlock door
+    # First, find the locked object itself
+    lockedObj = None
+    objsOnDest = state.get_objects_at(dest)
+    for obj in objsOnDest:
+        if obj.locked:
+            lockedObj = obj
+    if not lockedObj:
+        # There's no plan if there's no object to unlock
+        return []
+
+    # See if we have the key or if we can find it
+    key = None
+    for k in state.keys:
+        # Do we own the key?
+        if k.unlocks == lockedObj:
+            key = k
+            return [('move-adjacent', dest), ('unlock', dest)]
+    if not key:
+        # If not, can we find it?
+        for obj in state.known_objects:
+            if obj.unlocks == lockedObj:
+                key = obj
+                return [('fetch-key', key), ('move-adjacent', dest), ('unlock', dest)]
+    if not key:
+        # If we can't find a key we can't unlock the door
+        return []
+
+
+def fetch_key(state, key):
+    """Retrieve the given key."""
+    keyLoc = key.location
+    return [('move-to', keyLoc), ('takekey', keyLoc)]
+
+
+def move_adjacent(state, dest):
+    """Move the agent to an available adjacent tile to the dest."""
+    possibleAdjs = state.map.get_adjacent(dest)
+    for moveDir in possibleAdjs:
+        tile = possibleAdjs[moveDir]
+        if tile is None:
+            continue
+        if state.can_reach(tile):
+            return [('move-to', tile)]
 
 
 def achieve_goals(state, goals):
@@ -37,3 +77,6 @@ def achieve_goals(state, goals):
 def declare_methods():
     pyhop.declare_methods('move-to', move_to)
     pyhop.declare_methods('achieve_goals', achieve_goals)
+    pyhop.declare_methods('open', open_lock)
+    pyhop.declare_methods('fetch-key', fetch_key)
+    pyhop.declare_methods('move-adjacent', move_adjacent)
