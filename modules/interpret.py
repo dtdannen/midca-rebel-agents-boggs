@@ -14,16 +14,22 @@ class StateDiscrepancyDetector(base.BaseModule):
     """
 
     def init(self, world, mem):
+        """Give module critical MIDCA data."""
         self.mem = mem
         self.world = world
 
     def get_expected(self, action):
-        """Produce the expected Agent given an action."""
+        """
+        Produce the expected state of the world given an action.
+
+        Takes the previous world state (an Agent), and applies the action just
+        taken by MIDCA to it. The result is what we'd expect to see if nothing
+        has changed.
+        """
         oldStates = self.mem.get(self.mem.STATES)
         if oldStates and len(oldStates) > 1:
             oldAgent = oldStates[-2]
         else:
-            # print("Old states not found: {}".format(oldStates))
             return None
 
         return oldAgent.forecast_action(action)
@@ -56,14 +62,14 @@ class StateDiscrepancyDetector(base.BaseModule):
                         return
                 diffs = currState.diff(expected)
             if len(diffs) == 0:
-                self.mem.trace.add_data("DISCREPANCY", None)
+                self.mem.trace.add_data("DISCREPANCIES", None)
                 return
             if verbose >= 1:
                 print("Found {} discrepancies".format(len(diffs.keys())))
             if verbose >= 2:
                 print("Discrepancies found are {}".format(diffs))
             self.mem.set(self.mem.DISCREPANCY, (diffs))
-            self.mem.trace.add_data("DISCREPANCY", diffs)
+            self.mem.trace.add_data("DISCREPANCIES", diffs)
 
         else:
             if verbose >= 1:
@@ -110,6 +116,8 @@ class GoalValidityChecker(base.BaseModule):
                     print("Found goal discrepancy: {}={}".format(goal, goalValid[1]))
 
         self.mem.set(self.mem.DISCREPANCY, discrepancies)
+        if self.mem.trace:
+            self.mem.trace.add_data("DISCREPANCIES", discrepancies)
 
         if verbose >= 1:
                     print("End discrepancy check...\n")
@@ -119,6 +127,7 @@ class DiscrepancyExplainer(base.BaseModule):
     """Allows MIDCA to explain discrepancies in the state."""
 
     def init(self, world, mem):
+        """Give module crucial MIDCA data, and clear explanations from mem."""
         self.mem = mem
         self.world = world
         self.mem.set(self.mem.EXPLANATION, None)
@@ -161,6 +170,17 @@ class DiscrepancyExplainer(base.BaseModule):
             return('unknown-cause')
 
     def run(self, cycle, verbose=2):
+        """
+        For every discrepancy MIDCA has encountered try and explain it.
+
+        An individual explanation takes the form of a pair in which the first
+        calue is the discrepancy and the second is its explanation. After all
+        discrepancies have been explained, it stores the list of explanation
+        pairs in MIDCA's memory.
+        """
+        if self.mem.trace:
+            self.mem.trace.add_module(self.__name__.__class__)
+
         discDict = self.mem.get(self.mem.DISCREPANCY)
         if not discDict:
             if verbose >= 1:
@@ -178,87 +198,8 @@ class DiscrepancyExplainer(base.BaseModule):
 
         self.mem.set(self.mem.EXPLANATION, True)
         self.mem.set(self.mem.EXPLANATION_VAL, explanations)
-
-
-class GoalManager(base.BaseModule):
-    """
-    Allows MIDCA to manage goals given its percepts.
-
-    This module checks to ensure all goals are still valid, and whether we need
-    new goals in order to accomplish a goal we already have.
-    """
-
-    def init(self, world, mem):
-        self.mem = mem
-        self.world = world
-
-    def findDoorsFor(self, goal):
-        dest = goal.args[0]
-        state = self.mem.get(self.mem.STATE)
-        path = state.navigate_to(dest, doorsOpen=True)
-        currTile = state.at
-
-        doors = []
-        for moveDir in path:
-            if moveDir == 'n':
-                currTile = (currTile[0], currTile[1]-1)
-            elif moveDir == 's':
-                currTile = (currTile[0], currTile[1]+1)
-            elif moveDir == 'w':
-                currTile = (currTile[0]-1, currTile[1])
-            elif moveDir == 'e':
-                currTile = (currTile[0]+1, currTile[1])
-            if state.get_objects_at(currTile):
-                for obj in state.get_objects_at(currTile):
-                    if obj.objType == 'DOOR':
-                        doors.append(obj)
-        return doors
-
-    def run(self, cycle, verbose=2):
-        """Check each explanation and if it's about a goal solve that."""
-        if not self.mem.get(self.mem.EXPLANATION):
-            if verbose >= 1:
-                print("No explanations to manage, continuing")
-            return
-
-        goalGraph = self.mem.get(self.mem.GOAL_GRAPH)
-        if not goalGraph:
-            if verbose >= 1:
-                print("There are no goals, continuing")
-            return
-
-        explans = self.mem.get(self.mem.EXPLANATION_VAL)
-        for explan in explans:
-            if not isinstance(explan[0], goals.Goal):
-                continue
-            goal = explan[0]
-            reason = explan[1]
-            if goal.kwargs['predicate'] == 'move-to':
-                if reason == 'unpassable':
-                    goalGraph.remove(goal)
-                    if verbose >= 1:
-                        print("removing invalid goal {}".format(goal))
-                if reason == 'door-blocking':
-                    doors = self.findDoorsFor(goal)
-                    for door in doors:
-                        newGoal = goals.Goal(door.location, predicate='open', parent=goal)
-                        goalGraph.add(newGoal)
-                        if verbose >= 1:
-                            print("added a new goal {}".format(newGoal))
-                else:
-                    raise Exception("Discrepancy reason {} shouldn't exist".format(reason))
-            elif goal.kwargs['predicate'] == 'open':
-                if reason == 'no-object':
-                    goalGraph.remove(goal)
-                    if verbose >= 1:
-                        print("removing invalid goal {}".format(goal))
-                else:
-                    raise Exception("Discrepancy reason {} shouldn't exist".format(reason))
-            else:
-                raise NotImplementedError("Goal {} is not there yet".format(goal))
-
-        if verbose >= 1:
-            print("Done managing goals \n")
+        if self.mem.trace:
+            self.mem.trace.add_data("EXPLANATIONS", explanations)
 
 
 class UserGoalInput(base.BaseModule):
@@ -269,45 +210,63 @@ class UserGoalInput(base.BaseModule):
         self.world = world
 
     def run(self, cycle, verbose=0):
+        """
+        Allow user to give MIDCA agent a goal.
+
+        Currently, the user can tell the agent to move to a certain location or
+        to open whatever is locked at the given objective point.
+
+        Goals are given as `goal-type args`, and currently valid goals are
+            move-to (x,y)
+            open (x,y)
+        """
+        if self.mem.trace:
+            self.mem.trace.add_module()
+
         self.state = self.mem.get(self.mem.STATES)[-1]
+
         while True:
             if verbose >= 2:
                 print("""You may enter a goal as listed below:
                 \r\r\rmove-to x y : Moves the agent to (x, y)""")
             userInput = raw_input("Enter a goal or hit RETURN to continue.  ")
             goal = self.parse_input(userInput)
+
             if goal == 'q':
                 return goal
             elif goal == '':
                 return 'continue'
-            try:
-                if goal and self.state.valid_goal(goal)[0]:
-                    self.mem.get(self.mem.GOAL_GRAPH).insert(goal)
-            except Exception as e:
-                print(e.args[0])
+
+            if goal and self.state.valid_goal(goal)[0]:
+                self.mem.get(self.mem.GOAL_GRAPH).insert(goal)
+                if self.mem.trace:
+                    self.mem.trace.add_data("ADDED GOAL", goal)
 
     def parse_input(self, userIn):
         """Turn user input into a goal."""
+        acceptable_goals = ['move-to', 'open']
+
         if userIn == 'q' or userIn == '':
             return userIn
-        goalData = userIn.split()
-        if len(goalData) != 3:
-            print("Invalid goal. There should be three parts")
-            return False
 
-        if goalData[0] not in ['move-to', 'open']:
+        goalData = userIn.split()
+
+        if goalData[0] not in acceptable_goals:
             print("{} is not a valid goal command".format(goalData[0]))
             return False
         goalAction = goalData[0]
 
-        try:
-            x = int(goalData[1])
-            y = int(goalData[2])
-        except ValueError:
-            print("x and y must be integers")
-            return False
-        goalLoc = (x, y)
+        if goalAction in ['move-to', 'open']:
+            # goalData [1] should be of form (x,y)
+            x, y = goalData[1].strip('()').split(',')
+            try:
+                x = int(goalData[1])
+                y = int(goalData[2])
+            except ValueError:
+                print("x and y must be integers")
+                return False
+            goalLoc = (x, y)
 
-        goal = goals.Goal(goalLoc, predicate=goalAction)
+            goal = goals.Goal(goalLoc, predicate=goalAction)
 
         return goal

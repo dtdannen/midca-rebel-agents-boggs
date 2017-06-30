@@ -7,17 +7,27 @@ class SimpleAct(base.BaseModule):
     """Allows MIDCA to execute actions in a plan by affecting the Dungeon."""
 
     def init(self, world, mem):
+        """Give module critical MIDCA data."""
         self.mem = mem
         self.world = world
 
     def get_best_plan(self, world, goals, verbose):
-        # TODO: Actually evaluate plans for fitness
+        """
+        Find best plan in MIDCA's memory and return it.
+
+        Right now, it just chooses the first plan it gets. There's currently no
+        need to change this since as yet there won't be more than one plan to
+        choose from. This may change though.
+        """
         goalGraph = self.mem.get(self.mem.GOAL_GRAPH)
+        if not goalGraph:
+            return None
         for nextPlan in goalGraph.allMatchingPlans(goals):
             return nextPlan
         return None
 
     def run(self, cycle, verbose=2):
+        """Choose an action to take and store it in MIDCA's memory."""
         plan = None
         goalsAchieved = set()
         goals = self.mem.get(self.mem.CURRENT_GOALS)
@@ -36,6 +46,7 @@ class SimpleAct(base.BaseModule):
                 if verbose >= 1:
                     print "Plan to achieve goals has already been completed. Taking no action."
                 self.mem.add(self.mem.ACTIONS, [])
+
             else:
                 if verbose == 1:
                     print "Action selected:", action
@@ -44,15 +55,16 @@ class SimpleAct(base.BaseModule):
                     if verbose >= 3:
                         for a in plan:
                             print "  "+str(a)
+
                 self.mem.add(self.mem.ACTIONS, [action])
                 actions = self.mem.get(self.mem.ACTIONS)
                 if len(actions) > 400:
-                    actions = actions[200:]  # trim off old stale actions
+                    actions = actions[200:]
                     self.mem.set(self.mem.ACTIONS, actions)
-                    # print "Trimmed off 200 old stale actions to save space"
                 plan.advance()
 
-                if trace: trace.add_data("ACTION", action)
+                if trace:
+                    trace.add_data("ACTION", action)
         else:
             if verbose >= 1:
                 print "MIDCA will not select an action this cycle."
@@ -60,4 +72,5 @@ class SimpleAct(base.BaseModule):
             for g in goals:
                 self.mem.get(self.mem.GOAL_GRAPH).remove(g)
 
-            if trace: trace.add_data("ACTION", None)
+            if trace:
+                trace.add_data("ACTION", None)

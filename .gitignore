@@ -3,3 +3,5 @@ Misc/*
 build/*
 Pics/*
 *.tar.gz
+*.dot
+*.pdf
