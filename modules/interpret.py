@@ -1,5 +1,6 @@
 from MIDCA import base, goals
 import re
+import socket
 
 
 class StateDiscrepancyDetector(base.BaseModule):
@@ -278,3 +279,87 @@ class UserGoalInput(base.BaseModule):
             goal = goals.Goal(goalLoc, predicate=goalAction)
 
         return goal
+
+
+class RemoteUserGoalInput(base.BaseModule):
+    """Allows MIDCA to create a goal based on user input."""
+    def __init__(self, userPort):
+        super(RemoteUserGoalInput, self).__init__()
+        self.userPort = userPort
+
+    def init(self, world, mem):
+        self.mem = mem
+        self.world = world
+
+    def run(self, cycle, verbose=0):
+        """
+        Allow a remote user to give MIDCA agent a goal.
+
+        Currently, the user can tell the agent to move to a certain location or
+        to open whatever is locked at the given objective point.
+
+        Goals are given as `goal-type args`, and currently valid goals are
+            move-to (x,y)
+            open (x,y)
+        """
+        if self.mem.trace:
+            self.mem.trace.add_module(cycle, self.__class__.__name__)
+
+        self.state = self.mem.get(self.mem.STATES)[-1]
+
+        userInput = self.get_user_inputs()
+        if not userInput:
+            return
+        goal = self.parse_input(userInput)
+
+        if goal == 'q':
+            return goal
+        elif goal == '':
+            return 'continue'
+
+        if goal and self.state.valid_goal(goal)[0]:
+            self.mem.get(self.mem.GOAL_GRAPH).insert(goal)
+            if self.mem.trace:
+                self.mem.trace.add_data("ADDED GOAL", goal)
+
+    def parse_input(self, userIn):
+        """Turn user input into a goal."""
+        acceptable_goals = ['move-to', 'open']
+
+        if userIn == 'q' or userIn == '':
+            return userIn
+
+        goalData = userIn.split()
+
+        if goalData[0] not in acceptable_goals:
+            print("{} is not a valid goal command".format(goalData[0]))
+            return False
+        goalAction = goalData[0]
+
+        if goalAction in ['move-to', 'open']:
+            # goalData [1] should be of form (x,y)
+            x, y = goalData[1].strip('()').split(',')
+            try:
+                x = int(x)
+                y = int(y)
+            except ValueError:
+                print("x and y must be integers")
+                return False
+            goalLoc = (x, y)
+
+            goal = goals.Goal(goalLoc, predicate=goalAction)
+
+        return goal
+
+    def get_user_inputs(self):
+        data = None
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        try:
+            sock.connect(("localhost", self.userPort))
+            sock.sendall("input")
+            data = sock.recv(4096)
+        except socket.error:
+            pass
+        finally:
+            sock.close()
+        return data

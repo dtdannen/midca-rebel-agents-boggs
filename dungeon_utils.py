@@ -231,7 +231,7 @@ class Dungeon(object):
         if not self.loc_valid(target):
             raise ValueError("{} is not a valid location".format(target))
         if target not in self.floor.keys():
-            print("Unlock target location {} not in floor.keys()".format(keyLoc))
+            print("Unlock target location {} not in floor.keys()".format(target))
             return False
         if not self.adjacent(self.agentLoc, target):
             print("Agent at {} not adjacent to target location {}".format(self.agentLoc, self.keyLoc))
@@ -550,6 +550,27 @@ class Dungeon(object):
 
         return diffs
 
+    def draw_view(self, center, vRange):
+        """Return a string which shows a limited view of the board."""
+        ascii_board = "  "
+        ascii_board += " |".join([str(c) for c in range(self.dim)])
+        ascii_board += " |\n"
+
+        northBound = max(center[1] - vRange, 0)
+        southBound = min(center[1] + vRange, self.dim)
+        westBound = max(center[0] - vRange, 0)
+        eastBound = min(center[0] + vRange, self.dim)
+
+        for y in range(self.dim):
+            ascii_board += str(y) + "|"
+            for x in range(self.dim):
+                if (northBound <= y <= southBound) and (westBound <= x <= eastBound):
+                    ascii_board += self.draw_ascii_tile((x, y)) + "|"
+                else:
+                    ascii_board += "..|"
+            ascii_board += "\n"
+        return ascii_board
+
     def __random_loc(self):
         x = randint(0, self.dim-1)
         y = randint(0, self.dim-1)
@@ -583,6 +604,38 @@ class Dungeon(object):
     def __eq__(self, other):
         """Check if two Dungeons are the same."""
         return str(self) == str(other)
+
+    def __repr__(self):
+        """Return a string which allows for reconstructing the Dungeon."""
+        retStr = "dim = {}\nagent_vision = {}\nagent_at = {}\nwalls_at={}\n" +\
+                 "doors_at = {}\nchests_at={}\nkeys_at={}\nkey_pairs={}\n" +\
+                 "unlocked={}\nEND\n{}"
+        dim = self.dim
+        agent_vision = self.agent.vision
+        agent_at = self.agent.at
+
+        walls_at = doors_at = chests_at = keys_at = []
+        key_pairs = unlocked = []
+        for obj in self.objects:
+            oType = obj.objType
+            if oType == WALL:
+                walls_at.append(obj.location)
+            elif oType == DOOR:
+                doors_at.append(obj.location)
+                if not obj.locked:
+                    unlocked.append(obj.location)
+            elif oType == CHEST:
+                chests_at.append(obj.location)
+                if not obj.locked:
+                    unlocked.append(obj.location)
+            elif oType == KEY:
+                keys_at.append(obj.location)
+                key_pairs.append((obj.location, obj.unlocks.location, obj.unlocks.objType))
+
+        retStr = retStr.format(dim, agent_vision, agent_at, walls_at, doors_at,
+                               chests_at, keys_at, key_pairs, unlocked, str(self))
+
+        return retStr
 
 
 class DungeonMap(Dungeon):
@@ -901,6 +954,69 @@ def draw_Dungeon(dng):
     print(str(dng))
 
 
+def build_Dungeon_from_str(dngStr):
+    """
+    Take in a string and create a new Dungeon from it.
+
+    The dungeon string defines the values of all the attributes which the
+    dungeon has, and the function reads each line, identifies which
+    attribute is being set, and evaluates the value into a dict which has
+    the attributes as keys. The attributes are as follows:
+
+    dim = int: The size of the Dungeon
+    agent_vision = int: The range the agent can see
+    agent_at = x,y pair: Where the agent is
+    walls_at = list of x,y pairs: Where there are walls at
+    doors_at = list of x,y pairs: Where there are doors at
+    chests_at = list of x,y pairs: Where there are chests at
+    keys_at = list of x,y pairs: Where there are keys at
+    key_pairs = list of pairs of x,y pairs and and object type:
+        Which keys unlock which objects, and what kind of objects those are
+    unlocked = list of x,y pairs: Where there are unlocked objects
+
+    If the functions finds any line which says "END", it stops parsing.
+    """
+    dngAttribs = {}
+    lines = dngStr.split('\n')
+    for line in lines:
+        line = line.strip()
+        if line == "":
+            continue
+        if line == "END":
+            break
+        try:
+            lineData = line.split('=')
+            attrib = lineData[0].strip()
+            value = eval(lineData[1].strip())
+        except IndexError as e:
+            print(line, lineData)
+            raise e
+        dngAttribs[attrib] = value
+
+    dim = dngAttribs['dim']
+    agent_vision = dngAttribs['agent_vision']
+    agent_at = dngAttribs['agent_at']
+    dungeon = Dungeon(dim, agent_vision, agent_at)
+
+    for wallLoc in dngAttribs['walls_at']:
+        dungeon.place_object(WALL, wallLoc)
+    for doorLoc in dngAttribs['doors_at']:
+        dungeon.place_object(DOOR, doorLoc)
+    for chestLoc in dngAttribs['chests_at']:
+        dungeon.place_object(CHEST, chestLoc)
+
+    for keyLoc in dngAttribs['keys_at']:
+        for keyPair in dngAttribs['key_pairs']:
+            if keyPair[0] == keyLoc:
+                unlocks = dungeon.get_item_at(keyPair[1], keyPair[2])
+        dungeon.place_object(KEY, keyLoc, unlocks)
+
+    for obj in dungeon.objects:
+        if obj.location in dngAttribs['unlocked']:
+            obj.locked = False
+    return dungeon
+
+
 def build_Dungeon_from_file(filename):
     """
     Take in a text file and create a new Dungeon from it.
@@ -922,42 +1038,11 @@ def build_Dungeon_from_file(filename):
 
     If the functions finds any line which says "END", it stops parsing.
     """
-    dngAttribs = {}
-    with open(filename, 'r') as worldFile:
-        for line in worldFile:
-            line = line.strip()
-            if line == "":
-                continue
-            if line == "END":
-                break
-            try:
-                lineData = line.split('=')
-                attrib = lineData[0].strip()
-                value = eval(lineData[1].strip())
-            except IndexError as e:
-                print(line, lineData)
-                raise e
-            dngAttribs[attrib] = value
+    with open(filename, 'r') as dngFile:
+        dngStr = dngFile.read()
 
-    dim = dngAttribs['dim']
-    agent_vision = dngAttribs['agent_vision']
-    agent_at = dngAttribs['agent_at']
-    dungeon = Dungeon(dim, agent_vision, agent_at)
+    return build_Dungeon_from_str(dngStr)
 
-    for wallLoc in dngAttribs['walls_at']:
-        dungeon.place_object(WALL, wallLoc)
-    for doorLoc in dngAttribs['doors_at']:
-        dungeon.place_object(DOOR, doorLoc)
-    for chestLoc in dngAttribs['chests_at']:
-        dungeon.place_object(CHEST, chestLoc)
-
-    for keyLoc in dngAttribs['keys_at']:
-        for keyPair in dngAttribs['key_pairs']:
-            if keyPair[0] == keyLoc:
-                unlocks = dungeon.get_item_at(keyPair[1], keyPair[2])
-        dungeon.place_object(KEY, keyLoc, unlocks)
-
-    return dungeon
 
 def test():
     """Function for easier testing."""

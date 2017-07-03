@@ -6,6 +6,7 @@ doors_at      = [(2,1)]
 chests_at     = []
 keys_at       = [(5,2)]
 key_pairs     = [((5,2), (2,1), 'DOOR')]
+unlocked      = []
 
 END
 The function ignores this line and everything after it.

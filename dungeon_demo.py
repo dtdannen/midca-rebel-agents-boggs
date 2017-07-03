@@ -4,6 +4,7 @@ MIDCA demo using a dungeon-ish environment.
 
 Agent explores a dungeon with a limited view.
 """
+# import subprocess
 
 # import MIDCA
 from MIDCA import base
@@ -30,7 +31,16 @@ DECLARE_METHODS_FUNC = d_mthds.declare_methods
 DECLARE_OPERATORS_FUNC = d_ops.declare_operators
 PLAN_VALIDATOR = plan.dungeonPlanValidator
 DISPLAY_FUNC = dungeon_utils.draw_Dungeon
-VERBOSITY = 2
+VERBOSITY = 0
+
+# Set up remote user variables
+USR1_POS = (5, 5)
+USR1_VIEW = 3
+USR1_PORT = 9990
+
+USR2_POS = (8, 8)
+USR2_VIEW = 3
+USR2_PORT = 9995
 
 # Creates a PhaseManager object, which wraps a MIDCA object
 myMidca = base.PhaseManager(dng, display=DISPLAY_FUNC, verbose=VERBOSITY)
@@ -43,7 +53,13 @@ for phase in ["Simulate", "Perceive", "Interpret", "Eval", "Intend", "Plan", "Ac
 # Simulate phase modules
 myMidca.append_module("Simulate", simulate.SimulateActions())
 # myMidca.append_module("Simulate", simulate.ASCIIWorldViewer())
-myMidca.append_module("Simulate", simulate.WorldChanger())
+# myMidca.append_module("Simulate", simulate.WorldChanger())
+myMidca.append_module("Simulate", simulate.UpdateRemoteUser(userPos=USR1_POS,
+                                                            userView=USR1_VIEW,
+                                                            userPort=USR1_PORT))
+myMidca.append_module("Simulate", simulate.UpdateRemoteUser(userPos=USR2_POS,
+                                                            userView=USR2_VIEW,
+                                                            userPort=USR2_PORT))
 # TODO: Add some events
 
 # Perceive phase modules
@@ -55,7 +71,9 @@ myMidca.append_module("Interpret", evaluate.CompletionEvaluator())
 myMidca.append_module("Interpret", interpret.StateDiscrepancyDetector())
 myMidca.append_module("Interpret", interpret.GoalValidityChecker())
 myMidca.append_module("Interpret", interpret.DiscrepancyExplainer())
-myMidca.append_module("Interpret", interpret.UserGoalInput())
+# myMidca.append_module("Interpret", interpret.UserGoalInput())
+myMidca.append_module("Interpret", interpret.RemoteUserGoalInput(USR1_PORT))
+myMidca.append_module("Interpret", interpret.RemoteUserGoalInput(USR2_PORT))
 
 # Eval phase modules
 myMidca.append_module("Eval", evaluate.GoalManager())
@@ -83,7 +101,11 @@ myMidca.set_display_function(DISPLAY_FUNC)
 myMidca.storeHistory = False
 myMidca.mem.logEachAccess = False
 
+# # Open clients for users
+# client1 = subprocess.Popen("xterm")
+# client1 = subprocess.Popen("xterm")
+
 # Initialize and start running!
 myMidca.init()
 myMidca.initGoalGraph(cmpFunc=plan.dungeonGoalComparator)
-myMidca.run()
+myMidca.run(usingInterface=False, verbose=VERBOSITY)

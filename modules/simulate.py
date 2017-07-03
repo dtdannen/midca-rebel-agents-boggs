@@ -1,4 +1,5 @@
 """Collection of dungeon-specific simulator modules for MIDCA."""
+import socket
 
 from MIDCA import base
 from PIL import Image
@@ -90,7 +91,6 @@ class WorldChanger(base.BaseModule):
 
     def run(self, cycle, verbose=0):
         """Ask user for any changes and apply them if possible."""
-
         while True:
             #             if verbose >= 2:
             #                 print("""Change commands:
@@ -127,13 +127,44 @@ class ASCIIWorldViewer(base.BaseModule):
         print(str(self.world))
 
 
-class WorldChangeRecorder(base.BaseModule):
-    """Record the series of state changes as a series of images and goalgraphs."""
+class UpdateRemoteUser(base.BaseModule):
+    """Allows MIDCA to update remote clients."""
 
-    def __init__(self, outputDirectory='./Demos/recordings'):
-        super(WorldChangeRecorder, self).__init__()
-        self.outputDirectory = outputDirectory
+    def __init__(self, userPos, userView, userPort):
+        super(UpdateRemoteUser, self).__init__()
+        self.userPos = userPos
+        self.userView = userView
+        self.userPort = userPort
 
     def init(self, world, mem):
+        """Give module crucial MIDCA data."""
         self.mem = mem
         self.world = world
+
+    def run(self, cycle, verbose=0):
+        """Update client's knowledge of world state."""
+        # Get a slice of the world, based on where the user is
+        worldView = self.world.draw_view(self.userPos, self.userView)
+
+        # Get every goal
+        goalGraph = self.mem.get(self.mem.GOAL_GRAPH)
+        if goalGraph:
+            goals = goalGraph.getAllGoals()
+        else:
+            goals = None
+
+        # Get the current goals
+        currGoals = self.mem.get(self.mem.CURRENT_GOALS)
+
+        goalsStr = [str(g) for g in goals] if goals else ""
+        currGoalsStr = [str(g) for g in currGoals] if currGoals else ""
+
+        dataPacket = "~".join([worldView, str(goalsStr), str(currGoalsStr)])
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        try:
+            sock.connect(("localhost", self.userPort))
+            sock.sendall(dataPacket)
+        except socket.error:
+            pass
+        finally:
+            sock.close()
