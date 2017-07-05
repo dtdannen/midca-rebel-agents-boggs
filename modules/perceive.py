@@ -44,6 +44,7 @@ class ShowMap(base.BaseModule):
         self.world = world
 
     def run(self, cycle, verbose=2):
-        os.system('clear')
+        if verbose < 1:
+            os.system('clear')
         agent = self.mem.get(self.mem.STATE)
         agent.draw_map()

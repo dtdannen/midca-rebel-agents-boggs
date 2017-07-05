@@ -283,9 +283,11 @@ class UserGoalInput(base.BaseModule):
 
 class RemoteUserGoalInput(base.BaseModule):
     """Allows MIDCA to create a goal based on user input."""
-    def __init__(self, userPort):
+    def __init__(self, userPort, autoFile=None, client=None):
         super(RemoteUserGoalInput, self).__init__()
         self.userPort = userPort
+        self.autoFile = autoFile
+        self.client = client
 
     def init(self, world, mem):
         self.mem = mem
@@ -357,9 +359,65 @@ class RemoteUserGoalInput(base.BaseModule):
         try:
             sock.connect(("localhost", self.userPort))
             sock.sendall("input")
+
+            if self.client:
+                self.client.stdin.write(self.autoFile.readline())
+
             data = sock.recv(4096)
         except socket.error:
             pass
         finally:
             sock.close()
         return data
+
+
+class CompletionEvaluator(base.BaseModule):
+    """Evaluates whether goals have been completed and new goals are needed."""
+
+    def init(self, world, mem):
+        """Give the module critical MIDCA data."""
+        self.mem = mem
+        self.world = world
+
+    def run(self, cycle, verbose=2):
+        """Remove goals which have been completed."""
+        self.state = self.mem.get(self.mem.STATE)
+        try:
+            goals = self.mem.get(self.mem.CURRENT_GOALS)
+        except KeyError:
+            goals = []
+
+        trace = self.mem.trace
+        if trace:
+            trace.add_module(cycle, self.__class__.__name__)
+
+        goalGraph = self.mem.get(self.mem.GOAL_GRAPH)
+
+        goals_changed = False
+        if goals:
+            for goal in goals:
+                if self.state.goal_complete(goal):
+                    print("Goal {} completed!".format(goal))
+                    score = self.mem.get(self.mem.DELIVERED)
+                    if score:
+                        self.mem.set(self.mem.DELIVERED, score + 1)
+                    else:
+                        self.mem.set(self.mem.DELIVERED, 1)
+                    goalGraph.remove(goal)
+                    if trace:
+                        trace.add_data("REMOVED GOAL", goal)
+                    goals_changed = True
+
+                else:
+                    print("Goal {} not completed yet".format(goal))
+
+            numPlans = len(goalGraph.plans)
+            goalGraph.removeOldPlans()
+            newNumPlans = len(goalGraph.plans)
+            if numPlans != newNumPlans and verbose >= 1:
+                print "Removed {} plans that no longer apply.".format(numPlans - newNumPlans)
+                goals_changed = True
+        else:
+            print("No current goals, skipping eval")
+        if trace and goals_changed:
+            trace.add_data("GOALS", goals)

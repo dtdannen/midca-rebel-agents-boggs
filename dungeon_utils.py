@@ -7,11 +7,13 @@ CHEST = 'CHEST'
 DOOR = 'DOOR'
 WALL = 'WALL'
 KEY = 'KEY'
-OBJECT_LIST = [CHEST, DOOR, WALL, KEY]
+COIN = 'COIN'
+OBJECT_LIST = [CHEST, DOOR, WALL, KEY, COIN]
 OBJECT_ID_CODES = {CHEST: "C",
                    DOOR: "D",
                    WALL: "W",
-                   KEY: "K"}
+                   KEY: "K",
+                   COIN: "$"}
 
 
 class DungeonObject(object):
@@ -37,16 +39,19 @@ class DungeonObject(object):
         self.id = "{}x{}y{}".format(OBJECT_ID_CODES[objType],
                                     location[0], location[1])
 
+        if objType in [WALL, CHEST, DOOR]:
+            self.passable = False
+        else:
+            self.passable = True
+
         if objType in [CHEST, DOOR]:
             self.locked = True
         else:
             self.locked = False
 
         if objType == KEY:
-            self.passable = True
             self.unlocks = unlocks
         else:
-            self.passable = False
             self.unlocks = None
 
     @property
@@ -61,7 +66,9 @@ class DungeonObject(object):
         if self.objType == DOOR:
             return 'D' if self.locked else 'd'
         if self.objType == WALL: return 'XX'
-        return 'k'
+        if self.objType == KEY: return 'k'
+        if self.objType == COIN: return '$'
+        raise NotImplementedError("The object type {} isn't implemented yet".format(self.objType))
 
     def __str__(self):
         """Return a concise summary of the object's state."""
@@ -219,6 +226,25 @@ class Dungeon(object):
             self.agent.take_key(keyLoc)
             return True
         print("There's no key at {}".format(keyLoc))
+        return False
+
+    def agent_take_coin(self, coinLoc):
+        """If possible, have the agent actually take a key."""
+        if not self.loc_valid(coinLoc):
+            raise ValueError("{} is not a valid location".format(coinLoc))
+        if coinLoc not in self.floor.keys():
+            print("Coin location {} not in floor.keys()".format(coinLoc))
+            return False
+        if not (self.adjacent(self.agentLoc, coinLoc) or self.agentLoc == coinLoc):
+            print("Agent at {} not adjacent or on coin at location {}".format(self.agentLoc, self.coinLoc))
+            return False
+
+        coin = self.get_item_at(coinLoc, COIN)
+        if coin:
+            self.remove_object_at(COIN, coinLoc)
+            self.agent.take_coin(coinLoc)
+            return True
+        print("There's no coin at {}".format(coinLoc))
         return False
 
     def agent_unlock(self, target):
@@ -609,13 +635,13 @@ class Dungeon(object):
         """Return a string which allows for reconstructing the Dungeon."""
         retStr = "dim = {}\nagent_vision = {}\nagent_at = {}\nwalls_at={}\n" +\
                  "doors_at = {}\nchests_at={}\nkeys_at={}\nkey_pairs={}\n" +\
-                 "unlocked={}\nEND\n{}"
+                 "unlocked={}\ncoins_at={}\nEND\n{}"
         dim = self.dim
         agent_vision = self.agent.vision
         agent_at = self.agent.at
 
         walls_at = doors_at = chests_at = keys_at = []
-        key_pairs = unlocked = []
+        key_pairs = unlocked = coins_at = []
         for obj in self.objects:
             oType = obj.objType
             if oType == WALL:
@@ -631,9 +657,12 @@ class Dungeon(object):
             elif oType == KEY:
                 keys_at.append(obj.location)
                 key_pairs.append((obj.location, obj.unlocks.location, obj.unlocks.objType))
+            elif oType == COIN:
+                coins_at.append(obj.location)
 
         retStr = retStr.format(dim, agent_vision, agent_at, walls_at, doors_at,
-                               chests_at, keys_at, key_pairs, unlocked, str(self))
+                               chests_at, keys_at, key_pairs, unlocked, coins_at,
+                               str(self))
 
         return retStr
 
@@ -759,6 +788,8 @@ class Agent(object):
         self.vision = vision
         self.map = DungeonMap(dungeonDim, location)
         self.keys = []
+        self.coins = 0
+        self.health = 10
 
     @property
     def known_objects(self):
@@ -835,6 +866,28 @@ class Agent(object):
         if key:
             self.map.remove_object_at(KEY, keyLoc)
             self.keys.append(key)
+            return True
+        return False
+
+    def take_coin(self, coinLoc):
+        """
+        Take possession of a coin at `coinLoc`.
+
+        Takes a coin off the floor and keeps it. This removes it from the dungeon
+        permanently, and increments the agent's coin amount by 1. Note that this
+        DOES NOT affect the actual Dungeon, only the Agent and its Map.
+        """
+        if not self.map.loc_valid(coinLoc):
+            raise ValueError("{} is not a valid location".format(coinLoc))
+        if coinLoc not in self.map.floor.keys():
+            return False
+        if not (self.map.adjacent(self.at, coinLoc) or self.at == coinLoc):
+            return False
+
+        coin = self.map.get_item_at(coinLoc, COIN)
+        if coin:
+            self.map.remove_object_at(COIN, coinLoc)
+            self.coins += 1
             return True
         return False
 
@@ -973,6 +1026,7 @@ def build_Dungeon_from_str(dngStr):
     key_pairs = list of pairs of x,y pairs and and object type:
         Which keys unlock which objects, and what kind of objects those are
     unlocked = list of x,y pairs: Where there are unlocked objects
+    coins_at = list of x,y pairs: Where there are coins
 
     If the functions finds any line which says "END", it stops parsing.
     """
@@ -1004,6 +1058,8 @@ def build_Dungeon_from_str(dngStr):
         dungeon.place_object(DOOR, doorLoc)
     for chestLoc in dngAttribs['chests_at']:
         dungeon.place_object(CHEST, chestLoc)
+    for coinLoc in dngAttribs['coins_at']:
+        dungeon.place_object(COIN, coinLoc)
 
     for keyLoc in dngAttribs['keys_at']:
         for keyPair in dngAttribs['key_pairs']:

@@ -18,8 +18,6 @@ class DungeonClient(SocketServer.BaseRequestHandler):
     Listens for world-state updates, then prompts the user to give MIDCA a new
     goal. If the user gives a goal, it replies to the server with that goal.
     """
-    def setup(self):
-        """Set up the Dungeon client by getting the users position and view."""
 
     def handle(self):
         self.data = self.request.recv(4096)
@@ -27,7 +25,7 @@ class DungeonClient(SocketServer.BaseRequestHandler):
             userInput = raw_input("Enter a goal or hit RETURN to continue.  ")
             self.request.sendall(userInput)
             if userInput == 'q':
-                raise KeyboardInterrupt
+                sys.exit(0)
         else:
             os.system('clear')
             world, goals, currGoals = self.data.split("~")
@@ -49,4 +47,4 @@ if __name__ == '__main__':
         print("Shutting down client")
     finally:
         server.shutdown()
-        server.close()
+    raw_input("Hit ENTER to exit")

@@ -15,16 +15,20 @@ class SimpleAct(base.BaseModule):
         """
         Find best plan in MIDCA's memory and return it.
 
-        Right now, it just chooses the first plan it gets. There's currently no
-        need to change this since as yet there won't be more than one plan to
-        choose from. This may change though.
+        It finds the plan with the least amount of steps and chooses to pursue
+        that plan.
         """
         goalGraph = self.mem.get(self.mem.GOAL_GRAPH)
         if not goalGraph:
             return None
+        bestPlan = None
+        bestLength = float("inf")
         for nextPlan in goalGraph.allMatchingPlans(goals):
-            return nextPlan
-        return None
+            planLen = len(nextPlan.get_remaining_steps())
+            if planLen < bestLength:
+                bestPlan = nextPlan
+                bestLength = planLen
+        return bestPlan
 
     def run(self, cycle, verbose=2):
         """Choose an action to take and store it in MIDCA's memory."""
