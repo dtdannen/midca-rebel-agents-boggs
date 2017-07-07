@@ -2,57 +2,46 @@
 
 from copy import deepcopy
 from random import randint
+import os
 
 CHEST = 'CHEST'
 DOOR = 'DOOR'
 WALL = 'WALL'
 KEY = 'KEY'
 COIN = 'COIN'
-OBJECT_LIST = [CHEST, DOOR, WALL, KEY, COIN]
-OBJECT_ID_CODES = {CHEST: "C",
-                   DOOR: "D",
-                   WALL: "W",
-                   KEY: "K",
-                   COIN: "$"}
+FIRE = 'FIRE'
+TRAP = 'TRAP'
+OBJECT_LIST = [CHEST, DOOR, WALL, KEY, COIN, FIRE, TRAP]
+OBJECT_ID_CODES = {"C": CHEST,
+                   "D": DOOR,
+                   "W": WALL,
+                   "K": KEY,
+                   "$": COIN,
+                   "*": FIRE,
+                   "^": TRAP}
 
 
 class DungeonObject(object):
     """
-    Class for objects in the dungeon.
+    Superclass for objects and obstacles in the dungeon.
 
-    Since all objects have the same attributes, we can just use one class.
+    All objects share several traits, which are handled by this superclass. They
+    also all have ascii_rep methods, magic string methods, and equality methods
+    which must override the superclass'.
     """
 
-    def __init__(self, objType, location, unlocks=None):
+    def __init__(self, location):
         """
         Create object by setting attributes.
 
         The attributes an Dungeon Object has are:
         `objType`: The kind of dungeon object it is (e.g. 'CHEST')
         `location`: Where the object is as (x,y)
-        `locked`: Whether the object is locked
         `passable`: Whether the object is passable (can be moved over)
-        `unlocks`: If objType=='KEY', then this specifies what the key unlocks
         """
-        self.objType = objType
+        self.objType = None
+        self.passable = None
         self.location = location
-        self.id = "{}x{}y{}".format(OBJECT_ID_CODES[objType],
-                                    location[0], location[1])
-
-        if objType in [WALL, CHEST, DOOR]:
-            self.passable = False
-        else:
-            self.passable = True
-
-        if objType in [CHEST, DOOR]:
-            self.locked = True
-        else:
-            self.locked = False
-
-        if objType == KEY:
-            self.unlocks = unlocks
-        else:
-            self.unlocks = None
 
     @property
     def ascii_rep(self):
@@ -61,28 +50,183 @@ class DungeonObject(object):
 
         This is how the object will appear on the board display.
         """
-        if self.objType == CHEST:
-            return 'C' if self.locked else 'c'
-        if self.objType == DOOR:
-            return 'D' if self.locked else 'd'
-        if self.objType == WALL: return 'XX'
-        if self.objType == KEY: return 'k'
-        if self.objType == COIN: return '$'
-        raise NotImplementedError("The object type {} isn't implemented yet".format(self.objType))
+        raise NotImplementedError
 
     def __str__(self):
-        """Return a concise summary of the object's state."""
-        retStr = "{}@{} (".format(self.objType, self.location)
-        retStr = retStr + "L," if self.locked else retStr + "U,"
-        retStr = retStr + "O" if self.passable else retStr + "C"
-        retStr = retStr + ",{})".format(str(self.unlocks)) if self.unlocks else retStr + ")"
-        return retStr
+        raise NotImplementedError
 
     def __repr__(self):
         return self.__str__()
 
     def __eq__(self, other):
-        return str(self) == str(other)
+        return repr(self) == repr(other)
+
+
+class Wall(DungeonObject):
+    """Represents a wall in the dungeon."""
+
+    def __init__(self, location):
+        super(Wall, self).__init__(location)
+        self.passable = False
+        self.objType = WALL
+
+    @property
+    def ascii_rep(self):
+        return "XX"
+
+    def __str__(self):
+        return "Wall @ {}".format(self.location)
+
+    def __repr__(self):
+        return "W@{}".format(self.location)
+
+
+class Chest(DungeonObject):
+    """Represents a chest in the dungeon, and can hold things."""
+
+    def __init__(self, location, contains=None):
+        super(Chest, self).__init__(location)
+        self.passable = False
+        self.objType = CHEST
+        self.contains = contains
+        self.locked = True
+
+    def insert_object(self, obj):
+        self.contain = obj
+
+    @property
+    def ascii_rep(self):
+        if self.locked:
+            return 'CC'
+        elif self.contains:
+            return 'c' + self.contains.ascii_rep
+        else:
+            return 'cc'
+
+    def __str__(self):
+        locked = "Locked" if self.locked else "Unlocked"
+        return "{} chest @ {} containing {}".format(locked, self.location,
+                                                    str(self.contains))
+
+    def __repr__(self):
+        char = "C" if self.locked else "c"
+        return "{}@{}:{}".format(char, self.location, repr(self.contains))
+
+
+class Door(DungeonObject):
+    """Represents a door in the dungeon, which can be unlocked and opened."""
+
+    def __init__(self, location, locked=True):
+        super(Door, self).__init__(location)
+        self.passable = False
+        self.objType = DOOR
+        self.locked = locked
+
+    @property
+    def ascii_rep(self):
+        if self.locked:
+            return 'DD'
+        else:
+            return 'd'
+
+    def __str__(self):
+        locked = "Locked" if self.locked else "Unlocked"
+        return "{} door @ {}".format(locked, self.location)
+
+    def __repr__(self):
+        char = "D" if self.locked else "d"
+        return "{}@{}".format(char, self.location)
+
+
+class Key(DungeonObject):
+    """Represents a key in the dungeon. Can unlock a locked item."""
+
+    def __init__(self, location, unlocks):
+        super(Key, self).__init__(location)
+        self.passable = True
+        self.objType = KEY
+        self.unlocks = unlocks
+        self.taken = False
+
+    @property
+    def ascii_rep(self):
+        return 'k'
+
+    def __str__(self):
+        if self.taken:
+            return "Owned key which unlocks {}".format(repr(self.unlocks))
+        else:
+            return "Key at {} which unlocks {}".format(self.location, repr(self.unlocks))
+
+    def __repr__(self):
+        if self.taken:
+            return "k@tkn:{}".format(repr(self.unlocks))
+        else:
+            return "k@{}:{}".format(self.location, repr(self.unlocks))
+
+
+class Coin(DungeonObject):
+    """Represents a coin of some value in the dungeon."""
+
+    def __init__(self, location, value):
+        super(Coin, self).__init__(location)
+        self.passable = True
+        self.objType = COIN
+        self.value = value
+
+    @property
+    def ascii_rep(self):
+        return "$"
+
+    def __str__(self):
+        return "Coin @ {} worth {}".format(self.location, self.value)
+
+    def __repr__(self):
+        return "$@{}:{}".format(self.location, self.value)
+
+
+class Fire(DungeonObject):
+    """Represents a fire in the dungeon, which can deal damage to the agent."""
+
+    def __init__(self, location, damage):
+        super(Fire, self).__init__(location)
+        self.passable = True
+        self.objType = FIRE
+        self.damage = damage
+
+    @property
+    def ascii_rep(self):
+        return "**"
+
+    def __str__(self):
+        return "Fire @ {} which deals {} damage".format(self.location, self.damage)
+
+    def __repr__(self):
+        return "*@{}:{}".format(self.location, self.damage)
+
+
+class Trap(DungeonObject):
+    """Represents a trap in the dungeon, which is hidden until it activates."""
+
+    def __init__(self, location, damage):
+        super(Trap, self).__init__(location)
+        self.passable = True
+        self.objType = TRAP
+        self.damage = damage
+        self.hidden = True
+
+    @property
+    def ascii_rep(self):
+        return "" if self.hidden else "^^"
+
+    def __str__(self):
+        hidden = "Hidden" if self.hidden else "Sprung"
+        return "{} trap @ {} which deals {} damage".format(hidden, self.location,
+                                                           self.damage)
+
+    def __repr__(self):
+        char = "h" if self.hidden else "s"
+        return "^{}@{}:{}".format(char, self.location, self.damage)
 
 
 class Dungeon(object):
@@ -142,20 +286,42 @@ class Dungeon(object):
             objects += self.floor[loc]
         return objects
 
-    def place_object(self, objType, location, keyUnlocks=None):
+    def place_object(self, objType, location, **kwargs):
         """Place a new object of the given type at the location, if possible."""
         if not self.loc_valid(location):
             raise Exception("{} is not a valid place for {}".format(location, objType))
-        if objType in [CHEST, DOOR, WALL]:
+
+        if objType in [CHEST, DOOR, WALL, TRAP, FIRE]:
             if not self.loc_is_free(location):
                 raise Exception("{} is already occupied by a large object".format(location))
-            obj = DungeonObject(objType, location)
+
+        if objType == WALL:
+            obj = Wall(location)
+        elif objType == CHEST:
+            contains = kwargs['contains']
+            obj = Chest(location, contains)
+        elif objType == DOOR:
+            obj = Door(location)
+        elif objType == KEY:
+            unlocks = kwargs['unlocks']
+            obj = Key(location, unlocks)
+        elif objType == COIN:
+            value = kwargs['value']
+            obj = Coin(location, value)
+        elif objType == FIRE:
+            damage = kwargs['damage']
+            obj = Fire(location, damage)
+        elif objType == TRAP:
+            damage = kwargs['damage']
+            obj = Trap(location, damage)
         else:
-            obj = DungeonObject(objType, location, keyUnlocks)
-        if location in self.floor.keys():
+            raise NotImplementedError(objType)
+
+        if location in self.floor:
             self.floor[location].append(obj)
         else:
             self.floor[location] = [obj]
+        return obj
 
     def remove_object_at(self, objType, loc):
         """Remove the object at the given location."""
@@ -223,13 +389,15 @@ class Dungeon(object):
         key = self.get_item_at(keyLoc, KEY)
         if key:
             self.remove_object_at(KEY, keyLoc)
+            key.taken = True
+            key.location = None
             self.agent.take_key(keyLoc)
             return True
         print("There's no key at {}".format(keyLoc))
         return False
 
     def agent_take_coin(self, coinLoc):
-        """If possible, have the agent actually take a key."""
+        """If possible, have the agent actually take a coin."""
         if not self.loc_valid(coinLoc):
             raise ValueError("{} is not a valid location".format(coinLoc))
         if coinLoc not in self.floor.keys():
@@ -318,67 +486,6 @@ class Dungeon(object):
                 return obj
         return None
 
-    def generate(self, chests, doors, walls):
-        """
-        Generate a random Dungeon.
-
-        Fills the board with chests, doors, and walls, the amount of each
-        dictated by `chests`, `doors`, and `walls`. The sum of those should be
-        less than half the number of tiles, i.e.
-            `chests` + `doors` + `walls` <= `self.dim`**2/2-1
-
-        Note that not all tiles and keys are guaranteeded to be accessible, and
-        so not all doors and chests can be reached or unlocked.
-        """
-        assert chests + doors + walls <= self.dim**2/2 - 1, "too many objects!"
-
-        # Generate chests, walls, and doors
-        locks = []
-        objTypeIndex = 0
-        for objCount in [chests, doors, walls]:
-            objType = OBJECT_LIST[objTypeIndex]
-            objsPlaced = 0
-            while objsPlaced < objCount:
-                objLoc = self.__random_loc()
-                obj = DungeonObject(objType, objLoc)
-                if self.check_passable(objLoc):
-                    if objLoc in self.floor.keys():
-                        self.floor[objLoc].append(obj)
-                    else:
-                        self.floor[objLoc] = [obj]
-                    # print("Placing {}".format(str(obj)))
-                    objsPlaced += 1
-                    if objType is not WALL:
-                        locks.append(obj)
-            objTypeIndex += 1
-
-        # Generate and place keys
-        keyLock = locks.pop()
-        while len(locks) > -1:
-            keyLoc = self.__random_loc()
-            validLoc = True
-            if keyLoc in self.floor.keys():
-                for obj in self.floor[keyLoc]:
-                    if obj.objType in [DOOR, WALL, KEY]:
-                        validLoc = False
-                if validLoc:
-                    key = DungeonObject(KEY, keyLoc, keyLock)
-                    self.floor[keyLoc].append(key)
-                    print("Placing {}".format(str(key)))
-                    print(len(locks))
-                    try:
-                        keyLock = locks.pop()
-                    except IndexError:
-                        break
-            else:
-                key = DungeonObject(KEY, keyLoc, keyLock)
-                self.floor[keyLoc] = [key]
-                # print("Placing {}".format(str(key)))
-                try:
-                    keyLock = locks.pop()
-                except IndexError:
-                    break
-
     def check_passable(self, loc, doorsOpen=False):
         """Determine whether `loc` has an impassable object in it."""
         if loc == self.agentLoc:
@@ -397,16 +504,15 @@ class Dungeon(object):
 
     def loc_is_free(self, loc):
         """
-        Indicate whether the location can have a large object.
+        Indicate whether the location can hold non-trivial object.
 
-        Checks whether the tile is already occupied by a large object (chest,
-        wall, or door).
+        Trivial objects as yet are coins and keys
         """
         if loc not in self.floor.keys():
             return True
 
-        for objType in [CHEST, DOOR, WALL]:
-            if objType in [o.objType for o in self.floor[loc]]:
+        for obj in self.floor[loc]:
+            if obj.objType not in [KEY, COIN]:
                 return False
 
         return True
@@ -597,17 +703,17 @@ class Dungeon(object):
             ascii_board += "\n"
         return ascii_board
 
-    def __random_loc(self):
-        x = randint(0, self.dim-1)
-        y = randint(0, self.dim-1)
-        return (x, y)
-
     def loc_valid(self, loc):
         x = loc[0]
         y = loc[1]
         if not 0 <= x < self.dim: return False
         if not 0 <= y < self.dim: return False
         return True
+
+    def __random_loc(self):
+        x = randint(0, self.dim-1)
+        y = randint(0, self.dim-1)
+        return (x, y)
 
     def __str__(self):
         """
@@ -633,38 +739,11 @@ class Dungeon(object):
 
     def __repr__(self):
         """Return a string which allows for reconstructing the Dungeon."""
-        retStr = "dim = {}\nagent_vision = {}\nagent_at = {}\nwalls_at={}\n" +\
-                 "doors_at = {}\nchests_at={}\nkeys_at={}\nkey_pairs={}\n" +\
-                 "unlocked={}\ncoins_at={}\nEND\n{}"
-        dim = self.dim
-        agent_vision = self.agent.vision
-        agent_at = self.agent.at
-
-        walls_at = doors_at = chests_at = keys_at = []
-        key_pairs = unlocked = coins_at = []
+        retStr = "dim:{}\n".format(self.dim)
+        retStr += "aLoc:{}\n".format(self.agentLoc)
+        retStr += "aVis:{}\n".format(self.agent_vision)
         for obj in self.objects:
-            oType = obj.objType
-            if oType == WALL:
-                walls_at.append(obj.location)
-            elif oType == DOOR:
-                doors_at.append(obj.location)
-                if not obj.locked:
-                    unlocked.append(obj.location)
-            elif oType == CHEST:
-                chests_at.append(obj.location)
-                if not obj.locked:
-                    unlocked.append(obj.location)
-            elif oType == KEY:
-                keys_at.append(obj.location)
-                key_pairs.append((obj.location, obj.unlocks.location, obj.unlocks.objType))
-            elif oType == COIN:
-                coins_at.append(obj.location)
-
-        retStr = retStr.format(dim, agent_vision, agent_at, walls_at, doors_at,
-                               chests_at, keys_at, key_pairs, unlocked, coins_at,
-                               str(self))
-
-        return retStr
+            retStr += repr(obj) + '\n'
 
 
 class DungeonMap(Dungeon):
@@ -865,6 +944,8 @@ class Agent(object):
         key = self.map.get_item_at(keyLoc, KEY)
         if key:
             self.map.remove_object_at(KEY, keyLoc)
+            key.taken = True
+            key.location = None
             self.keys.append(key)
             return True
         return False
@@ -887,7 +968,7 @@ class Agent(object):
         coin = self.map.get_item_at(coinLoc, COIN)
         if coin:
             self.map.remove_object_at(COIN, coinLoc)
-            self.coins += 1
+            self.coins += coin.value
             return True
         return False
 
@@ -982,6 +1063,10 @@ class Agent(object):
             diffs['vision': (self.vision, other.vision)]
         if self.keys != other.keys:
             diffs['keys'] = (self.keys, other.keys)
+        if self.coins != other.coins:
+            diffs['coins'] = (self.coins, other.coins)
+        if self.health != other.health:
+            diffs['health'] = (self.health, other.health)
 
         mapDiffs = self.map.diff(other.map)
         if mapDiffs:
@@ -1008,96 +1093,158 @@ def draw_Dungeon(dng):
 
 
 def build_Dungeon_from_str(dngStr):
-    """
-    Take in a string and create a new Dungeon from it.
-
-    The dungeon string defines the values of all the attributes which the
-    dungeon has, and the function reads each line, identifies which
-    attribute is being set, and evaluates the value into a dict which has
-    the attributes as keys. The attributes are as follows:
-
-    dim = int: The size of the Dungeon
-    agent_vision = int: The range the agent can see
-    agent_at = x,y pair: Where the agent is
-    walls_at = list of x,y pairs: Where there are walls at
-    doors_at = list of x,y pairs: Where there are doors at
-    chests_at = list of x,y pairs: Where there are chests at
-    keys_at = list of x,y pairs: Where there are keys at
-    key_pairs = list of pairs of x,y pairs and and object type:
-        Which keys unlock which objects, and what kind of objects those are
-    unlocked = list of x,y pairs: Where there are unlocked objects
-    coins_at = list of x,y pairs: Where there are coins
-
-    If the functions finds any line which says "END", it stops parsing.
-    """
-    dngAttribs = {}
+    """Take in a string and create a new Dungeon from it."""
     lines = dngStr.split('\n')
-    for line in lines:
-        line = line.strip()
-        if line == "":
-            continue
-        if line == "END":
-            break
-        try:
-            lineData = line.split('=')
-            attrib = lineData[0].strip()
-            value = eval(lineData[1].strip())
-        except IndexError as e:
-            print(line, lineData)
-            raise e
-        dngAttribs[attrib] = value
+    dim = int(lines[0][4:])
+    agentLoc = int(lines[1][5:])
+    agentVision = int(lines[2][5:])
+    dng = Dungeon(dim=dim, agent_vision=agentVision, agentLoc=agentLoc)
+    lines = lines[3:]
+    while len(lines) > 0:
+        line = lines.pop()
+        objCode = line[0]
+        locIndex = line.index('@') + 1
+        miscIndex = line.index(':') + 1 if ':' in line else len(line)
 
-    dim = dngAttribs['dim']
-    agent_vision = dngAttribs['agent_vision']
-    agent_at = dngAttribs['agent_at']
-    dungeon = Dungeon(dim, agent_vision, agent_at)
+        objType = OBJECT_ID_CODES[objCode]
+        location = get_point_from_str(line[locIndex:miscIndex-1])
+        miscData = line[miscIndex:]
+        objsMade = []
 
-    for wallLoc in dngAttribs['walls_at']:
-        dungeon.place_object(WALL, wallLoc)
-    for doorLoc in dngAttribs['doors_at']:
-        dungeon.place_object(DOOR, doorLoc)
-    for chestLoc in dngAttribs['chests_at']:
-        dungeon.place_object(CHEST, chestLoc)
-    for coinLoc in dngAttribs['coins_at']:
-        dungeon.place_object(COIN, coinLoc)
-
-    for keyLoc in dngAttribs['keys_at']:
-        for keyPair in dngAttribs['key_pairs']:
-            if keyPair[0] == keyLoc:
-                unlocks = dungeon.get_item_at(keyPair[1], keyPair[2])
-        dungeon.place_object(KEY, keyLoc, unlocks)
-
-    for obj in dungeon.objects:
-        if obj.location in dngAttribs['unlocked']:
-            obj.locked = False
-    return dungeon
+        if objType == WALL:
+            objsMade.append(dng.place_object(WALL, location))
+        elif objType == DOOR:
+            locked = False if miscData.lower() == 'false' else True
+            objsMade.append(dng.place_object(DOOR, location, locked=locked))
+        elif objType == CHEST:
+            if miscData == '':
+                objsMade.append(dng.place_object(CHEST, location))
+            else:
+                contains = None
+                for obj in objsMade:
+                    if repr(obj) == miscData:
+                        contains = obj
+                        break
+                if contains:
+                    objsMade.append(dng.place_object(CHEST, location,
+                                                     contains=contains))
+                else:
+                    lines.append(line)
+        elif objType == KEY:
+            unlocks = None
+            for obj in objsMade:
+                if repr(obj) == miscData:
+                    unlocks = obj
+                    break
+            if unlocks:
+                objsMade.append(dng.place_object(KEY, location, unlocks=unlocks))
+            else:
+                lines.append(line)
+        elif objType == COIN:
+            value = int(miscData)
+            objsMade.append(dng.place_object(COIN, location, value=value))
+        elif objType == FIRE:
+            dmg = int(miscData)
+            objsMade.append(dng.place_object(FIRE, location, damage=dmg))
+        elif objType == TRAP:
+            dmg = int(miscData)
+            objsMade.append(dng.place_object(TRAP, location, damage=dmg))
+        else:
+            raise NotImplementedError(objType)
+    return dng
 
 
 def build_Dungeon_from_file(filename):
     """
     Take in a text file and create a new Dungeon from it.
 
-    The dungeon file defines the values of all the attributes which the
-    dungeon has, and the function reads each line, identifies which
-    attribute is being set, and evaluates the value into a dict which has
-    the attributes as keys. The attributes are as follows:
-
-    dim = int: The size of the Dungeon
-    agent_vision = int: The range the agent can see
-    agent_at = x,y pair: Where the agent is
-    walls_at = list of x,y pairs: Where there are walls at
-    doors_at = list of x,y pairs: Where there are doors at
-    chests_at = list of x,y pairs: Where there are chests at
-    keys_at = list of x,y pairs: Where there are keys at
-    key_pairs = list of pairs of x,y pairs and and object type:
-        Which keys unlock which objects, and what kind of objects those are
-
-    If the functions finds any line which says "END", it stops parsing.
+    Passes the text of the file into build_Dungeon_from_str.
     """
     with open(filename, 'r') as dngFile:
         dngStr = dngFile.read()
 
     return build_Dungeon_from_str(dngStr)
+
+
+def interactive_Dungeon_maker():
+    """Allows a user to build a Dungeon from scratch."""
+    def parse_command(cmd, dng, objsMade):
+        """Parse a command and then execute it."""
+        cmdData = cmd.split(' ')
+        cmdAction = cmdData[0]
+
+        if cmdAction == 'set':
+            attrib = cmdData[1].lower()
+            if attrib == 'agent-loc':
+                dest = get_point_from_str(cmdData[2])
+                success = dng.teleport_agent(dest)
+            elif attrib == 'agent-vision':
+                vRange = int(cmdData[2])
+                dng.agent.vision = vRange
+                success = True
+            else:
+                success = False
+                error = "Unknown attribute {} for set command".format(attrib)
+        if cmdAction == 'add':
+            objType = cmdData[1].upper()
+            objLoc = get_point_from_str(cmdData[2])
+            miscData = cmdData[3] if len(cmdData) == 4 else None
+
+            if objType not in OBJECT_LIST:
+                print("Unknown object type {}".format(objType))
+            elif objType == WALL:
+                newObj = dng.place_object(WALL, objLoc)
+                objsMade[hash(newObj)] = newObj
+                return True
+            elif objType == DOOR:
+                if not miscData:
+                    newObj = dng.place_object(DOOR, objLoc)
+                    return True
+                elif miscData.lower() == 'true':
+                    newObj = dng.place_object(DOOR, objLoc, locked=True)
+                    return True
+                elif miscData.lower() == 'false':
+                    newObj = dng.place_object(DOOR, objLoc, locked=False)
+                    return True
+                else:
+                    print("Unkown door lock status {}".format(miscData))
+                    return False
+            elif objType == CHEST:
+                if not miscData:
+                    newObj = dng.place_object(CHEST, location)
+                    success = ("add", newObj)
+
+
+
+    dim = input("First, how big is the dungeon? ")
+    dng = Dungeon(dim)
+    objsMade = {}
+    while True:
+        os.system('clear')
+        print(str(dng))
+        print("""Commands:
+        \r\rset agent-loc POINT moves the Agent to (x, y)
+        \r\rset agent-vision INT sets how far the Agent can see
+        \r\radd OBJTYPE POINT MISCDATA places an object at the given location
+        \r\rrem OBJID removes the object with the given id
+        \r\rset OBJID ATTRIBUTE VALUE changes the object's attribute
+        \r\rsave FILENAME writes the Dungeon to the given file
+        \r\rquit
+
+        Object IDs:\n""")
+        for objID in objsMade:
+            print(objsMade[objID], objID)
+        command = raw_input("Command>> ")
+        result = parse_command(command, dng)
+        print result
+        raw_input("ENTER to coninute...")
+
+
+def get_point_from_str(string):
+    """Convert a string of form '(x, y)' into a pair of ints."""
+    coords = string.strip('()').split(',')
+    point = (int(coords[0]), int(coords[1]))
+    return point
 
 
 def test():
