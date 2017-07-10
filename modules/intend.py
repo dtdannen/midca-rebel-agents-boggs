@@ -25,7 +25,7 @@ class QuickIntend(base.BaseModule):
         bestScore = float("inf")  # lower scores are preferable
         bestGoal = []
         for goal in goalList:
-            if goal.kwargs['predicate'] == 'move-to':
+            if goal.kwargs['predicate'] == 'agent-at':
                 dest = goal.args[0]
                 linPath = state.map.get_path_to(state.at, dest)
                 obstacles = state.map.obstacles_in(linPath)

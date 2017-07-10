@@ -1,0 +1,175 @@
+# Used MIDCA's NBeacons domain as a guide
+TYPE(DIM)
+type(AGENT-VISION)
+TYPE(AGENT)
+TYPE(TILE)
+TYPE(OBJECT)
+TYPE(WALL, OBJECT)
+TYPE(DOOR, OBJECT)
+TYPE(CHEST, OBJECT)
+TYPE(KEY, OBJECT)
+TYPE(COIN, OBJECT)
+TYPE(FIRE, OBJECT)
+TYPE(TRAP, OBJECT)
+
+# Tile location predicates
+predicate(adjacent-north, [loc1, loc2], [TILE, TILE])
+predicate(adjacent-south, [loc1, loc2], [TILE, TILE])
+predicate(adjacent-east, [loc1, loc2], [TILE, TILE])
+predicate(adjacent-west, [loc1, loc2], [TILE, TILE])
+predicate(adjacent, [loc1, loc2], [TILE, TILE])
+
+# Object location predicates
+predicate(agent-at, [agnt, loc], [AGENT, TILE])
+predicate(wall-at, [wall, loc], [WALL, TILE])
+predicate(door-at, [door, loc], [DOOR, TILE])
+predicate(chest-at, [chest, loc], [CHEST, TILE])
+predicate(key-at, [key, loc], [KEY, TILE])
+predicate(coin-at, [coin, loc], [COIN, TILE])
+predicate(fire-at, [fire, loc], [FIRE, TILE])
+predicate(trap-at, [trap, loc], [TRAP, TILE])
+
+# Status predicates
+predicate(passable, [loc], [TILE])
+predicate(visible, [loc], [TILE])
+predicate(door-locked, [door], [DOOR])
+predicate(chest-locked, [chst], [CHEST])
+predicate(contains-key, [chst, key], [CHEST, KEY])
+predicate(contains-coin, [chst, coin], [CHEST, COIN])
+predicate(unlocks-door, [key, door], [KEY, DOOR])
+predicate(unlocks-chest, [key, chst], [KEY, CHEST])
+predicate(key-in-chest, [key, chst], [KEY, CHEST])
+predicate(coin-in-chest, [coin, chst], [COIN, CHEST])
+predicate(taken, [key], [KEY])
+predicate(hidden, [trap], [TRAP])
+predicate(has-key, [agnt, key], [AGENT, KEY])
+
+# Agent damage predicates
+predicate(undamaged, [agnt], [AGENT])
+predicate(slightly-damaged, [agnt], [AGENT])
+predicate(moderately-damaged, [agnt], [AGENT])
+predicate(heavily-damaged, [agnt], [AGENT])
+predicate(broken, [agnt], [AGENT])
+
+
+#Movement operators
+operator(move-north,
+args = [(agnt, AGENT), (start, TILE), (dest, TILE)],
+preconditions = [
+  condition(passable, [dest]),
+	condition(agent-at, [agnt, start]),
+	condition(adjacent-north, [start, dest])],
+results = [
+	condition(agent-at, [agnt, start], negate = TRUE),
+	condition(agent-at, [agnt, dest])])
+
+operator(move-south,
+args = [(agnt, AGENT), (start, TILE), (dest, TILE)],
+preconditions = [
+  condition(passable, [dest]),
+	condition(agent-at, [agnt, start]),
+	condition(adjacent-south, [start, dest])],
+results = [
+	condition(agent-at, [agnt, start], negate = TRUE),
+	condition(agent-at, [agnt, dest])])
+
+operator(move-east,
+args = [(agnt, AGENT), (start, TILE), (dest, TILE)],
+preconditions = [
+  condition(passable, [dest]),
+	condition(agent-at, [agnt, start]),
+	condition(adjacent-east, [start, dest])],
+results = [
+	condition(agent-at, [agnt, start], negate = TRUE),
+	condition(agent-at, [agnt, dest])])
+
+operator(move-west,
+args = [(agnt, AGENT), (start, TILE), (dest, TILE)],
+preconditions = [
+  condition(passable, [dest]),
+	condition(agent-at, [agnt, start]),
+	condition(adjacent-west, [start, dest])],
+results = [
+	condition(agent-at, [agnt, start], negate = TRUE),
+	condition(agent-at, [agnt, dest])])
+
+operator(take-key,
+args = [(agnt, AGENT), (key, KEY), (agntLoc, TILE), (keyLoc, TILE)],
+preconditions = [
+  condition(agent-at, [agnt, agntLoc]),
+  condition(key-at, [key, keyLoc]),
+  condition(adjacent, [agntLoc, keyLoc])],
+results = [
+  condition(key-at, [key, keyLoc], negate=TRUE),
+  condition(taken, [key]),
+  condition(has-key, [agnt, key])])
+
+operator(take-key-chest,
+args = [(agnt, AGENT), (key, KEY), (chst, CHEST), (aLoc, TILE), (kLoc, TILE)],
+preconditions = [
+  condition(agent-at, [agnt, aLoc]),
+  condition(chest-at, [chst, kLoc]),
+  condition(key-at, [key, kLoc]),
+  condition(key-in-chest, [key, chst]),
+  condition(contains-key, [chst, key]),
+  condition(chest-locked, [chst], negate=TRUE)
+  condition(adjacent, [aLoc, kLoc])],
+results = [
+  condition(key-at, [key, kLoc], negate=TRUE),
+  condition(in-chest, [key, chst], negate=TRUE),
+  condition(contains-key, [chst, key], negate=TRUE),
+  condition(taken, [key]),
+  condition(has-key, [agnt, key])])
+
+operator(unlock-door,
+args = [(agnt, AGENT), (aLoc, TILE), (door, DOOR), (dLoc, TILE), (key, KEY)],
+preconditions = [
+  condition(agent-at, [agnt, aLoc]),
+  condition(door-at, [door, dLoc]),
+  condition(adjacent, [aLoc, dLoc]),
+  condition(door-locked, [door]),
+  condition(has-key, [agnt, key]),
+  condition(unlocks-door, [key, door])],
+results = [
+  condition(door-locked, [door], negate=TRUE),
+  condition(has-key, [agnt, key], negate=TRUE),
+  condition(passable, dLoc)])
+
+operator(unlock-chest,
+args = [(agnt, AGENT), (aLoc, TILE), (chest, CHEST), (cLoc, TILE), (key, KEY)],
+preconditions = [
+  condition(agent-at, [agnt, aLoc]),
+  condition(chest-at, [chest, cLoc]),
+  condition(adjacent, [aLoc, cLoc]),
+  condition(chest-locked, [chest]),
+  condition(has-key, [agnt, key]),
+  condition(unlocks-chest, [key, chest])],
+results = [
+  condition(chest-locked, [chest], negate=TRUE),
+  condition(has-key, [agnt, key], negate=TRUE)])
+
+operator(take-coin,
+args = [(agnt, AGENT), (coin, COIN), (agntLoc, TILE), (coinLoc, TILE)],
+preconditions = [
+  condition(agent-at, [agnt, agntLoc]),
+  condition(coin-at, [coin, coinLoc]),
+  condition(adjacent, [agntLoc, coinLoc])],
+results = [
+  condition(coin-at, [coin, coinLoc], negate=TRUE),
+  condition(has-coin, [agnt, coin])])
+
+operator(take-coin-chest,
+args = [(agnt, AGENT), (coin, COIN), (chst, CHEST), (aLoc, TILE), (cLoc, TILE)],
+preconditions = [
+  condition(agent-at, [agnt, aLoc]),
+  condition(chest-at, [chst, cLoc]),
+  condition(coin-at, [coin, cLoc]),
+  condition(coin-in-chest, [coin, chst]),
+  condition(contains-coin, [chst, coin]),
+  condition(chest-locked, [chst], negate=TRUE)
+  condition(adjacent, [aLoc, cLoc])],
+results = [
+  condition(coin-at, [coin, cLoc], negate=TRUE),
+  condition(adjacent, [aLoc, cLoc], negate=TRUE),
+  condition(in-chest, [coin, chst], negate=TRUE),
+  condition(contains-coin, [chst, coin], negate=TRUE)])

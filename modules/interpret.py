@@ -148,7 +148,7 @@ class DiscrepancyExplainer(base.BaseModule):
         state = self.mem.get(self.mem.STATE)
         goalAction = goal.kwargs['predicate']
 
-        if goalAction == 'move-to':
+        if goalAction == 'agent-at':
             dest = goal.args[0]
             if disc == 'unpassable':
                 return 'unpassable'
@@ -226,7 +226,7 @@ class UserGoalInput(base.BaseModule):
         to open whatever is locked at the given objective point.
 
         Goals are given as `goal-type args`, and currently valid goals are
-            move-to (x,y)
+            agent-at (x,y)
             open (x,y)
         """
         if self.mem.trace:
@@ -237,7 +237,7 @@ class UserGoalInput(base.BaseModule):
         while True:
             if verbose >= 2:
                 print("""You may enter a goal as listed below:
-                \r\r\rmove-to (x,y) : Moves the agent to (x, y)""")
+                \r\r\ragent-at (x,y) : Moves the agent to (x, y)""")
             userInput = raw_input("Enter a goal or hit RETURN to continue.  ")
             goal = self.parse_input(userInput)
 
@@ -253,7 +253,7 @@ class UserGoalInput(base.BaseModule):
 
     def parse_input(self, userIn):
         """Turn user input into a goal."""
-        acceptable_goals = ['move-to', 'open']
+        acceptable_goals = ['agent-at', 'open']
 
         if userIn == 'q' or userIn == '':
             return userIn
@@ -265,7 +265,7 @@ class UserGoalInput(base.BaseModule):
             return False
         goalAction = goalData[0]
 
-        if goalAction in ['move-to', 'open']:
+        if goalAction in ['agent-at', 'open']:
             # goalData [1] should be of form (x,y)
             x, y = goalData[1].strip('()').split(',')
             try:
@@ -301,7 +301,7 @@ class RemoteUserGoalInput(base.BaseModule):
         to open whatever is locked at the given objective point.
 
         Goals are given as `goal-type args`, and currently valid goals are
-            move-to (x,y)
+            agent-at (x,y)
             open (x,y)
         """
         if self.mem.trace:
@@ -326,7 +326,7 @@ class RemoteUserGoalInput(base.BaseModule):
 
     def parse_input(self, userIn):
         """Turn user input into a goal."""
-        acceptable_goals = ['move-to', 'open']
+        acceptable_goals = ['agent-at', 'open']
 
         if userIn == 'q' or userIn == '':
             return userIn
@@ -338,7 +338,7 @@ class RemoteUserGoalInput(base.BaseModule):
             return False
         goalAction = goalData[0]
 
-        if goalAction in ['move-to', 'open']:
+        if goalAction in ['agent-at', 'open']:
             # goalData [1] should be of form (x,y)
             x, y = goalData[1].strip('()').split(',')
             try:

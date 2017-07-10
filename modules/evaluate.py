@@ -71,8 +71,8 @@ class GoalManager(base.BaseModule):
             goal = explan[0]
             reason = explan[1]
 
-            # If the goal is a move-to goal, see if it's impossible to achieve
-            if goal.kwargs['predicate'] == 'move-to':
+            # If the goal is a agent-at goal, see if it's impossible to achieve
+            if goal.kwargs['predicate'] == 'agent-at':
                 if reason == 'unpassable':
                     # If the tile is unpassable or there is not path to the tile
                     # remove the goal.

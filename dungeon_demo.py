@@ -25,7 +25,7 @@ WALLS = 7
 # Setup
 # dng = dungeon_utils.Dungeon(dim=DIMENSION, agent_vision=2)
 # dng.generate(chests=CHESTS, doors=DOORS, walls=WALLS)
-dng = dungeon_utils.build_Dungeon_from_file('testingMap.dng')
+dng = dungeon_utils.build_Dungeon_from_file('dng_files/testDng.txt')
 
 DECLARE_METHODS_FUNC = d_mthds.declare_methods
 DECLARE_OPERATORS_FUNC = d_ops.declare_operators
@@ -45,8 +45,8 @@ USR2_PORT = 9995
 # Open clients for users
 USR1_args = ["xterm", "-e", "python", "./dungeon_client.py", str(USR1_PORT)]
 USR2_args = ["xterm", "-e", "python", "./dungeon_client.py", str(USR2_PORT)]
-client1 = subprocess.Popen(USR1_args, stdin=subprocess.PIPE)
-client2 = subprocess.Popen(USR2_args, stdin=subprocess.PIPE)
+client1 = subprocess.Popen(USR1_args)
+client2 = subprocess.Popen(USR2_args)
 
 # Creates a PhaseManager object, which wraps a MIDCA object
 myMidca = base.PhaseManager(dng, display=DISPLAY_FUNC, verbose=VERBOSITY)

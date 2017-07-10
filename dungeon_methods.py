@@ -41,7 +41,7 @@ def open_lock(state, dest):
     if not key:
         # If not, can we find it?
         for obj in state.known_objects:
-            if obj.unlocks == lockedObj:
+            if obj.objType == "KEY" and obj.unlocks == lockedObj:
                 key = obj
                 return [('fetch-key', key), ('move-adjacent', dest), ('unlock', dest)]
     if not key:
@@ -70,7 +70,11 @@ def achieve_goals(state, goals):
     """Base method which allows us to understand different goals."""
     tasks = []
     for goal in goals:
-        tasks.append((goal.kwargs['predicate'], goal.args[0]))
+        if goal.kwargs['predicate'] == 'agent-at':
+            action = 'move-to'
+        else:
+            action = goal.kwargs['predicate']
+        tasks.append((action, goal.args[0]))
     return tasks
 
 

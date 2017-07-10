@@ -52,7 +52,7 @@ class WorldChanger(base.BaseModule):
         """
         Transform the given response string into a digestible list.
 
-        The list contains the action type (e.g. 'move-to'), the location
+        The list contains the action type (e.g. 'agent-at'), the location
         given, and the kind of object, if there is one. In the future this may
         need to be more robust to allow for different kinds of changes.
         """

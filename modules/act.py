@@ -25,7 +25,7 @@ class SimpleAct(base.BaseModule):
         bestLength = float("inf")
         for nextPlan in goalGraph.allMatchingPlans(goals):
             planLen = len(nextPlan.get_remaining_steps())
-            if planLen < bestLength:
+            if planLen < bestLength and planLen != 0:
                 bestPlan = nextPlan
                 bestLength = planLen
         return bestPlan

@@ -15,10 +15,23 @@ OBJECT_LIST = [CHEST, DOOR, WALL, KEY, COIN, FIRE, TRAP]
 OBJECT_ID_CODES = {"C": CHEST,
                    "D": DOOR,
                    "W": WALL,
-                   "K": KEY,
+                   "k": KEY,
                    "$": COIN,
                    "*": FIRE,
                    "^": TRAP}
+
+OBJECT_CODE_IDS = {CHEST: "C",
+                   DOOR: "D",
+                   WALL: "W",
+                   KEY: "k",
+                   COIN: "$",
+                   FIRE: "*",
+                   TRAP: "^"}
+
+DIRECTON_EXPANSIONS = {'n': 'north',
+                       's': 'south',
+                       'w': 'west',
+                       'e': 'east'}
 
 
 class DungeonObject(object):
@@ -52,6 +65,15 @@ class DungeonObject(object):
         """
         raise NotImplementedError
 
+    @property
+    def id(self):
+        return OBJECT_CODE_IDS[self.objType] + str(hash(self))[:5]
+
+    @property
+    def predicates(self):
+        """Return a string of the MIDCA predicates appropriate for the object."""
+        raise NotImplementedError
+
     def __str__(self):
         raise NotImplementedError
 
@@ -60,6 +82,9 @@ class DungeonObject(object):
 
     def __eq__(self, other):
         return repr(self) == repr(other)
+
+    def __hash__(self):
+        return hash(repr(self))
 
 
 class Wall(DungeonObject):
@@ -73,6 +98,10 @@ class Wall(DungeonObject):
     @property
     def ascii_rep(self):
         return "XX"
+
+    @property
+    def predicates(self):
+        return ""
 
     def __str__(self):
         return "Wall @ {}".format(self.location)
@@ -97,11 +126,25 @@ class Chest(DungeonObject):
     @property
     def ascii_rep(self):
         if self.locked:
-            return 'CC'
-        elif self.contains:
-            return 'c' + self.contains.ascii_rep
+            char = 'C'
         else:
-            return 'cc'
+            char = 'c'
+        if self.contains:
+            return char
+        else:
+            return char * 2
+
+    @property
+    def predicates(self):
+        retStr = ""
+        if self.locked:
+            retStr += "chest-locked({})\n".format(self.id)
+        if self.contains:
+            if self.contains.objType == KEY:
+                retStr += "contains-key({}, {})\n".format(self.id, self.contains.id)
+            elif self.contains.objType == COIN:
+                retStr += "contains-coin({}, {})\n".format(self.id, self.contains.id)
+        return retStr
 
     def __str__(self):
         locked = "Locked" if self.locked else "Unlocked"
@@ -129,6 +172,13 @@ class Door(DungeonObject):
         else:
             return 'd'
 
+    @property
+    def predicates(self):
+        retStr = ""
+        if self.locked:
+            retStr += "door-locked({})\n".format(self.id)
+        return retStr
+
     def __str__(self):
         locked = "Locked" if self.locked else "Unlocked"
         return "{} door @ {}".format(locked, self.location)
@@ -141,16 +191,31 @@ class Door(DungeonObject):
 class Key(DungeonObject):
     """Represents a key in the dungeon. Can unlock a locked item."""
 
-    def __init__(self, location, unlocks):
+    def __init__(self, location, unlocks=None, inChest=None):
         super(Key, self).__init__(location)
         self.passable = True
         self.objType = KEY
         self.unlocks = unlocks
         self.taken = False
+        self.inChest = inChest
 
     @property
     def ascii_rep(self):
         return 'k'
+
+    @property
+    def predicates(self):
+        retStr = ""
+        if self.unlocks:
+            if self.unlocks.objType == DOOR:
+                retStr += "unlocks-door({}, {})\n".format(self.id, self.unlocks.id)
+            if self.unlocks.objType == CHEST:
+                retStr += "unlocks-chest({}, {})\n".format(self.id, self.unlocks.id)
+        if self.taken:
+            retStr += "taken({})\n".format(self.id)
+        if self.inChest:
+            retStr += "key-in-chest({}, {})\n".format(self.id, self.inChest.id)
+        return retStr
 
     def __str__(self):
         if self.taken:
@@ -168,15 +233,23 @@ class Key(DungeonObject):
 class Coin(DungeonObject):
     """Represents a coin of some value in the dungeon."""
 
-    def __init__(self, location, value):
+    def __init__(self, location, value, inChest=None):
         super(Coin, self).__init__(location)
         self.passable = True
         self.objType = COIN
         self.value = value
+        self.inChest = inChest
 
     @property
     def ascii_rep(self):
         return "$"
+
+    @property
+    def predicates(self):
+        retStr = ""
+        if self.inChest:
+            retStr += "coin-in-chest({}, {})\n".format(self.id, self.inChest.id)
+        return retStr
 
     def __str__(self):
         return "Coin @ {} worth {}".format(self.location, self.value)
@@ -198,6 +271,11 @@ class Fire(DungeonObject):
     def ascii_rep(self):
         return "**"
 
+    @property
+    def predicates(self):
+        retStr = ""
+        return retStr
+
     def __str__(self):
         return "Fire @ {} which deals {} damage".format(self.location, self.damage)
 
@@ -218,6 +296,13 @@ class Trap(DungeonObject):
     @property
     def ascii_rep(self):
         return "" if self.hidden else "^^"
+
+    @property
+    def predicates(self):
+        retStr = ""
+        if self.hidden:
+            retStr += "hidden({})\n".format(self.id)
+        return retStr
 
     def __str__(self):
         hidden = "Hidden" if self.hidden else "Sprung"
@@ -298,13 +383,19 @@ class Dungeon(object):
         if objType == WALL:
             obj = Wall(location)
         elif objType == CHEST:
-            contains = kwargs['contains']
-            obj = Chest(location, contains)
+            if 'contains' in kwargs:
+                contains = kwargs['contains']
+                obj = Chest(location, contains)
+            else:
+                obj = Chest(location)
         elif objType == DOOR:
             obj = Door(location)
         elif objType == KEY:
-            unlocks = kwargs['unlocks']
-            obj = Key(location, unlocks)
+            if 'unlocks' in kwargs:
+                unlocks = kwargs['unlocks']
+                obj = Key(location, unlocks)
+            else:
+                obj = Key(location)
         elif objType == COIN:
             value = kwargs['value']
             obj = Coin(location, value)
@@ -322,6 +413,13 @@ class Dungeon(object):
         else:
             self.floor[location] = [obj]
         return obj
+
+    def remove_object(self, objID):
+        """Remove the given object from the map."""
+        for obj in self.objects:
+            if repr(obj) == objID:
+                break
+        self.remove_object_at(obj.objType, obj.location)
 
     def remove_object_at(self, objType, loc):
         """Remove the object at the given location."""
@@ -552,7 +650,7 @@ class Dungeon(object):
         goalLoc = goal.args[0]
         goalAction = goal.kwargs['predicate']
 
-        if goalAction == 'move-to' and not self.check_passable(goalLoc):
+        if goalAction == 'agent-at' and not self.check_passable(goalLoc):
             raise Exception("Invalid goal: agent can't be at {}".format(goalLoc))
 
         if goalAction == 'open'and self.check_passable(goalLoc):
@@ -568,7 +666,7 @@ class Dungeon(object):
         new Dungeon serves as a PyHop goal.
         """
         goalDungeon = deepcopy(self)
-        if predicate == "move-to":
+        if predicate == "agent-at":
             loc = args[0]
             goalDungeon.teleport_agent(loc)
 
@@ -595,10 +693,11 @@ class Dungeon(object):
             target = args[0]
             succeeded = self.agent_unlock(target)
 
-        if succeeded:
-            return True
         else:
             raise NotImplementedError("Action type {} is not implemented".format(actType))
+
+        if succeeded:
+            return True
 
     def adjacent(self, loc1, loc2):
         """Indicate whether loc1 and loc2 are adjacent."""
@@ -710,6 +809,91 @@ class Dungeon(object):
         if not 0 <= y < self.dim: return False
         return True
 
+    def MIDCA_state_str(self):
+        """Return a string which MIDCA can interpret as a state."""
+        def gen_object_decls(self):
+            """Return a string declaring the objects in domain language."""
+            retStr = ""
+            for obj in self.objects:
+                retStr += "{}({})\n".format(obj.objType, obj.id)
+            return retStr
+
+        def gen_tile_decls(self):
+            """Return a string declaring all tiles."""
+            retStr = ""
+            for loc in self.all_locations:
+                retStr += "TILE(Tx{}y{})\n".format(loc[0], loc[1])
+            return retStr
+
+        def gen_tile_adjs(self):
+            """Return a string declaring all tile adjacencies."""
+            retStr = ""
+            for loc in self.all_locations:
+                nborDict = self.get_adjacent(loc)
+                for nborDir in nborDict:
+                    fullDir = DIRECTON_EXPANSIONS[nborDir]
+                    nborLoc = nborDict[nborDir]
+                    retStr += "adjacent-{}(Tx{}y{}, Tx{}y{})\n".format(fullDir,
+                                                                       loc[0], loc[1],
+                                                                       nborLoc[0], nborLoc[1])
+                    retStr += "adjacent(Tx{}y{}, Tx{}y{})\n".format(loc[0], loc[1],
+                                                                    nborLoc[0], nborLoc[1])
+            return retStr
+
+        def gen_obj_location_preds(self):
+            """Return a string of predicates which indicate where objects are."""
+            retStr = ""
+            for obj in self.objects:
+                retStr += "{}-at({}, Tx{}y{})\n".format(obj.objType.lower(),
+                                                        obj.id,
+                                                        obj.location[0],
+                                                        obj.location[1])
+            return retStr
+
+        def gen_tile_preds(self):
+            """Return a string with status predicates for each tile."""
+            retStr = ""
+            for loc in self.all_locations:
+                if self.check_passable(loc):
+                    retStr += "passable(Tx{}y{})\n".format(loc[0], loc[1])
+                if self.agent.can_see(loc):
+                    retStr += "visible(Tx{}y{})\n".format(loc[0], loc[1])
+            return retStr
+
+        def gen_object_preds(self):
+            """Return a string with all appropriate predicates relation to objects."""
+            retStr = ""
+            for obj in self.objects:
+                retStr += obj.predicates
+            return retStr
+
+        retStr = "DIM({})\nAGENT({})\nundamaged({})\n".format(self.dim,
+                                                              self.agent.__name__,
+                                                              self.agent.__name__)
+        retStr += "\n# Tile declarations\n"
+        retStr += gen_tile_decls(self)
+
+        retStr += "\n# Object declarations\n"
+        retStr += gen_object_decls(self)
+
+        retStr += "\n# Tile adjacency predicates\n"
+        retStr += gen_tile_adjs(self)
+
+        retStr += "\n# Object location predicates\n"
+        retStr += gen_obj_location_preds(self)
+
+        retStr += "\n# Tile status predicates\n"
+        retStr += gen_tile_preds(self)
+
+        retStr += "\n# Other object predicates\n"
+        retStr += gen_object_preds(self)
+
+        retStr += "\nagent-at({}, Tx{}y{})".format(self.agent.__name__,
+                                                   self.agent.at[0],
+                                                   self.agent.at[1])
+
+        return retStr
+
     def __random_loc(self):
         x = randint(0, self.dim-1)
         y = randint(0, self.dim-1)
@@ -741,9 +925,10 @@ class Dungeon(object):
         """Return a string which allows for reconstructing the Dungeon."""
         retStr = "dim:{}\n".format(self.dim)
         retStr += "aLoc:{}\n".format(self.agentLoc)
-        retStr += "aVis:{}\n".format(self.agent_vision)
+        retStr += "aVis:{}\n".format(self.agent.vision)
         for obj in self.objects:
             retStr += repr(obj) + '\n'
+        return retStr
 
 
 class DungeonMap(Dungeon):
@@ -839,7 +1024,7 @@ class DungeonMap(Dungeon):
         # TODO: make this much more robust!
         goalAction = goal.kwargs['predicate']
 
-        if goalAction == 'move-to':
+        if goalAction == 'agent-at':
             goalLoc = goal.args[0]
             if not self.check_passable(goalLoc):
                 return (False, 'unpassable')
@@ -868,7 +1053,7 @@ class Agent(object):
         self.map = DungeonMap(dungeonDim, location)
         self.keys = []
         self.coins = 0
-        self.health = 10
+        self.health = 5
 
     @property
     def known_objects(self):
@@ -1029,7 +1214,7 @@ class Agent(object):
 
     def goal_complete(self, goal):
         """Indicate whether a MIDCA goal has been completed."""
-        if goal.kwargs['predicate'] == 'move-to':
+        if goal.kwargs['predicate'] == 'agent-at':
             return self.at == goal.args[0]
         elif goal.kwargs['predicate'] == 'open':
             return self.map.loc_unlocked(goal.args[0])
@@ -1086,6 +1271,10 @@ class Agent(object):
             return False
         return True
 
+    def can_see(self, loc):
+        """Indicate whether the agent can see that location."""
+        return abs(loc[0]-self.at[0]) <= self.vision and abs(loc[1]-self.at[1]) <= self.vision
+
 
 def draw_Dungeon(dng):
     """Print the Dungeon board."""
@@ -1096,12 +1285,15 @@ def build_Dungeon_from_str(dngStr):
     """Take in a string and create a new Dungeon from it."""
     lines = dngStr.split('\n')
     dim = int(lines[0][4:])
-    agentLoc = int(lines[1][5:])
+    agentLoc = get_point_from_str(lines[1][5:])
     agentVision = int(lines[2][5:])
     dng = Dungeon(dim=dim, agent_vision=agentVision, agentLoc=agentLoc)
     lines = lines[3:]
+    objsMade = []
     while len(lines) > 0:
-        line = lines.pop()
+        line = lines.pop(0)
+        if len(line) == 0:
+            continue
         objCode = line[0]
         locIndex = line.index('@') + 1
         miscIndex = line.index(':') + 1 if ':' in line else len(line)
@@ -1109,7 +1301,6 @@ def build_Dungeon_from_str(dngStr):
         objType = OBJECT_ID_CODES[objCode]
         location = get_point_from_str(line[locIndex:miscIndex-1])
         miscData = line[miscIndex:]
-        objsMade = []
 
         if objType == WALL:
             objsMade.append(dng.place_object(WALL, location))
@@ -1139,6 +1330,7 @@ def build_Dungeon_from_str(dngStr):
             if unlocks:
                 objsMade.append(dng.place_object(KEY, location, unlocks=unlocks))
             else:
+                # print("Couldn't find object reference {}".format(miscData))
                 lines.append(line)
         elif objType == COIN:
             value = int(miscData)
@@ -1168,53 +1360,183 @@ def build_Dungeon_from_file(filename):
 
 def interactive_Dungeon_maker():
     """Allows a user to build a Dungeon from scratch."""
+    def set_obj_attrib(target, attrib, val, objsMade):
+        """Set the target attribute of the object to the given value, if possible."""
+        if attrib not in dir(target):
+            print("Object {} has no attribute {}".format(target, attrib))
+            return False
+
+        if attrib == 'location':
+            val = get_point_from_str(val)
+            target.location = val
+            return True
+        elif attrib in ['contains', 'unlocks']:
+            if val in objsMade.keys():
+                val = objsMade[val]
+            else:
+                print("Object code {} not made yet".format(val))
+                return False
+            target.__dict__[attrib] = val
+            return True
+        else:
+            attribType = type(target.__dict__[attrib])
+            target.__dict__[attrib] = attribType(val)
+            return True
+
     def parse_command(cmd, dng, objsMade):
         """Parse a command and then execute it."""
         cmdData = cmd.split(' ')
         cmdAction = cmdData[0]
 
         if cmdAction == 'set':
-            attrib = cmdData[1].lower()
-            if attrib == 'agent-loc':
+            data = cmdData[1].lower()
+            if data == 'agent-loc':
                 dest = get_point_from_str(cmdData[2])
-                success = dng.teleport_agent(dest)
-            elif attrib == 'agent-vision':
+                return dng.teleport_agent(dest)
+            elif data == 'agent-vision':
                 vRange = int(cmdData[2])
                 dng.agent.vision = vRange
-                success = True
+                return True
+            elif data in objsMade.keys():
+                objTarget = objsMade[data]
+                attrib = cmdData[2].lower()
+                value = cmdData[3]
+                return set_obj_attrib(objTarget, attrib, value, objsMade)
             else:
-                success = False
-                error = "Unknown attribute {} for set command".format(attrib)
-        if cmdAction == 'add':
+                print("Unknown data {} for set command".format(data))
+                return False
+        elif cmdAction == 'add':
             objType = cmdData[1].upper()
-            objLoc = get_point_from_str(cmdData[2])
-            miscData = cmdData[3] if len(cmdData) == 4 else None
+            try:
+                objLoc = get_point_from_str(cmdData[2])
+            except ValueError:
+                print("Problem converting location to point: not an int")
+                return False
+            if len(cmdData) == 4:
+                miscData = cmdData[3]
+            elif len(cmdData) >= 4:
+                miscData = cmdData[3:]
+            else:
+                miscData = None
 
             if objType not in OBJECT_LIST:
                 print("Unknown object type {}".format(objType))
             elif objType == WALL:
                 newObj = dng.place_object(WALL, objLoc)
-                objsMade[hash(newObj)] = newObj
+                objsMade[repr(newObj)] = newObj
                 return True
             elif objType == DOOR:
                 if not miscData:
                     newObj = dng.place_object(DOOR, objLoc)
+                    objsMade[repr(newObj)] = newObj
                     return True
                 elif miscData.lower() == 'true':
                     newObj = dng.place_object(DOOR, objLoc, locked=True)
+                    objsMade[repr(newObj)] = newObj
                     return True
                 elif miscData.lower() == 'false':
                     newObj = dng.place_object(DOOR, objLoc, locked=False)
+                    objsMade[repr(newObj)] = newObj
                     return True
                 else:
                     print("Unkown door lock status {}".format(miscData))
                     return False
             elif objType == CHEST:
                 if not miscData:
-                    newObj = dng.place_object(CHEST, location)
-                    success = ("add", newObj)
+                    newObj = dng.place_object(CHEST, objLoc)
+                    objsMade[repr(newObj)] = newObj
+                    return True
+                miscData = " ".join(miscData)
+                if miscData in objsMade.keys():
+                    contains = objsMade[miscData]
+                    if contains.objType not in [KEY, COIN]:
+                        print("A chest can't hold a {}".format(contains.objType))
+                        return False
+                    newObj = dng.place_object(CHEST, objLoc, contains=contains)
+                    objsMade[repr(newObj)] = newObj
+                    return True
+                else:
+                    print("Object code {} is not made yet".format(miscData))
+                    return False
+            elif objType == KEY:
+                if not miscData:
+                    newObj = dng.place_object(KEY, objLoc)
+                    objsMade[repr(newObj)] = newObj
+                    return True
+                miscData = " ".join(miscData)
+                if miscData in objsMade.keys():
+                    unlocks = objsMade[miscData]
+                    if unlocks.objType not in [CHEST, DOOR]:
+                        print("Object type {} can't be unlocked".format(unlocks.objType))
+                        return False
+                    newObj = dng.place_object(KEY, objLoc, unlocks=unlocks)
+                    objsMade[repr(newObj)] = newObj
+                    return True
+                else:
+                    print("Object code {} is not made yet".format(miscData))
+                    return False
+            elif objType == COIN:
+                if not miscData:
+                    print("Coin assigned value of 1")
+                    value = 1
+                else:
+                    try:
+                        value = int(miscData)
+                    except ValueError:
+                        print("Coin value must be an int, {} isn't".format(miscData))
+                        return False
 
+                newObj = dng.place_object(COIN, objLoc, value=value)
+                objsMade[repr(newObj)] = newObj
+                return True
+            elif objType == FIRE:
+                if not miscData:
+                    print("Fire assigned damage of 3")
+                    damage = 3
+                else:
+                    try:
+                        damage = int(miscData)
+                    except ValueError:
+                        print("Damage needs to be an int, {} isn't".format(miscData))
+                        return False
 
+                newObj = dng.place_object(FIRE, objLoc, damage=damage)
+                objsMade[repr(newObj)] = newObj
+                return True
+            elif objType == TRAP:
+                if not miscData:
+                    print("Trap assigned damage of 3")
+                    damage = 3
+                else:
+                    try:
+                        damage = int(miscData)
+                    except ValueError:
+                        print("Damage needs to be an int, {} isn't".format(miscData))
+                        return False
+
+                newObj = dng.place_object(TRAP, objLoc, damage=damage)
+                objsMade[repr(newObj)] = newObj
+                return True
+            else:
+                print("Object type {} is not implemented yet".format(objType))
+                return False
+        elif cmdAction == 'rem':
+            targetID = cmdData[1]
+            if targetID not in objsMade.keys():
+                print("Can't remove object {}, doesn't exist")
+                return False
+            dng.remove_object(targetID)
+            return True
+        elif cmdAction == 'save':
+            filename = "dng_files/" + cmdData[1]
+            with open(filename, 'w') as saveFile:
+                saveFile.write(repr(dng))
+            with open(filename+".state", 'w') as saveFile:
+                saveFile.write(dng.MIDCA_state_str())
+            return True
+        else:
+            print("Command {} not implemented yet".format(cmdAction))
+            return False
 
     dim = input("First, how big is the dungeon? ")
     dng = Dungeon(dim)
@@ -1225,19 +1547,33 @@ def interactive_Dungeon_maker():
         print("""Commands:
         \r\rset agent-loc POINT moves the Agent to (x, y)
         \r\rset agent-vision INT sets how far the Agent can see
+        \r\rset OBJID ATTRIBUTE VALUE changes the object's attribute
         \r\radd OBJTYPE POINT MISCDATA places an object at the given location
         \r\rrem OBJID removes the object with the given id
-        \r\rset OBJID ATTRIBUTE VALUE changes the object's attribute
         \r\rsave FILENAME writes the Dungeon to the given file
         \r\rquit
 
-        Object IDs:\n""")
+        \r\rObject IDs:\n""")
+        col = 1
         for objID in objsMade:
-            print(objsMade[objID], objID)
-        command = raw_input("Command>> ")
-        result = parse_command(command, dng)
-        print result
-        raw_input("ENTER to coninute...")
+            if col % 4 == 0:
+                col = 1
+                print("{}".format(repr(objsMade[objID])))
+            else:
+                col += 1
+                print "{}\t|\t".format(repr(objsMade[objID])),
+        command = raw_input("\nCommand>> ")
+        if command.lower() in ['q', 'quit']:
+            print("Exiting dungeon maker...")
+            return True
+        try:
+            result = parse_command(command, dng, objsMade)
+        except Exception as e:
+            print("Couldn't complete command...")
+            print(e)
+            result = False
+        if not result:
+            raw_input("Hit enter to continue...")
 
 
 def get_point_from_str(string):
@@ -1256,4 +1592,5 @@ def test():
 
 
 if __name__ == '__main__':
-    test()
+    dng = build_Dungeon_from_file('dng_files/testDng.txt')
+    print(dng.MIDCA_state_str())
