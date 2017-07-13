@@ -69,7 +69,7 @@ class StateDiscrepancyDetector(base.BaseModule):
                 print("Found {} discrepancies".format(len(diffs.keys())))
             if verbose >= 2:
                 print("Discrepancies found are {}".format(diffs))
-            self.mem.set(self.mem.DISCREPANCY, (diffs))
+            self.mem.set(self.mem.DISCREPANCY, diffs)
             self.mem.trace.add_data("DISCREPANCIES", diffs)
 
         else:
@@ -109,16 +109,12 @@ class GoalValidityChecker(base.BaseModule):
                 print("No current goals to check validity, continuing")
             return
 
-        foundDiscs = False
         for goal in currGoals:
             goalValid = state.valid_goal(goal)
             if not goalValid[0]:
                 discrepancies[goal] = goalValid[1]
-                foundDiscs = True
                 if verbose >= 2:
                     print("Found goal discrepancy: {}={}".format(goal, goalValid[1]))
-        if not foundDiscs:
-            discrepancies = None
 
         self.mem.set(self.mem.DISCREPANCY, discrepancies)
         if self.mem.trace:
@@ -146,9 +142,9 @@ class DiscrepancyExplainer(base.BaseModule):
         a surmountable obstacle.
         """
         state = self.mem.get(self.mem.STATE)
-        goalAction = goal.kwargs['predicate']
+        goalPred = goal.kwargs['predicate']
 
-        if goalAction == 'agent-at':
+        if goalPred == 'agent-at':
             dest = goal.args[0]
             if disc == 'unpassable':
                 return 'unpassable'
@@ -158,9 +154,15 @@ class DiscrepancyExplainer(base.BaseModule):
                     return 'door-blocking'
                 return 'no-access'
 
-        if goalAction == 'open':
+        if goalPred == 'open':
             if disc == 'no-object':
                 return 'no-object'
+
+        if goalPred == 'killed':
+            if disc == 'no-target':
+                return 'target-not-found'
+            elif disc == 'civi-killed':
+                return 'civi-in-AOE'
 
     def explain(self, discAt, discContent):
         """Try to explain a discrepancy."""
@@ -205,6 +207,7 @@ class DiscrepancyExplainer(base.BaseModule):
             for explan in explanations:
                 print("  {}: {}".format(explan[0], explan[1]))
 
+        self.mem.set(self.mem.DISCREPANCY, None)
         self.mem.set(self.mem.EXPLANATION, True)
         self.mem.set(self.mem.EXPLANATION_VAL, explanations)
         if self.mem.trace:
@@ -263,9 +266,9 @@ class UserGoalInput(base.BaseModule):
         if goalData[0] not in acceptable_goals:
             print("{} is not a valid goal command".format(goalData[0]))
             return False
-        goalAction = goalData[0]
+        goalPred = goalData[0]
 
-        if goalAction in ['agent-at', 'open']:
+        if goalPred in ['agent-at', 'open']:
             # goalData [1] should be of form (x,y)
             x, y = goalData[1].strip('()').split(',')
             try:
@@ -276,7 +279,7 @@ class UserGoalInput(base.BaseModule):
                 return False
             goalLoc = (x, y)
 
-            goal = goals.Goal(goalLoc, predicate=goalAction)
+            goal = goals.Goal(goalLoc, predicate=goalPred)
 
         return goal
 
@@ -336,9 +339,9 @@ class RemoteUserGoalInput(base.BaseModule):
         if goalData[0] not in acceptable_goals:
             print("{} is not a valid goal command".format(goalData[0]))
             return False
-        goalAction = goalData[0]
+        goalPred = goalData[0]
 
-        if goalAction in ['agent-at', 'open']:
+        if goalPred in ['agent-at', 'open']:
             # goalData [1] should be of form (x,y)
             x, y = goalData[1].strip('()').split(',')
             try:
@@ -349,7 +352,7 @@ class RemoteUserGoalInput(base.BaseModule):
                 return False
             goalLoc = (x, y)
 
-            goal = goals.Goal(goalLoc, predicate=goalAction)
+            goal = goals.Goal(goalLoc, predicate=goalPred)
 
         return goal
 

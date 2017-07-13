@@ -56,7 +56,7 @@ predicate(broken, [agnt], [AGENT])
 operator(move-north,
 args = [(agnt, AGENT), (start, TILE), (dest, TILE)],
 preconditions = [
-  condition(passable, [dest]),
+    condition(passable, [dest]),
 	condition(agent-at, [agnt, start]),
 	condition(adjacent-north, [start, dest])],
 results = [

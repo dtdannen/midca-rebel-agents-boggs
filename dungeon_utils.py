@@ -11,14 +11,17 @@ KEY = 'KEY'
 COIN = 'COIN'
 FIRE = 'FIRE'
 TRAP = 'TRAP'
-OBJECT_LIST = [CHEST, DOOR, WALL, KEY, COIN, FIRE, TRAP]
+NPC = "NPC"
+BOMB_RANGE = 2
+OBJECT_LIST = [CHEST, DOOR, WALL, KEY, COIN, FIRE, TRAP, NPC]
 OBJECT_ID_CODES = {"C": CHEST,
                    "D": DOOR,
                    "W": WALL,
                    "k": KEY,
                    "$": COIN,
                    "*": FIRE,
-                   "^": TRAP}
+                   "^": TRAP,
+                   "&": NPC}
 
 OBJECT_CODE_IDS = {CHEST: "C",
                    DOOR: "D",
@@ -26,7 +29,8 @@ OBJECT_CODE_IDS = {CHEST: "C",
                    KEY: "k",
                    COIN: "$",
                    FIRE: "*",
-                   TRAP: "^"}
+                   TRAP: "^",
+                   NPC: "&"}
 
 DIRECTON_EXPANSIONS = {'n': 'north',
                        's': 'south',
@@ -265,7 +269,7 @@ class Fire(DungeonObject):
         super(Fire, self).__init__(location)
         self.passable = True
         self.objType = FIRE
-        self.damage = damage
+        self.damage = 1
 
     @property
     def ascii_rep(self):
@@ -290,7 +294,7 @@ class Trap(DungeonObject):
         super(Trap, self).__init__(location)
         self.passable = True
         self.objType = TRAP
-        self.damage = damage
+        self.damage = 1
         self.hidden = True
 
     @property
@@ -312,6 +316,36 @@ class Trap(DungeonObject):
     def __repr__(self):
         char = "h" if self.hidden else "s"
         return "^{}@{}:{}".format(char, self.location, self.damage)
+
+
+class NPC(DungeonObject):
+    """Used to represent enemies and civilians in the dungeon."""
+
+    def __init__(self, location, civilian=False):
+        super(NPC, self).__init__(location)
+        self.passable = False
+        self.objType = NPC
+        self.civi = civilian
+
+    @property
+    def ascii_rep(self):
+        return "&C" if self.civi else "&E"
+
+    @property
+    def predicates(self):
+        retStr = ""
+        "is-{}({})".format(self.civ_type, self.id)
+
+    @property
+    def civ_type(self):
+        return "civi" if self.civi else "enemy"
+
+    def __str__(self):
+        "{} NPC @ {}".format(self.civ_type.capitalize(), self.location)
+
+    def __repr__(self):
+        char = "C" if self.civi else "E"
+        "&{}@{}".format(char, self.location)
 
 
 class Dungeon(object):
@@ -455,6 +489,9 @@ class Dungeon(object):
 
     def move_agent(self, moveDir):
         """Legally move the agent in the given direction."""
+        if self.agent.damage == 'broken':
+            return False
+
         if moveDir == 'n':
             dest = (self.agentLoc[0], self.agentLoc[1]-1)
         elif moveDir == 'e':
@@ -469,9 +506,23 @@ class Dungeon(object):
         if not self.loc_valid(dest) or not self.check_passable(dest):
             return False
 
+        self.take_damage(dest)
         self.agentLoc = dest
         self.agent.move(moveDir)
         return True
+
+    def take_damage(self, loc):
+        damageDealt = 0
+        if loc in self.floor:
+            for obj in self.floor[loc]:
+                try:
+                    damageDealt += obj.damage
+                except AttributeError:
+                    continue
+
+                if obj.objType == TRAP and obj.hidden:
+                    obj.hidden = False
+        self.agent.take_damage(damageDealt)
 
     def agent_take_key(self, keyLoc):
         """If possible, have the agent actually take a key."""
@@ -539,6 +590,25 @@ class Dungeon(object):
         print("There's no locked object at {}".format(target))
         return False
 
+    def agent_bomb(self):
+        """Have the agent detonate a bomb at its location."""
+        target = self.agent.at
+        killed = self.bombed_at(target)
+        self.agent.bomb()
+        return killed
+
+    def bombed_at(self, target):
+        """Detonate a bomb at the target location."""
+        killed = 0
+        surroundingObjs = self.get_objects_around(target, BOMB_RANGE)
+        for loc in surroundingObjs:
+            for obj in surroundingObjs[loc]:
+                if obj.objType == NPC:
+                    self.remove_object(obj.id)
+                    killed += 1
+
+        return killed
+
     def unlock(self, target, key=None):
         """Unlock anything locked at the target location."""
         if not self.loc_valid(target):
@@ -555,7 +625,7 @@ class Dungeon(object):
                 else:
                     obj.passable = True
 
-    def get_objects_around(self, loc, vRange):
+    def get_objects_around(self, loc, vRange, includeHidden=False):
         """Return the objects and their properties around a location."""
         objects = {}
         if vRange == -1:
@@ -569,6 +639,7 @@ class Dungeon(object):
             for y in range(northBound, southBound+1):
                 vLoc = (x, y)
                 if vLoc in self.floor.keys():
+                    viewedObjs = [obj for obj in self.floor[vLoc] if not (obj.objType == TRAP and obj.hidden and not includeHidden)]
                     objects[vLoc] = deepcopy(self.floor[vLoc])
 
         return objects
@@ -648,12 +719,12 @@ class Dungeon(object):
         # TODO: make this much more robust!
         # In particular, make sure the 'open' goal is checked more thoroughly.
         goalLoc = goal.args[0]
-        goalAction = goal.kwargs['predicate']
+        goalPred = goal.kwargs['predicate']
 
-        if goalAction == 'agent-at' and not self.check_passable(goalLoc):
+        if goalPred == 'agent-at' and not self.check_passable(goalLoc):
             raise Exception("Invalid goal: agent can't be at {}".format(goalLoc))
 
-        if goalAction == 'open'and self.check_passable(goalLoc):
+        if goalPred == 'open'and self.check_passable(goalLoc):
             raise Exception("Invalid goal: nothing to open at {}".format(goalLoc))
         return True
 
@@ -752,6 +823,14 @@ class Dungeon(object):
             origin = nextOrigin
 
         return path
+
+    def get_object(self, objID):
+        """Return the object with the given ID, if there is one."""
+        for obj in self.objects:
+            if obj.id == objID:
+                return obj
+
+        return None
 
     def obstacles_in(self, path, doorsOpen=False):
         """Calculate and return number of obstacles in a given path."""
@@ -867,9 +946,10 @@ class Dungeon(object):
                 retStr += obj.predicates
             return retStr
 
-        retStr = "DIM({})\nAGENT({})\nundamaged({})\n".format(self.dim,
-                                                              self.agent.__name__,
-                                                              self.agent.__name__)
+        retStr = "DIM({})\nAGENT({})\{}({})\n".format(self.dim,
+                                                      self.agent.__name__,
+                                                      self.agent.damage,
+                                                      self.agent.__name__)
         retStr += "\n# Tile declarations\n"
         retStr += gen_tile_decls(self)
 
@@ -1022,19 +1102,33 @@ class DungeonMap(Dungeon):
     def valid_goal(self, goal):
         """Indicate whether a goal is valid."""
         # TODO: make this much more robust!
-        goalAction = goal.kwargs['predicate']
+        goalPred = goal.kwargs['predicate']
 
-        if goalAction == 'agent-at':
+        if goalPred == 'agent-at':
             goalLoc = goal.args[0]
             if not self.check_passable(goalLoc):
                 return (False, 'unpassable')
             if not self.navigate_to(self.agentLoc, goalLoc):
                 return (False, 'no-access')
 
-        if goalAction == 'open':
+        if goalPred == 'open':
             goalLoc = goal.args[0]
             if self.check_passable(goalLoc):
                 return (False, 'no-object')
+
+        if goalPred == 'killed':
+            targetID = goal.args[0]
+            target = self.get_object(targetID)
+            if not target:
+                return (False, 'no-target')
+
+            targetLoc = target.location
+            objsAroundTarget = self.get_objects_around(targetLoc)
+            for loc in objsAroundTarget:
+                for obj in objsAroundTarget[loc]:
+                    if obj.objType == NPC and obj.civi:
+                        return (False, 'civi-killed')
+
         return (True, 'none')
 
 
@@ -1053,7 +1147,16 @@ class Agent(object):
         self.map = DungeonMap(dungeonDim, location)
         self.keys = []
         self.coins = 0
-        self.health = 5
+        self.health = 4
+
+    @property
+    def damage(self):
+        """Indicate the level of damage the bot has taken."""
+        return {4: 'undamaged',
+                3: 'slightly-damaged',
+                2: 'moderately-damaged',
+                1: 'heavily-damaged',
+                0: 'broken'}[self.health]
 
     @property
     def known_objects(self):
@@ -1275,6 +1378,14 @@ class Agent(object):
         """Indicate whether the agent can see that location."""
         return abs(loc[0]-self.at[0]) <= self.vision and abs(loc[1]-self.at[1]) <= self.vision
 
+    def take_damage(self, damage):
+        """Reduce the agent's health by the given amount."""
+        self.health -= damage
+
+    def bomb(self):
+        """Detonate a bomb under the agent which kills enemies in a 2-block radius."""
+        return self.map.bombed_at(self.at)
+
 
 def draw_Dungeon(dng):
     """Print the Dungeon board."""
@@ -1346,7 +1457,7 @@ def build_Dungeon_from_str(dngStr):
     return dng
 
 
-def build_Dungeon_from_file(filename):
+def build_Dungeon_from_file(filename, MIDCA=False):
     """
     Take in a text file and create a new Dungeon from it.
 
@@ -1521,11 +1632,12 @@ def interactive_Dungeon_maker():
                 print("Object type {} is not implemented yet".format(objType))
                 return False
         elif cmdAction == 'rem':
-            targetID = cmdData[1]
+            targetID = " ".join(cmdData[1:])
             if targetID not in objsMade.keys():
-                print("Can't remove object {}, doesn't exist")
+                print("Can't remove object {}, doesn't exist".format(targetID))
                 return False
             dng.remove_object(targetID)
+            del objsMade[targetID]
             return True
         elif cmdAction == 'save':
             filename = "dng_files/" + cmdData[1]
@@ -1592,5 +1704,5 @@ def test():
 
 
 if __name__ == '__main__':
-    dng = build_Dungeon_from_file('dng_files/testDng.txt')
-    print(dng.MIDCA_state_str())
+    dng = interactive_Dungeon_maker()
+    # print(dng.MIDCA_state_str())

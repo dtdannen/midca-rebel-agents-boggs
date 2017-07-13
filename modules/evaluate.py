@@ -111,6 +111,30 @@ class GoalManager(base.BaseModule):
                 else:
                     raise Exception("Discrepancy reason {} shouldn't exist".format(reason))
 
+            # If the goal is for an NPC to be killed and there's a problem, it's
+            # either because the target given isn't around anymore or because
+            # the attack would kill civilians.
+            elif goal.kwargs['predicate'] == 'killed':
+                if reason == 'target-not-found':
+                    goalGraph.remove(goal)
+                    # TODO: Alert user to goal removal and reason why
+                    if verbose >= 1:
+                        print("removing invalid goal {}".format(goal))
+                    if self.mem.trace:
+                        self.mem.trace.add_data("REMOVED GOAL", goal)
+
+                # NOTE: This is where the rebellion happens!!
+                elif reason == 'civi-in-AOE':
+                    if verbose >= 1:
+                        print("rejecting goal {}".format(goal))
+                    if self.mem.trace:
+                        self.mem.trace.add_data("REJECTED GOAL", goal)
+                    self.mem.set("REBELLION", goal)
+                    self.mem.set("REBEL_EXPLAN", reason)
+
+                else:
+                    raise Exception("Discrepancy reason {} shouldn't exist".format(reason))
+
             else:
                 raise NotImplementedError("Goal {} is not there yet".format(goal))
 
@@ -118,3 +142,19 @@ class GoalManager(base.BaseModule):
             print("Done managing goals \n")
         if self.mem.trace:
             self.mem.trace.add_data("GOALS", goalGraph)
+
+
+class HandleRebellion(base.BaseModule):
+    """Allow MIDCA to rebel against goals it deems unworthy."""
+
+    def init(self, world, mem):
+        self.mem = mem
+        self.world = world
+
+    def run(self, cycle, verbose=0):
+        rebellion = self.mem.get("REBELLION")
+        if rebellion:
+            # TODO Notify the user through the communications channel
+            # TODO Give explanation through notification channel
+            # TODO Relate location of civilians through communication channel
+            # TODO Ask for new info through notification channel

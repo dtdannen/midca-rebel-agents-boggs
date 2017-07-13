@@ -39,5 +39,9 @@ def unlock(state, target):
     return state
 
 
+def bomb(state):
+    state.bomb()
+
+
 def declare_operators():
-    pyhop.declare_operators(move, takekey, unlock)
+    pyhop.declare_operators(move, takekey, unlock, bomb)

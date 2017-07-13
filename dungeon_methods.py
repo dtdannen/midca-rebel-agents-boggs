@@ -72,9 +72,17 @@ def achieve_goals(state, goals):
     for goal in goals:
         if goal.kwargs['predicate'] == 'agent-at':
             action = 'move-to'
+            tasks.append((action, goal.args[0]))
+
+        elif goal.kwargs['predicate'] == 'killed':
+            targetID = goal.args[0]
+            targetLoc = state.map.get_object(targetID).location
+            tasks.append(('move-to', targetLoc))
+            tasks.append(('bomb'))
+            
         else:
             action = goal.kwargs['predicate']
-        tasks.append((action, goal.args[0]))
+            tasks.append((action, goal.args[0]))
     return tasks
 
 

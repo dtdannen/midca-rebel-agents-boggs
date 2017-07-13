@@ -48,3 +48,4 @@ class ShowMap(base.BaseModule):
             os.system('clear')
         agent = self.mem.get(self.mem.STATE)
         agent.draw_map()
+        print("Health: {}".format(agent.damage))

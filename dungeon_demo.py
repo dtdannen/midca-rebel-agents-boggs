@@ -25,7 +25,7 @@ WALLS = 7
 # Setup
 # dng = dungeon_utils.Dungeon(dim=DIMENSION, agent_vision=2)
 # dng.generate(chests=CHESTS, doors=DOORS, walls=WALLS)
-dng = dungeon_utils.build_Dungeon_from_file('dng_files/testDng.txt')
+dng = dungeon_utils.build_Dungeon_from_file('dng_files/test.dng')
 
 DECLARE_METHODS_FUNC = d_mthds.declare_methods
 DECLARE_OPERATORS_FUNC = d_ops.declare_operators
