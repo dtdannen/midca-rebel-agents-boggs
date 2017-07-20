@@ -3,6 +3,44 @@ import copy
 from MIDCA import base, goals
 
 
+class Rebellion(object):
+    """Holds information pertaining to an agent's rebellion against a specific goal."""
+
+    def __init__(self, goal, **kwargs):
+        assert isinstance(goal, goals.Goal), "A rebellion must be against a goal"
+        self.goal = goal
+        self.kwargs = kwargs
+
+    def __contains__(self, item):
+        return item in self.kwargs or item == 'goal'
+
+    def __getitem__(self, item):
+        if item not in self:
+            raise KeyError("{} is not a valid key for {}".format(item, repr(self)))
+        if item == 'goal':
+            return self.goal
+        else:
+            return self.kwargs[item]
+
+    def __setitem__(self, item, val):
+        if item not in self:
+            raise KeyError("{} is not a valid key for {}".format(item, repr(self)))
+        if item == 'goal':
+            raise ValueError("You can't change a rebellion's rejected goal")
+        self.kwargs[item] = val
+        return True
+
+    def __str__(self):
+        retStr = "rebellion(goal={}\n".format(self.goal)
+        for kw in self.kwargs:
+            retStr += "          {}={}\n".format(kw, self.kwargs[kw])
+        retStr += "         )"
+        return retStr
+
+    def __repr__(self):
+        return "rebellion(goal={})".format(self.goal)
+
+
 class GoalManager(base.BaseModule):
     """
     Allows MIDCA to manage goals given its percepts.
@@ -15,6 +53,10 @@ class GoalManager(base.BaseModule):
         """Give module crucial MIDCA data."""
         self.mem = mem
         self.world = world
+
+    @property
+    def agent(self):
+        return self.world.agent()
 
     def findDoorsFor(self, goal):
         """
@@ -77,6 +119,7 @@ class GoalManager(base.BaseModule):
                     # If the tile is unpassable or there is not path to the tile
                     # remove the goal.
                     goalGraph.remove(goal)
+                    self.world.dialog(goal.kwargs['user'], "removing invalid goal {}".format(goal))
                     if verbose >= 1:
                         print("removing invalid goal {}".format(goal))
                     if self.mem.trace:
@@ -103,6 +146,7 @@ class GoalManager(base.BaseModule):
             elif goal.kwargs['predicate'] == 'open':
                 if reason == 'no-object':
                     goalGraph.remove(goal)
+                    self.world.dialog(goal.kwargs['user'], "removing invalid goal {}".format(goal))
                     if verbose >= 1:
                         print("removing invalid goal {}".format(goal))
                     if self.mem.trace:
@@ -117,7 +161,7 @@ class GoalManager(base.BaseModule):
             elif goal.kwargs['predicate'] == 'killed':
                 if reason == 'target-not-found':
                     goalGraph.remove(goal)
-                    # TODO: Alert user to goal removal and reason why
+                    self.world.dialog(goal.kwargs['user'], "removing invalid goal {}".format(goal))
                     if verbose >= 1:
                         print("removing invalid goal {}".format(goal))
                     if self.mem.trace:
@@ -125,12 +169,17 @@ class GoalManager(base.BaseModule):
 
                 # NOTE: This is where the rebellion happens!!
                 elif reason == 'civi-in-AOE':
+                    civilians = self.agent.get_civs_in_blast()
+                    rebellion = Rebellion(goal, reason=reason, civilians=civilians)
                     if verbose >= 1:
                         print("rejecting goal {}".format(goal))
+                        print(str(rebellion))
                     if self.mem.trace:
-                        self.mem.trace.add_data("REJECTED GOAL", goal)
-                    self.mem.set("REBELLION", goal)
-                    self.mem.set("REBEL_EXPLAN", reason)
+                        self.mem.trace.add_data("REBELLION", rebellion)
+                    if not self.mem.get("REBELLION"):
+                        self.mem.set("REBELLION", [rebellion])
+                    else:
+                        self.mem.add("REBELLION", rebellion)
 
                 else:
                     raise Exception("Discrepancy reason {} shouldn't exist".format(reason))
@@ -151,10 +200,99 @@ class HandleRebellion(base.BaseModule):
         self.mem = mem
         self.world = world
 
+    @property
+    def agent(self):
+        return self.world.agent()
+
     def run(self, cycle, verbose=0):
-        rebellion = self.mem.get("REBELLION")
-        if rebellion:
-            # TODO Notify the user through the communications channel
-            # TODO Give explanation through notification channel
-            # TODO Relate location of civilians through communication channel
-            # TODO Ask for new info through notification channel
+        """Check if there should be a rebellion, and then follow through if so."""
+        if self.mem.trace:
+            self.mem.trace.add_module(cycle, self.__class__.__name__)
+
+        rebellions = self.mem.get("REBELLION")
+        if not rebellions:
+            return
+
+        for rebellion in rebellions:
+            goal = rebellion.goal
+            reason = rebellion['reason']
+            print("Rebelling because {}".format(reason))
+            self.remove_goal(goal)
+            self.alert_user(rebellion)
+
+            if reason == 'civi-in-AOE':
+                for civi in rebellion['civilians']:
+                    self.world.inform(goal['user'], civi.id)
+
+            altGoals = self.gen_alt_goals(goal, reason)
+            if self.mem.trace:
+                self.mem.trace.add_data("ALTERNATE GOALS", altGoals)
+
+            selectedGoal = self.get_response(goal['user'], altGoals)
+            if selectedGoal is not None:
+                self.add_goal(selectedGoal)
+
+            if self.mem.trace:
+                self.mem.trace.add_data("USER CHOICE", selectedGoal)
+
+        self.mem.set("REBELLION", None)
+        return
+
+    def get_response(self, user, altGoals):
+        goalKey = self.relate_alt_goals(altGoals, user)
+        response = self.world.wait_for_dialogs(user)[0]
+        try:
+            response = int(response)
+        except ValueError:
+            pass
+
+        while response not in goalKey:
+            self.relate_alt_goals(altGoals, user)
+            response = self.world.wait_for_dialogs(user)[0]
+            try:
+                response = int(response)
+            except ValueError:
+                pass
+
+        selectedGoal = goalKey[response]
+        return selectedGoal
+
+    def relate_alt_goals(self, altGoals, senderID):
+        """Relate possible alt goals to user and create lookup dict for response."""
+        goalKey = {}
+        dialogStr = "Possible alternate goals:\n"
+        goalNum = 1
+        for goal in altGoals:
+            dialogStr += "\t{}) {}\n".format(goalNum, goal)
+            goalKey[goalNum] = goal
+            goalNum += 1
+        dialogStr += "\t{}) None".format(goalNum)
+        goalKey[goalNum] = None
+
+        self.world.dialog(senderID, dialogStr)
+        return goalKey
+
+    def gen_alt_goals(self, oldGoal, reason):
+        """Create and return possible alternate goals to a rejected goal."""
+        altGoals = []
+        if reason == 'civi-in-AOE':
+            for enemy in self.agent.filter_objects(objType="NPC", civi=False, alive=True):
+                altGoal = goals.Goal(enemy.id, predicate='killed', user=oldGoal['user'])
+                if self.agent.valid_goal(altGoal)[0]:
+                    altGoals.append(altGoal)
+
+        return altGoals
+
+    def alert_user(self, rebellion):
+        """Inform the operator that the agent is rebelling, and why."""
+        self.world.dialog(rebellion.goal['user'], str(rebellion))
+
+    def remove_goal(self, goal):
+        goalGraph = self.mem.get(self.mem.GOAL_GRAPH)
+        goalGraph.remove(goal)
+        if self.mem.trace:
+            self.mem.trace.add_data("REJECTED GOAL", goal)
+
+    def add_goal(self, goal):
+        goalGraph = self.mem.get(self.mem.GOAL_GRAPH)
+        goalGraph.add(goal)

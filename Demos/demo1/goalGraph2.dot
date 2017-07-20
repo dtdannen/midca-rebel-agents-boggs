@@ -1,6 +1,0 @@
-digraph
-{
-  Goal1 [label="Goal((6, 9), predicate: move-to) "]
-
-
-}

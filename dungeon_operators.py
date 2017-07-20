@@ -39,8 +39,9 @@ def unlock(state, target):
     return state
 
 
-def bomb(state):
+def bomb(state, range):
     state.bomb()
+    return state
 
 
 def declare_operators():

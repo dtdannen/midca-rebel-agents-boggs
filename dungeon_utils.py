@@ -2,7 +2,14 @@
 
 from copy import deepcopy
 from random import randint
+from pickle import dumps, loads
 import os
+import sys
+import traceback
+from MIDCA import plans
+
+AGENT = "AGENT"
+OPERATOR = "OPERATOR"
 
 CHEST = 'CHEST'
 DOOR = 'DOOR'
@@ -11,9 +18,10 @@ KEY = 'KEY'
 COIN = 'COIN'
 FIRE = 'FIRE'
 TRAP = 'TRAP'
-NPC = "NPC"
+NPC = 'NPC'
 BOMB_RANGE = 2
-OBJECT_LIST = [CHEST, DOOR, WALL, KEY, COIN, FIRE, TRAP, NPC]
+MAX_VISION_RANGE = 3
+OBJECT_LIST = [CHEST, DOOR, WALL, KEY, COIN, FIRE, TRAP, NPC, AGENT, OPERATOR]
 OBJECT_ID_CODES = {"C": CHEST,
                    "D": DOOR,
                    "W": WALL,
@@ -21,7 +29,9 @@ OBJECT_ID_CODES = {"C": CHEST,
                    "$": COIN,
                    "*": FIRE,
                    "^": TRAP,
-                   "&": NPC}
+                   "&": NPC,
+                   "A": AGENT,
+                   "O": OPERATOR}
 
 OBJECT_CODE_IDS = {CHEST: "C",
                    DOOR: "D",
@@ -30,7 +40,9 @@ OBJECT_CODE_IDS = {CHEST: "C",
                    COIN: "$",
                    FIRE: "*",
                    TRAP: "^",
-                   NPC: "&"}
+                   NPC: "&",
+                   AGENT: "A",
+                   OPERATOR: "O"}
 
 DIRECTON_EXPANSIONS = {'n': 'north',
                        's': 'south',
@@ -318,34 +330,40 @@ class Trap(DungeonObject):
         return "^{}@{}:{}".format(char, self.location, self.damage)
 
 
-class NPC(DungeonObject):
+class Npc(DungeonObject):
     """Used to represent enemies and civilians in the dungeon."""
 
-    def __init__(self, location, civilian=False):
-        super(NPC, self).__init__(location)
+    def __init__(self, location, civi=False, living=True):
+        super(Npc, self).__init__(location)
         self.passable = False
         self.objType = NPC
-        self.civi = civilian
+        self.civi = civi
+        self.alive = living
 
     @property
     def ascii_rep(self):
+        if not self.alive:
+            return ""
         return "&C" if self.civi else "&E"
 
     @property
     def predicates(self):
         retStr = ""
-        "is-{}({})".format(self.civ_type, self.id)
+        return "is-{}({})".format(self.civ_type, self.id)
 
     @property
     def civ_type(self):
         return "civi" if self.civi else "enemy"
 
     def __str__(self):
-        "{} NPC @ {}".format(self.civ_type.capitalize(), self.location)
+        alive = "alive" if self.alive else "dead"
+        return "{} NPC @ {} which is {}".format(self.civ_type.capitalize(),
+                                                self.location, alive)
 
     def __repr__(self):
         char = "C" if self.civi else "E"
-        "&{}@{}".format(char, self.location)
+        status = "L" if self.alive else "D"
+        return "&{}@{}:{}".format(char, self.location, status)
 
 
 class Dungeon(object):
@@ -356,7 +374,7 @@ class Dungeon(object):
     environment when needed.
     """
 
-    def __init__(self, dim, agent_vision=-1, agentLoc=None):
+    def __init__(self, dim):
         """
         Initialize a blank dungeon of size `dim`x`dim`.
 
@@ -381,11 +399,27 @@ class Dungeon(object):
         # Generate self variables
         self.dim = self.hgt = self.wdt = dim
         self.floor = {}
-        if agentLoc:
-            self.agentLoc = agentLoc
-        else:
-            self.agentLoc = (dim/2, dim/2)
-        self.agent = Agent('Drizzt', self.agentLoc, dim, agent_vision)
+        self.users = {}
+
+    @property
+    def all_users(self):
+        return self.users.values()
+
+    @property
+    def agents(self):
+        agents = []
+        for userID in self.users:
+            if self.users[userID].userType == AGENT:
+                agents.append(self.users[userID])
+        return agents
+
+    @property
+    def operators(self):
+        operators = []
+        for userID in self.users:
+            if self.users[userID].userType == OPERATOR:
+                operators.append(self.users[userID])
+        return operators
 
     @property
     def all_locations(self):
@@ -405,14 +439,48 @@ class Dungeon(object):
             objects += self.floor[loc]
         return objects
 
+    def add_user(self, name, location, vision, userType):
+        if not self.loc_valid(location):
+            raise Exception("Location {} is not valid".format(location))
+
+        if not self.loc_is_free(location):
+            return False
+
+        if name in self.users:
+            print("User named {} already exists".format(name))
+            return False
+        newUser = Agent(name, location, self.dim, vision, userType)
+        self.users[name] = newUser
+        return newUser
+
+    def get_user(self, userID):
+        return self.users[userID]
+
+    def user_at(self, loc):
+        """Indicate whether there is a user at the location."""
+        for user in self.all_users:
+            if user.at == loc:
+                return True
+        return False
+
+    def get_user_at(self, loc):
+        """Return the user at the location, of None if there isn't one."""
+        if not self.user_at(loc):
+            return None
+
+        for user in self.all_users:
+            if user.at == loc:
+                return user
+
     def place_object(self, objType, location, **kwargs):
         """Place a new object of the given type at the location, if possible."""
         if not self.loc_valid(location):
             raise Exception("{} is not a valid place for {}".format(location, objType))
 
-        if objType in [CHEST, DOOR, WALL, TRAP, FIRE]:
+        if objType in [CHEST, DOOR, WALL, TRAP, FIRE, NPC]:
             if not self.loc_is_free(location):
-                raise Exception("{} is already occupied by a large object".format(location))
+                # print("{} is already occupied by a large object".format(location))
+                return False
 
         if objType == WALL:
             obj = Wall(location)
@@ -439,6 +507,9 @@ class Dungeon(object):
         elif objType == TRAP:
             damage = kwargs['damage']
             obj = Trap(location, damage)
+        elif objType == NPC:
+            civi = kwargs['civi']
+            obj = Npc(location, civi)
         else:
             raise NotImplementedError(objType)
 
@@ -454,6 +525,18 @@ class Dungeon(object):
             if repr(obj) == objID:
                 break
         self.remove_object_at(obj.objType, obj.location)
+
+    def add_object(self, obj):
+        """Add the given object to the map. Does NOT pay attention to spacing rules."""
+        if not isinstance(obj, DungeonObject):
+            raise Exception("obj {} should be a DungeonObject, but is {}".format(obj, type(obj)))
+        objLoc = obj.location
+        if objLoc in self.floor:
+            if obj in self.floor[objLoc]:
+                return
+            self.floor[objLoc].append(obj)
+        else:
+            self.floor[objLoc] = [obj]
 
     def remove_object_at(self, objType, loc):
         """Remove the object at the given location."""
@@ -475,43 +558,44 @@ class Dungeon(object):
             del self.floor[loc]
         return True
 
-    def teleport_agent(self, dest):
+    def teleport_agent(self, dest, userID):
         """Spontaneously move the agent to the dest, if possible."""
+        user = self.users[userID]
         if not self.loc_valid(dest):
             print("{} is not a valid location".format(dest))
             return False
         if not self.check_passable(dest):
             print("Can't move the agent to {}".format(dest))
             return False
-        self.agentLoc = dest
-        self.agent.at = dest
+        user.at = dest
         return True
 
-    def move_agent(self, moveDir):
+    def move_agent(self, moveDir, userID):
         """Legally move the agent in the given direction."""
-        if self.agent.damage == 'broken':
+        user = self.users[userID]
+
+        if user.damage == 'broken':
             return False
 
         if moveDir == 'n':
-            dest = (self.agentLoc[0], self.agentLoc[1]-1)
+            dest = (user.at[0], user.at[1]-1)
         elif moveDir == 'e':
-            dest = (self.agentLoc[0]+1, self.agentLoc[1])
+            dest = (user.at[0]+1, user.at[1])
         elif moveDir == 's':
-            dest = (self.agentLoc[0], self.agentLoc[1]+1)
+            dest = (user.at[0], user.at[1]+1)
         elif moveDir == 'w':
-            dest = (self.agentLoc[0]-1, self.agentLoc[1])
+            dest = (user.at[0]-1, user.at[1])
         else:
             raise ValueError("{} is not a valid movement direction".format(moveDir))
 
         if not self.loc_valid(dest) or not self.check_passable(dest):
             return False
 
-        self.take_damage(dest)
-        self.agentLoc = dest
-        self.agent.move(moveDir)
+        self.take_damage(dest, userID)
+        user.move(moveDir)
         return True
 
-    def take_damage(self, loc):
+    def take_damage(self, loc, userID):
         damageDealt = 0
         if loc in self.floor:
             for obj in self.floor[loc]:
@@ -522,17 +606,21 @@ class Dungeon(object):
 
                 if obj.objType == TRAP and obj.hidden:
                     obj.hidden = False
-        self.agent.take_damage(damageDealt)
+        self.users[userID].take_damage(damageDealt)
 
-    def agent_take_key(self, keyLoc):
+    def agent_take_key(self, keyLoc, userID):
         """If possible, have the agent actually take a key."""
         if not self.loc_valid(keyLoc):
             raise ValueError("{} is not a valid location".format(keyLoc))
+
         if keyLoc not in self.floor.keys():
             print("Key location {} not in floor.keys()".format(keyLoc))
             return False
-        if not (self.adjacent(self.agentLoc, keyLoc) or self.agentLoc == keyLoc):
-            print("Agent at {} not adjacent or on key location {}".format(self.agentLoc, self.keyLoc))
+
+        user = self.users[userID]
+
+        if not (self.adjacent(user.at, keyLoc) or user.at == keyLoc):
+            print("Agent at {} not adjacent or on key location {}".format(user.at, keyLoc))
             return False
 
         key = self.get_item_at(keyLoc, KEY)
@@ -540,31 +628,35 @@ class Dungeon(object):
             self.remove_object_at(KEY, keyLoc)
             key.taken = True
             key.location = None
-            self.agent.take_key(keyLoc)
+            user.take_key(keyLoc)
             return True
         print("There's no key at {}".format(keyLoc))
         return False
 
-    def agent_take_coin(self, coinLoc):
+    def agent_take_coin(self, coinLoc, userID):
         """If possible, have the agent actually take a coin."""
         if not self.loc_valid(coinLoc):
             raise ValueError("{} is not a valid location".format(coinLoc))
+
         if coinLoc not in self.floor.keys():
             print("Coin location {} not in floor.keys()".format(coinLoc))
             return False
-        if not (self.adjacent(self.agentLoc, coinLoc) or self.agentLoc == coinLoc):
-            print("Agent at {} not adjacent or on coin at location {}".format(self.agentLoc, self.coinLoc))
+
+        user = self.users[userID]
+
+        if not (self.adjacent(user.at, coinLoc) or user.at == coinLoc):
+            print("Agent at {} not adjacent or on coin at location {}".format(user.at, self.coinLoc))
             return False
 
         coin = self.get_item_at(coinLoc, COIN)
         if coin:
             self.remove_object_at(COIN, coinLoc)
-            self.agent.take_coin(coinLoc)
+            user.take_coin(coinLoc)
             return True
         print("There's no coin at {}".format(coinLoc))
         return False
 
-    def agent_unlock(self, target):
+    def agent_unlock(self, target, userID):
         """
         Unlock a door or chest at `target`.
 
@@ -573,40 +665,45 @@ class Dungeon(object):
         """
         if not self.loc_valid(target):
             raise ValueError("{} is not a valid location".format(target))
+
         if target not in self.floor.keys():
             print("Unlock target location {} not in floor.keys()".format(target))
             return False
-        if not self.adjacent(self.agentLoc, target):
-            print("Agent at {} not adjacent to target location {}".format(self.agentLoc, self.keyLoc))
+
+        user = self.users[userID]
+
+        if not self.adjacent(user.at, target):
+            print("Agent at {} not adjacent to target location {}".format(user.at, target))
             return False
 
         for obj in self.floor[target]:
-            if obj.locked and self.agent.can_unlock(obj):
+            if obj.locked and user.can_unlock(obj):
                 obj.locked = False
                 if obj.objType == DOOR:
                     obj.passable = True
-                self.agent.unlock(target)
+                user.unlock(target)
                 return True
         print("There's no locked object at {}".format(target))
         return False
 
-    def agent_bomb(self):
+    def agent_bomb(self, userID):
         """Have the agent detonate a bomb at its location."""
-        target = self.agent.at
+        user = self.users[userID]
+        target = user.at
         killed = self.bombed_at(target)
-        self.agent.bomb()
+        user.bomb()
         return killed
 
     def bombed_at(self, target):
         """Detonate a bomb at the target location."""
         killed = 0
-        surroundingObjs = self.get_objects_around(target, BOMB_RANGE)
+        surroundingObjs = self.get_objects_around(target, BOMB_RANGE, makeCopy=False)
         for loc in surroundingObjs:
             for obj in surroundingObjs[loc]:
                 if obj.objType == NPC:
-                    self.remove_object(obj.id)
                     killed += 1
-
+                    obj.alive = False
+                    obj.passable = True
         return killed
 
     def unlock(self, target, key=None):
@@ -625,7 +722,7 @@ class Dungeon(object):
                 else:
                     obj.passable = True
 
-    def get_objects_around(self, loc, vRange, includeHidden=False):
+    def get_objects_around(self, loc, vRange, includeHidden=False, makeCopy=True):
         """Return the objects and their properties around a location."""
         objects = {}
         if vRange == -1:
@@ -640,9 +737,30 @@ class Dungeon(object):
                 vLoc = (x, y)
                 if vLoc in self.floor.keys():
                     viewedObjs = [obj for obj in self.floor[vLoc] if not (obj.objType == TRAP and obj.hidden and not includeHidden)]
-                    objects[vLoc] = deepcopy(self.floor[vLoc])
-
+                    if makeCopy:
+                        objects[vLoc] = deepcopy(viewedObjs)
+                    else:
+                        objects[vLoc] = viewedObjs
         return objects
+
+    def get_users_around(self, loc, vRange):
+        """Return the users around a location."""
+        users = {}
+        if vRange == -1:
+            return self.users
+        northBound = max(loc[1] - vRange, 0)
+        southBound = min(loc[1] + vRange, self.dim)
+        westBound = max(loc[0] - vRange, 0)
+        eastBound = min(loc[0] + vRange, self.dim)
+
+        for x in range(westBound, eastBound+1):
+            for y in range(northBound, southBound+1):
+                vLoc = (x, y)
+                if self.user_at(vLoc):
+                    user = self.get_user_at(vLoc)
+                    users[user.__name__] = user
+
+        return users
 
     def get_item_at(self, loc, objType):
         """Return the item of `objType` at `loc`, if there is one."""
@@ -657,8 +775,8 @@ class Dungeon(object):
 
     def check_passable(self, loc, doorsOpen=False):
         """Determine whether `loc` has an impassable object in it."""
-        if loc == self.agentLoc:
-            return False
+        if self.user_at(loc):
+            return True
 
         if loc not in self.floor.keys():
             return True
@@ -684,6 +802,9 @@ class Dungeon(object):
             if obj.objType not in [KEY, COIN]:
                 return False
 
+        if self.user_at(loc):
+            return False
+
         return True
 
     def loc_unlocked(self, loc):
@@ -702,8 +823,8 @@ class Dungeon(object):
         """Draw a single tile of the board at the given location."""
         tileStr = ''
         # If the agent is there, draw it
-        if loc == self.agentLoc:
-            tileStr += '@'
+        if self.user_at(loc):
+            tileStr += self.get_user_at(loc).ascii_rep
 
         # If the tile has contents, draw them
         if loc in self.floor.keys():
@@ -728,41 +849,25 @@ class Dungeon(object):
             raise Exception("Invalid goal: nothing to open at {}".format(goalLoc))
         return True
 
-    def create_goal(self, predicate, *args):
-        """
-        Given a predicate and args, create a new Dungeon which fits the goal.
-
-        This creates a new Dungeon object which is different from the current
-        one such that the given predicate is true in relation to the args. This
-        new Dungeon serves as a PyHop goal.
-        """
-        goalDungeon = deepcopy(self)
-        if predicate == "agent-at":
-            loc = args[0]
-            goalDungeon.teleport_agent(loc)
-
-        elif predicate == "open":
-            loc = args[0]
-            goalDungeon.unlock(loc)
-
-        return goalDungeon
-
-    def apply_action(self, action):
+    def apply_action(self, action, userID):
         """Apply a PyHop generated action to the Dungeon."""
         actType = action.op
         args = action.args
 
         if actType == 'move':
             moveDir = args[0]
-            succeeded = self.move_agent(moveDir)
+            succeeded = self.move_agent(moveDir, userID)
 
         elif actType == 'takekey':
             keyLoc = args[0]
-            succeeded = self.agent_take_key(keyLoc)
+            succeeded = self.agent_take_key(keyLoc, userID)
 
         elif actType == 'unlock':
             target = args[0]
-            succeeded = self.agent_unlock(target)
+            succeeded = self.agent_unlock(target, userID)
+
+        elif actType == 'bomb':
+            succeeded = self.agent_bomb(userID)
 
         else:
             raise NotImplementedError("Action type {} is not implemented".format(actType))
@@ -770,9 +875,35 @@ class Dungeon(object):
         if succeeded:
             return True
 
+    def apply_action_str(self, actStr, userID):
+        """Accept a string version of a pyhop command."""
+        actionData = actStr.strip(')').split('(')
+        op = actionData[0]
+        args = [arg for arg in actionData[1].split(', ')]
+        action = plans.Action(op, *args)
+        self.apply_action(action, userID)
+
     def adjacent(self, loc1, loc2):
         """Indicate whether loc1 and loc2 are adjacent."""
         return abs(loc1[0]-loc2[0]) == 1 or abs(loc1[1]-loc2[1]) == 1
+
+    def get_closest_adjacent(self, loc1, loc2):
+        """Return the location pair which is adjacent to loc1 and closest to loc2."""
+        adjacentTiles = self.get_adjacent(loc1)
+        dist = (loc2[0]-loc1[0], loc2[1]-loc1[1])
+        preffedNS = 'n' if dist[0] < 0 else 's'
+        preffedWE = 'w' if dist[0] < 0 else 'e'
+        if preffedWE in adjacentTiles:
+            adjTile = adjacentTiles[preffedWE]
+            if self.check_passable(adjTile):
+                return adjTile
+        if preffedNS in adjacentTiles:
+            adjTile = adjacentTiles[preffedNS]
+            if self.check_passable(adjTile):
+                return adjTile
+        for loc in adjacentTiles:
+            if self.check_passable(adjTile):
+                return adjTile
 
     def get_adjacent(self, loc):
         """Return the 2-4 tiles adjacent to the given one and their direction."""
@@ -830,6 +961,7 @@ class Dungeon(object):
             if obj.id == objID:
                 return obj
 
+        print("Item with objID {} not found".format(objID))
         return None
 
     def obstacles_in(self, path, doorsOpen=False):
@@ -890,6 +1022,16 @@ class Dungeon(object):
 
     def MIDCA_state_str(self):
         """Return a string which MIDCA can interpret as a state."""
+
+        def gen_user_decls(self):
+            retStr = ""
+            for agt in self.agents:
+                retStr += "AGENT({}:{})\n".format(agt.id, agt.vision)
+
+            for opr in self.operators:
+                retStr += "OPERATOR({}:{})\n".format(opr.id, opr.vision)
+            return retStr
+
         def gen_object_decls(self):
             """Return a string declaring the objects in domain language."""
             retStr = ""
@@ -935,8 +1077,8 @@ class Dungeon(object):
             for loc in self.all_locations:
                 if self.check_passable(loc):
                     retStr += "passable(Tx{}y{})\n".format(loc[0], loc[1])
-                if self.agent.can_see(loc):
-                    retStr += "visible(Tx{}y{})\n".format(loc[0], loc[1])
+                # if self.agent.can_see(loc):
+                #     retStr += "visible(Tx{}y{})\n".format(loc[0], loc[1])
             return retStr
 
         def gen_object_preds(self):
@@ -946,10 +1088,19 @@ class Dungeon(object):
                 retStr += obj.predicates
             return retStr
 
-        retStr = "DIM({})\nAGENT({})\{}({})\n".format(self.dim,
-                                                      self.agent.__name__,
-                                                      self.agent.damage,
-                                                      self.agent.__name__)
+        def gen_user_preds(self):
+            retStr = ""
+            for user in self.all_users:
+                usrType = "operator" if user.userType == OPERATOR else "agent"
+            retStr += "{}-at({}:{}, Tx{}y{})".format(usrType, user.id, user.vision,
+                                                     user.at[0], user.at[1])
+            return retStr
+
+        retStr = "DIM({})\n".format(self.dim)
+
+        retStr += "\n# User declarations\n"
+        retStr += gen_user_decls(self)
+
         retStr += "\n# Tile declarations\n"
         retStr += gen_tile_decls(self)
 
@@ -965,19 +1116,26 @@ class Dungeon(object):
         retStr += "\n# Tile status predicates\n"
         retStr += gen_tile_preds(self)
 
+        retStr += "\n# User predicates\n"
+        retStr += gen_user_preds(self)
+
         retStr += "\n# Other object predicates\n"
         retStr += gen_object_preds(self)
 
-        retStr += "\nagent-at({}, Tx{}y{})".format(self.agent.__name__,
-                                                   self.agent.at[0],
-                                                   self.agent.at[1])
-
         return retStr
 
-    def __random_loc(self):
+    def random_loc(self):
         x = randint(0, self.dim-1)
         y = randint(0, self.dim-1)
         return (x, y)
+
+    def save(self, filename):
+        filename = "./dng_files/" + filename + ".dng"
+        with open(filename, 'w') as saveFile:
+            saveFile.write(repr(dng))
+        with open(filename+".state", 'w') as saveFile:
+            saveFile.write(dng.MIDCA_state_str())
+        return True
 
     def __str__(self):
         """
@@ -1004,8 +1162,8 @@ class Dungeon(object):
     def __repr__(self):
         """Return a string which allows for reconstructing the Dungeon."""
         retStr = "dim:{}\n".format(self.dim)
-        retStr += "aLoc:{}\n".format(self.agentLoc)
-        retStr += "aVis:{}\n".format(self.agent.vision)
+        for user in self.all_users:
+            retStr += repr(user) + '\n'
         for obj in self.objects:
             retStr += repr(obj) + '\n'
         return retStr
@@ -1019,13 +1177,14 @@ class DungeonMap(Dungeon):
     the Agent knows. It also doesn't have its own Agent to prevent recursion.
     """
 
-    def __init__(self, dim, agentLoc):
+    def __init__(self, dim, agent):
         assert type(dim) is int, "dim must be an int"
 
         # Generate self variables
         self.dim = self.hgt = self.wdt = dim
         self.floor = {}
-        self.agentLoc = agentLoc
+        self.users = {agent.id: agent}
+        self.agent = agent
 
     def teleport_agent(self, dest):
         """Override a method the map shouldn't do."""
@@ -1035,7 +1194,7 @@ class DungeonMap(Dungeon):
         """Override a method the map shouldn't do."""
         raise NotImplementedError("A DungeonMap can't generate itself!")
 
-    def update_map(self, view, center, vRange):
+    def update_map(self, viewedObjs, viewedUsrs, center, vRange, operator=False):
         """Update the map based on what the Agent sees."""
         northBound = max(center[1] - vRange, 0)
         southBound = min(center[1] + vRange, self.dim)
@@ -1045,11 +1204,22 @@ class DungeonMap(Dungeon):
         for x in range(westBound, eastBound+1):
             for y in range(northBound, southBound+1):
                 vLoc = (x, y)
-                if vLoc in view.keys():
-                    self.floor[vLoc] = view[vLoc]
+                if vLoc in viewedObjs.keys():
+                    self.floor[vLoc] = viewedObjs[vLoc]
+                    del viewedObjs[vLoc]
                 else:
                     if vLoc in self.floor.keys():
                         del self.floor[vLoc]
+
+        if operator:
+            for objLoc in viewedObjs:
+                objs = viewedObjs[objLoc]
+                for obj in objs:
+                    if obj.objType == NPC and not obj.civi:
+                        self.floor[objLoc] = viewedObjs[objLoc]
+
+        for userName in viewedUsrs:
+            self.users[userName] = viewedUsrs[userName]
 
     def navigate_to(self, origin, dest, doorsOpen=False):
         """
@@ -1101,14 +1271,14 @@ class DungeonMap(Dungeon):
 
     def valid_goal(self, goal):
         """Indicate whether a goal is valid."""
-        # TODO: make this much more robust!
+        user = self.all_users[0]
         goalPred = goal.kwargs['predicate']
 
         if goalPred == 'agent-at':
             goalLoc = goal.args[0]
             if not self.check_passable(goalLoc):
                 return (False, 'unpassable')
-            if not self.navigate_to(self.agentLoc, goalLoc):
+            if not self.navigate_to(user.at, goalLoc):
                 return (False, 'no-access')
 
         if goalPred == 'open':
@@ -1122,8 +1292,8 @@ class DungeonMap(Dungeon):
             if not target:
                 return (False, 'no-target')
 
-            targetLoc = target.location
-            objsAroundTarget = self.get_objects_around(targetLoc)
+            bombLoc = self.get_closest_adjacent(target.location, self.agent.at)
+            objsAroundTarget = self.get_objects_around(bombLoc, BOMB_RANGE)
             for loc in objsAroundTarget:
                 for obj in objsAroundTarget[loc]:
                     if obj.objType == NPC and obj.civi:
@@ -1139,15 +1309,25 @@ class Agent(object):
     Used for PyHop planning in conjunction with fog-of-war and limited knowledge
     scenarios.
     """
+    agentCount = 0
+    operatorCount = 0
 
-    def __init__(self, name, location, dungeonDim, vision=-1):
+    def __init__(self, name, location, dungeonDim, vision=-1, userType=AGENT):
         self.__name__ = name
+        self.id = name
         self.at = location
         self.vision = vision
-        self.map = DungeonMap(dungeonDim, location)
+        self.map = DungeonMap(dungeonDim, self)
         self.keys = []
         self.coins = 0
         self.health = 4
+        self.userType = userType
+        if userType == AGENT:
+            self.number = Agent.agentCount
+            Agent.agentCount += 1
+        else:
+            self.number = Agent.operatorCount
+            Agent.operatorCount += 1
 
     @property
     def damage(self):
@@ -1163,9 +1343,40 @@ class Agent(object):
         """Return a list of all dungeon objects."""
         return self.map.objects
 
+    def filter_objects(self, **kwargs):
+        """Return a list of known objects whose attributes fit the filters."""
+        knownObjs = self.known_objects
+        filteredObjs = []
+        for obj in knownObjs:
+            for attrib in kwargs:
+                try:
+                    valid = eval("obj.{}".format(attrib)) == kwargs[attrib]
+                except AttributeError:
+                    valid = False
+                if not valid:
+                    break
+            if valid:
+                filteredObjs.append(obj)
+        return filteredObjs
+
     def view(self, dungeon):
         viewedObjs = dungeon.get_objects_around(self.at, self.vision)
-        self.map.update_map(viewedObjs, self.at, self.vision)
+        viewedUsers = dungeon.get_users_around(self.at, self.vision)
+
+        if self.userType == OPERATOR:
+            enemies = [e for e in dungeon.objects if e.objType == NPC and not e.civi]
+            for e in enemies:
+                viewedObjs[e.location] = [e]
+
+        self.map.update_map(viewedObjs, viewedUsers, self.at, self.vision, operator=True)
+
+    def update_knowledge(self, objOrAgent):
+        """Add the given object or agent to the Agent's knowledge-base."""
+        if isinstance(objOrAgent, Agent):
+            self.map.users[objOrAgent.__name__] = objOrAgent
+
+        elif isinstance(objOrAgent, DungeonObject):
+            self.map.add_object(objOrAgent)
 
     def navigate_to(self, dest, doorsOpen=False):
         """Convenient wrapper for navigating."""
@@ -1299,6 +1510,9 @@ class Agent(object):
             target = args[0]
             succeeded = self.unlock(target)
 
+        elif actType == 'bomb':
+            succeeded = self.map.bombed_at(self.at)
+
         else:
             raise NotImplementedError("Action type {} is not implemented".format(actType))
 
@@ -1311,16 +1525,15 @@ class Agent(object):
         """Wrapper to allow easier access to goal checking."""
         return self.map.valid_goal(goal)
 
-    def create_goal(self, action, *args):
-        """Wrapper to allow easier use of goal creation."""
-        return self.map.create_goal(action, *args)
-
     def goal_complete(self, goal):
         """Indicate whether a MIDCA goal has been completed."""
         if goal.kwargs['predicate'] == 'agent-at':
             return self.at == goal.args[0]
         elif goal.kwargs['predicate'] == 'open':
             return self.map.loc_unlocked(goal.args[0])
+        elif goal.kwargs['predicate'] == 'killed':
+            target = self.map.get_object(goal.args[0])
+            return target.alive is False
         else:
             raise NotImplementedError("Goal {} is not valid".format(goal))
 
@@ -1386,20 +1599,66 @@ class Agent(object):
         """Detonate a bomb under the agent which kills enemies in a 2-block radius."""
         return self.map.bombed_at(self.at)
 
+    def get_civs_in_blast(self):
+        """Return a list of civilians in the potential bomb blast."""
+        civs = []
+        objs = self.map.get_objects_around(self.at, BOMB_RANGE)
+        print(objs)
+        for objLoc in objs:
+            objList = objs[objLoc]
+            for obj in objList:
+                if obj.objType == NPC and obj.civi:
+                    civs.append(obj)
+
+        return civs
+
+    @property
+    def ascii_rep(self):
+        char = "A" if self.userType == AGENT else "O"
+        return char + str(self.number)
+
+    def __repr__(self):
+        char = "A" if self.userType == AGENT else "O"
+        return "{}@{}:{}:{}".format(char, self.at, self.vision, self.__name__)
+
 
 def draw_Dungeon(dng):
     """Print the Dungeon board."""
     print(str(dng))
 
 
+def generate_random_drone_demo(dim, civilians, enemies, operators, agents):
+    """Create a blank Dungeon and populate it with appropriate NPCs and users."""
+    dng = Dungeon(dim)
+    for _ in range(civilians):
+        while not dng.place_object(NPC, dng.random_loc(), civi=True):
+            pass
+
+    for _ in range(enemies):
+        while not dng.place_object(NPC, dng.random_loc(), civi=False):
+            pass
+
+    for opNum in range(operators):
+        uName = "Op" + str(opNum)
+        vision = randint(1, MAX_VISION_RANGE)
+        while not dng.add_user(uName, dng.random_loc(), vision, OPERATOR):
+            pass
+
+    for agnNum in range(agents):
+        agnName = "Agt" + str(agnNum)
+        vision = randint(1, MAX_VISION_RANGE)
+        while not dng.add_user(agnName, dng.random_loc(), vision, AGENT):
+            pass
+
+    return dng
+
+
 def build_Dungeon_from_str(dngStr):
     """Take in a string and create a new Dungeon from it."""
     lines = dngStr.split('\n')
     dim = int(lines[0][4:])
-    agentLoc = get_point_from_str(lines[1][5:])
-    agentVision = int(lines[2][5:])
-    dng = Dungeon(dim=dim, agent_vision=agentVision, agentLoc=agentLoc)
-    lines = lines[3:]
+    dng = Dungeon(dim=dim)
+    lines = lines[1:]
     objsMade = []
     while len(lines) > 0:
         line = lines.pop(0)
@@ -1415,9 +1674,11 @@ def build_Dungeon_from_str(dngStr):
 
         if objType == WALL:
             objsMade.append(dng.place_object(WALL, location))
+
         elif objType == DOOR:
             locked = False if miscData.lower() == 'false' else True
             objsMade.append(dng.place_object(DOOR, location, locked=locked))
+
         elif objType == CHEST:
             if miscData == '':
                 objsMade.append(dng.place_object(CHEST, location))
@@ -1432,6 +1693,7 @@ def build_Dungeon_from_str(dngStr):
                                                      contains=contains))
                 else:
                     lines.append(line)
+
         elif objType == KEY:
             unlocks = None
             for obj in objsMade:
@@ -1443,15 +1705,29 @@ def build_Dungeon_from_str(dngStr):
             else:
                 # print("Couldn't find object reference {}".format(miscData))
                 lines.append(line)
+
         elif objType == COIN:
             value = int(miscData)
             objsMade.append(dng.place_object(COIN, location, value=value))
+
         elif objType == FIRE:
             dmg = int(miscData)
             objsMade.append(dng.place_object(FIRE, location, damage=dmg))
+
         elif objType == TRAP:
             dmg = int(miscData)
             objsMade.append(dng.place_object(TRAP, location, damage=dmg))
+
+        elif objType == NPC:
+            living = miscData == "L"
+            civi = line[1] == "V"
+            objsMade.append(dng.place_object(NPC, location, civi=civi, living=living))
+
+        elif objType in [AGENT, OPERATOR]:
+            miscData = miscData.split(":")
+            vision = int(miscData[0])
+            name = miscData[1]
+            objsMade.append(dng.add_user(name, location, vision, objType))
         else:
             raise NotImplementedError(objType)
     return dng
@@ -1470,7 +1746,7 @@ def build_Dungeon_from_file(filename, MIDCA=False):
 
 
 def interactive_Dungeon_maker():
-    """Allows a user to build a Dungeon from scratch."""
+    """Allow a user to build a Dungeon from scratch."""
     def set_obj_attrib(target, attrib, val, objsMade):
         """Set the target attribute of the object to the given value, if possible."""
         if attrib not in dir(target):
@@ -1501,14 +1777,7 @@ def interactive_Dungeon_maker():
 
         if cmdAction == 'set':
             data = cmdData[1].lower()
-            if data == 'agent-loc':
-                dest = get_point_from_str(cmdData[2])
-                return dng.teleport_agent(dest)
-            elif data == 'agent-vision':
-                vRange = int(cmdData[2])
-                dng.agent.vision = vRange
-                return True
-            elif data in objsMade.keys():
+            if data in objsMade.keys():
                 objTarget = objsMade[data]
                 attrib = cmdData[2].lower()
                 value = cmdData[3]
@@ -1516,6 +1785,7 @@ def interactive_Dungeon_maker():
             else:
                 print("Unknown data {} for set command".format(data))
                 return False
+
         elif cmdAction == 'add':
             objType = cmdData[1].upper()
             try:
@@ -1628,9 +1898,24 @@ def interactive_Dungeon_maker():
                 newObj = dng.place_object(TRAP, objLoc, damage=damage)
                 objsMade[repr(newObj)] = newObj
                 return True
+            elif objType == NPC:
+                if not miscData:
+                    civi = False
+                else:
+                    civi = True if miscData.lower() == 'civilian' else False
+                newObj = dng.place_object(NPC, objLoc, civi=civi)
+                objsMade[repr(newObj)] = newObj
+                return True
+            elif objType in [AGENT, OPERATOR]:
+                name = miscData[0]
+                vision = int(miscData[1])
+                newAgent = dng.add_user(name, objLoc, vision, objType)
+                objsMade[repr(newAgent)] = newAgent
+                return True
             else:
                 print("Object type {} is not implemented yet".format(objType))
                 return False
+
         elif cmdAction == 'rem':
             targetID = " ".join(cmdData[1:])
             if targetID not in objsMade.keys():
@@ -1639,13 +1924,10 @@ def interactive_Dungeon_maker():
             dng.remove_object(targetID)
             del objsMade[targetID]
             return True
+
         elif cmdAction == 'save':
-            filename = "dng_files/" + cmdData[1]
-            with open(filename, 'w') as saveFile:
-                saveFile.write(repr(dng))
-            with open(filename+".state", 'w') as saveFile:
-                saveFile.write(dng.MIDCA_state_str())
-            return True
+            return dng.save(cmdData[1])
+
         else:
             print("Command {} not implemented yet".format(cmdAction))
             return False
@@ -1657,10 +1939,8 @@ def interactive_Dungeon_maker():
         os.system('clear')
         print(str(dng))
         print("""Commands:
-        \r\rset agent-loc POINT moves the Agent to (x, y)
-        \r\rset agent-vision INT sets how far the Agent can see
-        \r\rset OBJID ATTRIBUTE VALUE changes the object's attribute
         \r\radd OBJTYPE POINT MISCDATA places an object at the given location
+        \r\rset OBJID ATTRIBUTE VALUE changes the object's attribute
         \r\rrem OBJID removes the object with the given id
         \r\rsave FILENAME writes the Dungeon to the given file
         \r\rquit
@@ -1683,8 +1963,10 @@ def interactive_Dungeon_maker():
         except Exception as e:
             print("Couldn't complete command...")
             print(e)
+            print(traceback.format_exc())
             result = False
         if not result:
+            print("error thrown...")
             raw_input("Hit enter to continue...")
 
 
@@ -1704,5 +1986,10 @@ def test():
 
 
 if __name__ == '__main__':
-    dng = interactive_Dungeon_maker()
-    # print(dng.MIDCA_state_str())
+    # dng = interactive_Dungeon_maker()
+    # dng = build_Dungeon_from_file('dng_files/test.dng')
+    dng = generate_random_drone_demo(10, 4, 5, 1, 1)
+    print(dng)
+    filename = raw_input("Save this as: ")
+    if filename != "":
+        dng.save(filename)

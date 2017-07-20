@@ -57,13 +57,8 @@ def fetch_key(state, key):
 
 def move_adjacent(state, dest):
     """Move the agent to an available adjacent tile to the dest."""
-    possibleAdjs = state.map.get_adjacent(dest)
-    for moveDir in possibleAdjs:
-        tile = possibleAdjs[moveDir]
-        if tile is None:
-            continue
-        if state.can_reach(tile):
-            return [('move-to', tile)]
+    adjTile = state.map.get_closest_adjacent(dest, state.at)
+    return [('move-to', adjTile)]
 
 
 def achieve_goals(state, goals):
@@ -77,9 +72,9 @@ def achieve_goals(state, goals):
         elif goal.kwargs['predicate'] == 'killed':
             targetID = goal.args[0]
             targetLoc = state.map.get_object(targetID).location
-            tasks.append(('move-to', targetLoc))
-            tasks.append(('bomb'))
-            
+            tasks.append(('move-adjacent', targetLoc))
+            tasks.append(('bomb', 2))
+
         else:
             action = goal.kwargs['predicate']
             tasks.append((action, goal.args[0]))

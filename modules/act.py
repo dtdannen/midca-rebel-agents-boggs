@@ -40,7 +40,7 @@ class SimpleAct(base.BaseModule):
         trace = self.mem.trace
         if trace:
             trace.add_module(cycle, self.__class__.__name__)
-            trace.add_data("WORLD", copy.deepcopy(self.world))
+            trace.add_data("WORLD", copy.deepcopy(self.world.agent()))
             trace.add_data("GOALS", copy.deepcopy(goals))
             trace.add_data("PLAN", copy.deepcopy(plan))
 
@@ -60,6 +60,7 @@ class SimpleAct(base.BaseModule):
                         for a in plan:
                             print "  "+str(a)
 
+                self.world.send_action(str(action))
                 self.mem.add(self.mem.ACTIONS, [action])
                 actions = self.mem.get(self.mem.ACTIONS)
                 if len(actions) > 400:

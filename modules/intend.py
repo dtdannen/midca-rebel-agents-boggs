@@ -32,7 +32,7 @@ class QuickIntend(base.BaseModule):
                 goalScore = len(linPath) + 3 * obstacles
             else:
                 goalScore = 5
-                # TODO: Make heuristic function for open goal.
+                # TODO: Make heuristic function for open goal and killed goal.
             if goalScore < bestScore:
                 bestGoal = [goal]
                 bestScore = goalScore

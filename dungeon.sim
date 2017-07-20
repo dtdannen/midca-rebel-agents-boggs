@@ -1,7 +1,7 @@
 # Used MIDCA's NBeacons domain as a guide
 TYPE(DIM)
-type(AGENT-VISION)
 TYPE(AGENT)
+TYPE(OPERATOR)
 TYPE(TILE)
 TYPE(OBJECT)
 TYPE(WALL, OBJECT)
@@ -21,6 +21,7 @@ predicate(adjacent, [loc1, loc2], [TILE, TILE])
 
 # Object location predicates
 predicate(agent-at, [agnt, loc], [AGENT, TILE])
+predicate(operator-at, [opr, loc], [OPERATOR, TILE])
 predicate(wall-at, [wall, loc], [WALL, TILE])
 predicate(door-at, [door, loc], [DOOR, TILE])
 predicate(chest-at, [chest, loc], [CHEST, TILE])

@@ -284,17 +284,13 @@ class UserGoalInput(base.BaseModule):
         return goal
 
 
-class RemoteUserGoalInput(base.BaseModule):
+class PrimitiveRemoteUserGoalInput(base.BaseModule):
     """Allows MIDCA to create a goal based on user input."""
-    def __init__(self, userPort, autoFile=None, client=None):
-        super(RemoteUserGoalInput, self).__init__()
-        self.userPort = userPort
-        self.autoFile = autoFile
-        self.client = client
 
     def init(self, world, mem):
         self.mem = mem
         self.world = world
+        # Here, as with other Remote modules, world is really the client
 
     def run(self, cycle, verbose=0):
         """
@@ -372,6 +368,105 @@ class RemoteUserGoalInput(base.BaseModule):
         finally:
             sock.close()
         return data
+
+
+class RemoteUserGoalInput(base.BaseModule):
+    """Allows MIDCA to create a goal based on user input."""
+
+    def init(self, world, mem):
+        self.mem = mem
+        self.world = world
+        # Here, as with other Remote modules, world is really the client
+
+    def run(self, cycle, verbose=0):
+        """
+        Allow a remote user to give MIDCA agent a goal.
+
+        Currently, the user can tell the agent to move to a certain location or
+        to open whatever is locked at the given objective point.
+
+        Goals are given as `goal-type args`, and currently valid goals are
+            agent-at (x,y)
+            open (x,y)
+            killed targetID
+        """
+        if self.mem.trace:
+            self.mem.trace.add_module(cycle, self.__class__.__name__)
+
+        self.state = self.mem.get(self.mem.STATES)[-1]
+
+        operatorInputs = self.world.get_new_goals()
+        if not operatorInputs:
+            return
+
+        for rawGoal in operatorInputs:
+            if rawGoal == "":
+                continue
+            rawGoalStr, senderID = rawGoal.split(";")
+            try:
+                argsIndex = rawGoalStr.index('(')
+            except ValueError:
+                print("Invalid goal string {}".format(rawGoalStr))
+                continue
+            goalStr = " ".join((rawGoalStr[:argsIndex], rawGoalStr[argsIndex:]))
+            goal, error = self.parse_input(goalStr, senderID)
+            if goal:
+                print("User added goal; {}".format(goal))
+                self.world.dialog(senderID, "Goal added")
+            else:
+                self.world.dialog(senderID, "Error; {}".format(error))
+
+            if goal:
+                self.mem.get(self.mem.GOAL_GRAPH).insert(goal)
+                if self.mem.trace:
+                    self.mem.trace.add_data("ADDED GOAL", goal)
+
+    def parse_input(self, userIn, senderID):
+        """Turn user input into a goal."""
+        acceptable_goals = ['agent-at', 'open', 'killed']
+
+        if userIn == 'q' or userIn == '':
+            return userIn
+
+        goalData = userIn.split()
+
+        if goalData[0] not in acceptable_goals:
+            error = "{} is not a valid goal command".format(goalData[0])
+            return False, error
+        goalPred = goalData[0]
+
+        if goalPred in ['agent-at', 'open']:
+            # goalData [1] should be of form (x,y)
+            x, y = goalData[1].strip('()').split(',')
+            try:
+                x = int(x)
+                y = int(y)
+            except ValueError:
+                error = "x and y must be integers"
+                return False, error
+            goalLoc = (x, y)
+
+            if not self.state.map.loc_valid(goalLoc) or not self.state.map.loc_is_free(goalLoc):
+                error = "Invalid location {} for goal {}".format(goalLoc, goalPred)
+                return False, error
+
+            goal = goals.Goal(goalLoc, predicate=goalPred, user=senderID)
+
+        elif goalPred in ['killed']:
+            targetID = goalData[1].strip("()")
+            target = None
+            for obj in self.state.known_objects:
+                print(obj.id, targetID)
+                if obj.id == targetID:
+                    target = obj
+                    break
+            if target is None:
+                error = "Don't know of target {}".format(targetID)
+                return False, error
+
+            goal = goals.Goal(targetID, predicate=goalPred, user=senderID)
+
+        return goal, ""
 
 
 class CompletionEvaluator(base.BaseModule):

@@ -25,7 +25,7 @@ WALLS = 7
 # Setup
 # dng = dungeon_utils.Dungeon(dim=DIMENSION, agent_vision=2)
 # dng.generate(chests=CHESTS, doors=DOORS, walls=WALLS)
-dng = dungeon_utils.build_Dungeon_from_file('dng_files/test.dng')
+dng = dungeon_utils.build_Dungeon_from_file('../dng_files/test.dng')
 
 DECLARE_METHODS_FUNC = d_mthds.declare_methods
 DECLARE_OPERATORS_FUNC = d_ops.declare_operators
@@ -43,8 +43,8 @@ USR2_VIEW = 3
 USR2_PORT = 9995
 
 # Open clients for users
-USR1_args = ["xterm", "-e", "python", "./dungeon_client.py", str(USR1_PORT)]
-USR2_args = ["xterm", "-e", "python", "./dungeon_client.py", str(USR2_PORT)]
+USR1_args = ["xterm", "-e", "python", "../dungeon_client_old.py", str(USR1_PORT)]
+USR2_args = ["xterm", "-e", "python", "../dungeon_client_old.py", str(USR2_PORT)]
 client1 = subprocess.Popen(USR1_args)
 client2 = subprocess.Popen(USR2_args)
 
@@ -78,8 +78,8 @@ myMidca.append_module("Interpret", interpret.StateDiscrepancyDetector())
 myMidca.append_module("Interpret", interpret.GoalValidityChecker())
 myMidca.append_module("Interpret", interpret.DiscrepancyExplainer())
 # myMidca.append_module("Interpret", interpret.UserGoalInput())
-myMidca.append_module("Interpret", interpret.RemoteUserGoalInput(USR1_PORT))
-myMidca.append_module("Interpret", interpret.RemoteUserGoalInput(USR2_PORT))
+myMidca.append_module("Interpret", interpret.PrimitiveRemoteUserGoalInput(USR1_PORT))
+myMidca.append_module("Interpret", interpret.PrimitiveRemoteUserGoalInput(USR2_PORT))
 
 # Eval phase modules
 myMidca.append_module("Eval", evaluate.GoalManager())
