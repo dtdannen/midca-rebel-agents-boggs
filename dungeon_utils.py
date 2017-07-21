@@ -8,20 +8,25 @@ import sys
 import traceback
 from MIDCA import plans
 
-AGENT = "AGENT"
-OPERATOR = "OPERATOR"
+AGENT = "AGENT"  #: Easily check if an Agent object is an agent
+OPERATOR = "OPERATOR"  #: Easily check if an Agent object is an operator
 
-CHEST = 'CHEST'
-DOOR = 'DOOR'
-WALL = 'WALL'
-KEY = 'KEY'
-COIN = 'COIN'
-FIRE = 'FIRE'
-TRAP = 'TRAP'
-NPC = 'NPC'
-BOMB_RANGE = 2
-MAX_VISION_RANGE = 3
+CHEST = 'CHEST'  #: Easily check if a DungeonObject object is a chest
+DOOR = 'DOOR'  #: Easily check if a DungeonObject object is a door
+WALL = 'WALL'  #: Easily check if a DungeonObject object is a wall
+KEY = 'KEY'  #: Easily check if a DungeonObject object is a key
+COIN = 'COIN'  #: Easily check if a DungeonObject object is a coin
+FIRE = 'FIRE'  #: Easily check if a DungeonObject object is a fire
+TRAP = 'TRAP'  #: Easily check if a DungeonObject object is a trap
+NPC = 'NPC'  #: Easily check if a DungeonObject object is a NPC
+
+BOMB_RANGE = 2  #: Radius of a bomb's blast
+MAX_VISION_RANGE = 3  #: Maximum vision range of Agent objects generated randomly
+
+#: List of all objects which could be in the Dungeon
 OBJECT_LIST = [CHEST, DOOR, WALL, KEY, COIN, FIRE, TRAP, NPC, AGENT, OPERATOR]
+
+#: Conversion table from object characters to object strings
 OBJECT_ID_CODES = {"C": CHEST,
                    "D": DOOR,
                    "W": WALL,
@@ -33,6 +38,7 @@ OBJECT_ID_CODES = {"C": CHEST,
                    "A": AGENT,
                    "O": OPERATOR}
 
+#: Conversion table from object strings to object characters
 OBJECT_CODE_IDS = {CHEST: "C",
                    DOOR: "D",
                    WALL: "W",
@@ -44,6 +50,7 @@ OBJECT_CODE_IDS = {CHEST: "C",
                    AGENT: "A",
                    OPERATOR: "O"}
 
+#: Conversion table from direction-indicating characters to strings
 DIRECTON_EXPANSIONS = {'n': 'north',
                        's': 'south',
                        'w': 'west',
@@ -1975,14 +1982,6 @@ def get_point_from_str(string):
     coords = string.strip('()').split(',')
     point = (int(coords[0]), int(coords[1]))
     return point
-
-
-def test():
-    """Function for easier testing."""
-    dng = Dungeon(5)
-    dng.generate(3, 3, 5)
-    print(dng.MIDCA_state_str())
-    print(str(dng))
 
 
 if __name__ == '__main__':

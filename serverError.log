@@ -1,0 +1,14 @@
+Traceback (most recent call last):
+  File "/usr/local/lib/python2.7/SocketServer.py", line 290, in _handle_request_noblock
+    self.process_request(request, client_address)
+  File "/usr/local/lib/python2.7/SocketServer.py", line 318, in process_request
+    self.finish_request(request, client_address)
+  File "/usr/local/lib/python2.7/SocketServer.py", line 331, in finish_request
+    self.RequestHandlerClass(request, client_address, self)
+  File "/usr/local/lib/python2.7/SocketServer.py", line 652, in __init__
+    self.handle()
+  File "./dungeon_server.py", line 92, in handle
+    success = dng.apply_action_str(msgData[0], userID)
+  File "/home/jamesboggs/Desktop/MIDCA_Testing/dungeon_utils.py", line 882, in apply_action_str
+    args = [arg for arg in actionData[1].split(', ')]
+IndexError: list index out of range
