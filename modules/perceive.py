@@ -4,7 +4,11 @@ from MIDCA import base
 
 
 class Observer(base.BaseModule):
-    """Copies the agent state to MIDCA memory, allowing for custom fog-of-war."""
+    """
+    Copies the agent state to MIDCA memory, allowing for custom fog-of-war.
+
+    DEPRECATED
+    """
 
     def init(self, world, mem):
         self.mem = mem
@@ -89,16 +93,3 @@ class RemoteObserver(base.BaseModule):
             trace.add_module(cycle, self.__class__.__name__)
             trace.add_data("WORLD", agentCopy)
             trace.add_data("CURR WORLD", agentCopy)
-
-
-class ShowMap(base.BaseModule):
-    """Lets MIDCA show the agent's map of the world."""
-
-    def init(self, world, mem):
-        self.mem = mem
-        self.client = world
-
-    def run(self, cycle, verbose=2):
-        agent = self.mem.get(self.mem.STATE)
-        agent.draw_map()
-        print("Health: {}".format(agent.damage))

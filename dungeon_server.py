@@ -28,6 +28,17 @@ DIALOG_SEND = 7
 DIALOG_REQ = 8
 
 
+def msgSetup(func):
+    """Open a connection before the func and close it after."""
+    def fullMsgFunc(self, *args, **kwargs):
+        self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.socket.connect(self.conAddr)
+        result = func(self, *args, **kwargs)
+        self.socket.close()
+        return result
+    return fullMsgFunc
+
+
 class DungeonServer(SS.TCPServer):
     """
     Special TCP server class which simulates the dungeon.
@@ -197,17 +208,6 @@ class DungeonServer(SS.TCPServer):
         self.dungeon = dungeon
         self.queuedGoals = {}
         self.messages = {}
-
-
-def msgSetup(func):
-    """Open a connection before the func and close it after."""
-    def fullMsgFunc(self, *args, **kwargs):
-        self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.socket.connect(self.conAddr)
-        result = func(self, *args, **kwargs)
-        self.socket.close()
-        return result
-    return fullMsgFunc
 
 
 class Client(object):

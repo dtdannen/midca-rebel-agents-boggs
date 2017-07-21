@@ -215,7 +215,11 @@ class DiscrepancyExplainer(base.BaseModule):
 
 
 class UserGoalInput(base.BaseModule):
-    """Allows MIDCA to create a goal based on user input."""
+    """
+    Allows MIDCA to create a goal based on user input.
+
+    DEPRECATED
+    """
 
     def init(self, world, mem):
         self.mem = mem
@@ -285,7 +289,11 @@ class UserGoalInput(base.BaseModule):
 
 
 class PrimitiveRemoteUserGoalInput(base.BaseModule):
-    """Allows MIDCA to create a goal based on user input."""
+    """
+    Allows MIDCA to create a goal based on user input.
+
+    DEPRECATED
+    """
 
     def init(self, world, mem):
         self.mem = mem

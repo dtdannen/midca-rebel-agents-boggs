@@ -1,6 +1,10 @@
 Dungeon Object Class
 ********************
 
+.. autoclass:: dungeon_utils.DungeonObject
+    :members:
+    :undoc-members:
+
 .. toctree::
    :maxdepth: 2
    :caption: Subclasses:
@@ -13,6 +17,3 @@ Dungeon Object Class
    dungeon_objects/fire
    dungeon_objects/trap
    dungeon_objects/NPC
-
-.. autoclass:: dungeon_utils.DungeonObject
-    :members:

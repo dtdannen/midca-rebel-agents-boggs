@@ -384,22 +384,6 @@ class Dungeon(object):
     def __init__(self, dim):
         """
         Initialize a blank dungeon of size `dim`x`dim`.
-
-        Creates a new Dungeon object which is completely empty. In the dungeon
-        environment, any (x,y) pair which isn't occupied by something is
-        considered floor and is passable. The objects which can fill a Dungeon
-        are:
-        Chests: Never passable, initially locked, may have a key in them.
-        Doors: Passable when unlocked, initially locked
-        Walls: Never passable
-        Keys: Always passable, unlock one locked object
-        Agent: The agent, can pick up keys, can unlock chests/doors
-
-        The board is stored as a dictionary with (x,y) locations as keys and
-        lists of objects as values, so that the value of a location is a list
-        of the objects there. The agent is a special case, in that it moves, and
-        so the current location of the agent is stored separately. The agent starts
-        in the middle of the dungeon.
         """
         assert type(dim) is int, "dim must be an int"
 

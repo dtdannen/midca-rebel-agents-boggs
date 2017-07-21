@@ -7,11 +7,13 @@ Welcome to Rebel Agents's documentation!
 ========================================
 
 .. toctree::
-   :maxdepth: 3
+   :maxdepth: 2
    :caption: Contents:
 
    dungeon_utils
    dungeon_server
+   pyhop
+   modules
 
 
 Indices and tables
