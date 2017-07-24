@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 """
-MIDCA demo using a dungeon-ish environment.
+MIDCA demo using a world-ish environment.
 
-Agent explores a dungeon with a limited view.
+Agent explores a world with a limited view.
 """
 import subprocess
 
@@ -11,9 +11,9 @@ from MIDCA import base
 from MIDCA.modules import planning
 
 # Domain Specific Imports
-import dungeon_utils
-import dungeon_operators as d_ops
-import dungeon_methods as d_mthds
+import world_utils
+import world_operators as d_ops
+import world_methods as d_mthds
 from modules import simulate, perceive, interpret, evaluate, intend, act, plan
 
 
@@ -23,14 +23,14 @@ DOORS = 3
 WALLS = 7
 
 # Setup
-# dng = dungeon_utils.Dungeon(dim=DIMENSION, agent_vision=2)
+# dng = world_utils.World(dim=DIMENSION, agent_vision=2)
 # dng.generate(chests=CHESTS, doors=DOORS, walls=WALLS)
-dng = dungeon_utils.build_Dungeon_from_file('../dng_files/test.dng')
+dng = world_utils.build_World_from_file('../dng_files/test.dng')
 
 DECLARE_METHODS_FUNC = d_mthds.declare_methods
 DECLARE_OPERATORS_FUNC = d_ops.declare_operators
-PLAN_VALIDATOR = plan.dungeonPlanValidator
-DISPLAY_FUNC = dungeon_utils.draw_Dungeon
+PLAN_VALIDATOR = plan.worldPlanValidator
+DISPLAY_FUNC = world_utils.draw_World
 VERBOSITY = 2
 
 # Set up remote user variables
@@ -43,8 +43,8 @@ USR2_VIEW = 3
 USR2_PORT = 9995
 
 # Open clients for users
-USR1_args = ["xterm", "-e", "python", "../dungeon_client_old.py", str(USR1_PORT)]
-USR2_args = ["xterm", "-e", "python", "../dungeon_client_old.py", str(USR2_PORT)]
+USR1_args = ["xterm", "-e", "python", "../world_client_old.py", str(USR1_PORT)]
+USR2_args = ["xterm", "-e", "python", "../world_client_old.py", str(USR2_PORT)]
 client1 = subprocess.Popen(USR1_args)
 client2 = subprocess.Popen(USR2_args)
 
@@ -109,5 +109,5 @@ myMidca.mem.logEachAccess = False
 
 # Initialize and start running!
 myMidca.init()
-myMidca.initGoalGraph(cmpFunc=plan.dungeonGoalComparator)
+myMidca.initGoalGraph(cmpFunc=plan.worldGoalComparator)
 myMidca.run(usingInterface=True, verbose=VERBOSITY)

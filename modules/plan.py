@@ -1,9 +1,9 @@
-"""Contains the plan validator for the Dungeon environemnt."""
+"""Contains the plan validator for the World environemnt."""
 
 import copy
 
 
-def dungeonPlanValidator(state, plan):
+def worldPlanValidator(state, plan):
     """
     Ensure that the given plan is still valid in the given state.
 
@@ -22,14 +22,14 @@ def dungeonPlanValidator(state, plan):
     return actionSuccess
 
 
-def dungeonGoalComparator(goal1, goal2):
+def worldGoalComparator(goal1, goal2):
     """
     Compares two goals and returns either -1, 0, or 1.
 
     If goal1 should be achieved before goal2, this returns -1, and if the
     reverse is true, it returns 1. If neither needs to preceed the other, then
     0 is returned. This function checks whether one goal has the other as its
-    parent goal. In the Dungeon domain, if a goal engenders another goal, the
+    parent goal. In the World domain, if a goal engenders another goal, the
     original goal is the parent of the new goal.
     """
     if 'parent' in goal1.kwargs.keys() and goal1.kwargs['parent'] == goal2:

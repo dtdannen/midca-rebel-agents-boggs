@@ -4,7 +4,7 @@ from MIDCA import base
 
 
 class SimpleAct(base.BaseModule):
-    """Allows MIDCA to execute actions in a plan by affecting the Dungeon."""
+    """Allows MIDCA to execute actions in a plan by affecting the World."""
 
     def init(self, world, mem):
         """Give module critical MIDCA data."""

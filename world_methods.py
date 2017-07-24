@@ -1,7 +1,7 @@
 """
-Provides all of the PyHop methods for the Dungeon domain.
+Provides all of the PyHop methods for the World domain.
 
-All methods interact solely with the Agent as state, and never see the Dungeon as
+All methods interact solely with the Agent as state, and never see the World as
 a whole. This ensures that the planning is completely reliant on the Agent's
 knowledge.
 """

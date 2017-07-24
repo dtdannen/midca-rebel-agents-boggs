@@ -1,6 +1,6 @@
 MIDCA Client
 ************
 
-.. autoclass:: dungeon_server.MIDCAClient
+.. autoclass:: world_communications.MIDCAClient
     :members:
     :undoc-members:

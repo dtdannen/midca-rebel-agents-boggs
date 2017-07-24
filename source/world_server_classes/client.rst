@@ -1,7 +1,7 @@
 Client
 ************
 
-.. autoclass:: dungeon_server.Client
+.. autoclass:: world_communications.Client
     :members:
     :undoc-members:
 

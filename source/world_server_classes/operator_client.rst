@@ -1,6 +1,6 @@
 Operator Client
 ***************
 
-.. autoclass:: dungeon_server.OperatorClient
+.. autoclass:: world_communications.OperatorClient
     :members:
     :undoc-members:

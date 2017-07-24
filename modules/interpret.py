@@ -7,7 +7,7 @@ class StateDiscrepancyDetector(base.BaseModule):
     """
     Allows MIDCA to identify discrepancies between expected and actual state.
 
-    This is a simplistic version, but it compares what it expects the dungeon to
+    This is a simplistic version, but it compares what it expects the world to
     be with what it really is by copying the Agent from the last state and
     applying the current move to it. The it checks whether there's a difference
     between the simulated map of the old Agent and the real map of the current

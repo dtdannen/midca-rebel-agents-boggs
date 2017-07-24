@@ -1,7 +1,7 @@
 """
-Provides all of the PyHop operators for the Dungeon domain.
+Provides all of the PyHop operators for the World domain.
 
-All operators interact solely with the Agent as state, and never see the Dungeon as
+All operators interact solely with the Agent as state, and never see the World as
 a whole. This ensures that the planning is completely reliant on the Agent's
 knowledge.
 """
@@ -27,7 +27,7 @@ def takekey(state, keyLoc):
     try:
         state.take_key(keyLoc)
     except ValueError:
-        print("{} is not a valid location in the dungeon".format(keyLoc))
+        print("{} is not a valid location in the world".format(keyLoc))
     return state
 
 
@@ -35,7 +35,7 @@ def unlock(state, target):
     try:
         state.unlock(target)
     except ValueError:
-        print("{} is not a valid location in the dungeon".format(target))
+        print("{} is not a valid location in the world".format(target))
     return state
 
 

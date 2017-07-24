@@ -1,4 +1,12 @@
-"""Contains the Dungeon class and related classes."""
+"""
+Contains the ``World`` class and related classes and functions.
+
+This is the module responsible for anything to do with representing or simulating
+a ``World`` and the ``Agents`` and ``Operators`` within it. This module features
+three main classes: ``World``, ``WorldObject``, and ``Agent``, and a bunch of subclasses.
+Additionally, there are several helper functions which interact with or create ``World``s
+in some way.
+"""
 
 from copy import deepcopy
 from random import randint
@@ -11,19 +19,19 @@ from MIDCA import plans
 AGENT = "AGENT"  #: Easily check if an Agent object is an agent
 OPERATOR = "OPERATOR"  #: Easily check if an Agent object is an operator
 
-CHEST = 'CHEST'  #: Easily check if a DungeonObject object is a chest
-DOOR = 'DOOR'  #: Easily check if a DungeonObject object is a door
-WALL = 'WALL'  #: Easily check if a DungeonObject object is a wall
-KEY = 'KEY'  #: Easily check if a DungeonObject object is a key
-COIN = 'COIN'  #: Easily check if a DungeonObject object is a coin
-FIRE = 'FIRE'  #: Easily check if a DungeonObject object is a fire
-TRAP = 'TRAP'  #: Easily check if a DungeonObject object is a trap
-NPC = 'NPC'  #: Easily check if a DungeonObject object is a NPC
+CHEST = 'CHEST'  #: Easily check if a WorldObject object is a chest
+DOOR = 'DOOR'  #: Easily check if a WorldObject object is a door
+WALL = 'WALL'  #: Easily check if a WorldObject object is a wall
+KEY = 'KEY'  #: Easily check if a WorldObject object is a key
+COIN = 'COIN'  #: Easily check if a WorldObject object is a coin
+FIRE = 'FIRE'  #: Easily check if a WorldObject object is a fire
+TRAP = 'TRAP'  #: Easily check if a WorldObject object is a trap
+NPC = 'NPC'  #: Easily check if a WorldObject object is a NPC
 
 BOMB_RANGE = 2  #: Radius of a bomb's blast
 MAX_VISION_RANGE = 3  #: Maximum vision range of Agent objects generated randomly
 
-#: List of all objects which could be in the Dungeon
+#: List of all objects which could be in the World
 OBJECT_LIST = [CHEST, DOOR, WALL, KEY, COIN, FIRE, TRAP, NPC, AGENT, OPERATOR]
 
 #: Conversion table from object characters to object strings
@@ -57,23 +65,40 @@ DIRECTON_EXPANSIONS = {'n': 'north',
                        'e': 'east'}
 
 
-class DungeonObject(object):
+class WorldObject(object):
     """
-    Superclass for objects and obstacles in the dungeon.
+    Superclass for objects and obstacles in the world.
 
-    All objects share several traits, which are handled by this superclass. They
-    also all have ascii_rep methods, magic string methods, and equality methods
-    which must override the superclass'.
+    All objects share several traits, which are handled by this superclass:
+
+    ``objType``:
+        This is a string which indicates what type of object the object really is.
+        This value should be a member of ``OBJECT_LIST``. This is set automatically
+        when a ``WorldObject`` subclass is instantiated, and should **not** be
+        altered.
+
+    ``passable``:
+        This is a boolean which indicates whether an ``Agent`` can move through
+        the tile which the object is on. This is set automatically when a ``WorldObject``
+        subclass is instantiated, and may change as a result of actions taken by
+        agents or operators.
+
+    ``location``:
+        This is a pair of ints which indicates where on the board the object is
+        located. This is the only argument which all ``WorldObject`` subclasses
+        require for instantiation. Currently this value does not change, but it
+        may be altered as a result of agent or operator actions.
+
+    All subclasses also have several properties and magic methods, some of which
+    are provides universally by the base class and some of which must be implemented
+    in each subclass.
     """
 
     def __init__(self, location):
         """
-        Create object by setting attributes.
+        Create object by giving it a location.
 
-        The attributes an Dungeon Object has are:
-        `objType`: The kind of dungeon object it is (e.g. 'CHEST')
-        `location`: Where the object is as (x,y)
-        `passable`: Whether the object is passable (can be moved over)
+        The WorldObject superclass should not be directly instantiated.
         """
         self.objType = None
         self.passable = None
@@ -82,61 +107,178 @@ class DungeonObject(object):
     @property
     def ascii_rep(self):
         """
-        Return the ascii represntation of the object.
+        Return the ASCII art version of the object for use in drawing the world.
 
-        This is how the object will appear on the board display.
+        This property determines how an object is displayed on the world map, and
+        must be overridden by any subclass of ``WorldObject``.
+
+        ``return``:
+            This function should return a str of length two or less.
         """
         raise NotImplementedError
 
     @property
     def id(self):
+        """
+        Return a unique string ID for the object.
+
+        This function provides each object with a unique string by prepending the
+        object code character to the string of ``hash(self)``. This should **not**
+        be overridden by subclasses.
+
+        ``return``:
+            This function returns a six character string such that the first character
+            is a letter in ``OBJECT_ID_CODES.keys()`` and the remaining five are
+            the has value of the object.
+        """
         return OBJECT_CODE_IDS[self.objType] + str(hash(self))[:5]
 
     @property
     def predicates(self):
-        """Return a string of the MIDCA predicates appropriate for the object."""
+        """
+        Return a string of the MIDCA predicates appropriate for the object.
+
+        In order to facilitate conversion to a MIDCA state representation, every
+        object should be able to render all the prepositions which are relevant
+        to it. The domain file ``world.sim`` lists every potential predicate. This
+        function must be overridden by subclasses.
+
+        ``return``:
+            A string which features all predicates relevant to the object, each
+            separated by a newline.
+        """
         raise NotImplementedError
 
     def __str__(self):
+        """
+        Return the string representation of the object.
+
+        This function should return an easily-readble verbal representation of the
+        object. Concision is important, but human-readability is a larger concern.
+        This method must be overridden by subclasses.
+
+        ``return``:
+            A human-readable string which describes the object.
+        """
         raise NotImplementedError
 
     def __repr__(self):
-        return self.__str__()
+        """
+        Return a concise representation of the object.
+
+        This function should emphasize concision and completeness, with human-readability
+        being a secondary concern. The string which results from this function should
+        allow complete reconstruction of the object, i.e. all information about
+        the object should be encoded in the string. This method must be overridden
+        by subclasses.
+
+        ``return``:
+            A concise, complete representation of the object.
+        """
+        raise NotImplementedError
 
     def __eq__(self, other):
+        """Indicate whether this object is equal to the other object.
+
+        This function is used to compare the equality of two objects in the ``World``.
+        Because the string returned by the ``__repr__`` method should encode ALL
+        information about the object in a predicatable way, two objects are equal
+        iff their representations are equal. That principle underlies this function.
+        This function does not need to be overridden by subclasses.
+
+        ``return``:
+            A boolean which is true iff the two objects are equivalent.
+        """
         return repr(self) == repr(other)
 
     def __hash__(self):
+        """
+        Return an integer unique to this object.
+
+        This function should generate an integer such that no other object which
+        is not equivalent to this one will have the same value for its ``__hash__``
+        function. This is accomplished by calling Python's built-in ``hash`` function
+        on the representation of this object. Since the representation encodes ALL
+        information about this object in a predictable way, the hash value will
+        be unique to objects with exactly the same state as this one.
+
+        ``return``:
+            An integer unique to this object.
+        """
         return hash(repr(self))
 
 
-class Wall(DungeonObject):
-    """Represents a wall in the dungeon."""
+class Wall(WorldObject):
+    """
+    Represents a wall in the world.
+
+    Walls are obstacles with no special properties. They only block tiles, nothing
+    else.
+
+    Instantiation::
+
+        wall = Wall((x, y))
+    """
 
     def __init__(self, location):
+        """Instantiate a world at ``location``."""
         super(Wall, self).__init__(location)
         self.passable = False
         self.objType = WALL
 
     @property
     def ascii_rep(self):
+        """
+        Return the ASCII art version of the wall for use in drawing the world.
+
+        A wall appears as two "X"s, as such::
+
+            |XX|
+
+        """
         return "XX"
 
     @property
     def predicates(self):
+        """
+        Return a string of the MIDCA predicates appropriate for a wall.
+
+        A wall has no unique predicates, and so the return string is empty.
+        """
         return ""
 
     def __str__(self):
+        """
+        Return the verbal representation of the wall.
+
+        The verbal representation of a wall is not very interesting...
+        """
         return "Wall @ {}".format(self.location)
 
     def __repr__(self):
+        """Return a concise representation of the wall."""
         return "W@{}".format(self.location)
 
 
-class Chest(DungeonObject):
-    """Represents a chest in the dungeon, and can hold things."""
+class Chest(WorldObject):
+    """
+    Represents a chest in the world, and can hold things.
+
+    A chest has two interesting properties: ``contains`` and ``locked``. However
+    ``contains`` does not actually do anything at the moment besides store an
+    object. Thus, ``locked`` is also not particularly interesting, although it is
+    implemented fully. A chest is never passable.
+
+    A chest can be instantiated with just a location or it can be given a list of
+    objects to contain.
+
+    Instantiation::
+
+        chest = Chest((x,y)[, WorldObject])
+    """
 
     def __init__(self, location, contains=None):
+        """Instantiate a chest at the location, containing the given object."""
         super(Chest, self).__init__(location)
         self.passable = False
         self.objType = CHEST
@@ -144,10 +286,31 @@ class Chest(DungeonObject):
         self.locked = True
 
     def insert_object(self, obj):
-        self.contain = obj
+        """
+        Insert an object into the chest.
+
+        This will override the existing object, if there is one.
+
+        ``obj``:
+            This must be an instance of a WorldObject.
+        """
+        assert isinstance(obj, WorldObject), "Cannot insert non-WorldObject into chest"
+        self.contains = (obj)
 
     @property
     def ascii_rep(self):
+        """
+        Return the ASCII art version of the object for use in drawing the world.
+
+        A chest is represented as an uppercase "C" if it is locked or a lowercase
+        "c" if it is not. It is shown twice if it is enpty, and once it it contains
+        something, as such::
+
+            |C.| = locked, full
+            |c.| = unlocked, full
+            |CC| = locked, empty
+            |cc| = unlocked, empty
+        """
         if self.locked:
             char = 'C'
         else:
@@ -159,6 +322,16 @@ class Chest(DungeonObject):
 
     @property
     def predicates(self):
+        """
+        Return a string of the MIDCA predicates appropriate for the object.
+
+        Three predicates relate to chests: ``chest-locked``, ``contains-key``, and
+        ``contains-coin``.
+
+        ``return``:
+            A string which features all predicates relevant to the chest, each
+            separated by a newline.
+        """
         retStr = ""
         if self.locked:
             retStr += "chest-locked({})\n".format(self.id)
@@ -170,19 +343,44 @@ class Chest(DungeonObject):
         return retStr
 
     def __str__(self):
+        """
+        Return the string representation of the object.
+
+        The string for a chest will indicate whether it's unlocked or not, and
+        what it contains.
+        """
         locked = "Locked" if self.locked else "Unlocked"
         return "{} chest @ {} containing {}".format(locked, self.location,
                                                     str(self.contains))
 
     def __repr__(self):
+        """
+        Return a concise representation of the chest.
+
+        The string for a chest will indicate whether it's unlocked or not, and
+        what it contains.
+        """
         char = "C" if self.locked else "c"
         return "{}@{}:{}".format(char, self.location, repr(self.contains))
 
 
-class Door(DungeonObject):
-    """Represents a door in the dungeon, which can be unlocked and opened."""
+class Door(WorldObject):
+    """
+    Represents a door in the world, which can be unlocked and opened.
+
+    If a door is locked, it is not passable. Once the door is unlocked, it becomes
+    passable.
+
+    A door is by default instantiated as locked, by it can be instantiated as unlocked
+    as well.
+
+    Instantiation::
+
+        door = Door((x,y)[, locked=bool])
+    """
 
     def __init__(self, location, locked=True):
+        """Instantiate a door at the given location."""
         super(Door, self).__init__(location)
         self.passable = False
         self.objType = DOOR
@@ -211,8 +409,8 @@ class Door(DungeonObject):
         return "{}@{}".format(char, self.location)
 
 
-class Key(DungeonObject):
-    """Represents a key in the dungeon. Can unlock a locked item."""
+class Key(WorldObject):
+    """Represents a key in the world. Can unlock a locked item."""
 
     def __init__(self, location, unlocks=None, inChest=None):
         super(Key, self).__init__(location)
@@ -253,8 +451,8 @@ class Key(DungeonObject):
             return "k@{}:{}".format(self.location, repr(self.unlocks))
 
 
-class Coin(DungeonObject):
-    """Represents a coin of some value in the dungeon."""
+class Coin(WorldObject):
+    """Represents a coin of some value in the world."""
 
     def __init__(self, location, value, inChest=None):
         super(Coin, self).__init__(location)
@@ -281,8 +479,8 @@ class Coin(DungeonObject):
         return "$@{}:{}".format(self.location, self.value)
 
 
-class Fire(DungeonObject):
-    """Represents a fire in the dungeon, which can deal damage to the agent."""
+class Fire(WorldObject):
+    """Represents a fire in the world, which can deal damage to the agent."""
 
     def __init__(self, location, damage):
         super(Fire, self).__init__(location)
@@ -306,8 +504,8 @@ class Fire(DungeonObject):
         return "*@{}:{}".format(self.location, self.damage)
 
 
-class Trap(DungeonObject):
-    """Represents a trap in the dungeon, which is hidden until it activates."""
+class Trap(WorldObject):
+    """Represents a trap in the world, which is hidden until it activates."""
 
     def __init__(self, location, damage):
         super(Trap, self).__init__(location)
@@ -337,8 +535,8 @@ class Trap(DungeonObject):
         return "^{}@{}:{}".format(char, self.location, self.damage)
 
 
-class Npc(DungeonObject):
-    """Used to represent enemies and civilians in the dungeon."""
+class Npc(WorldObject):
+    """Used to represent enemies and civilians in the world."""
 
     def __init__(self, location, civi=False, living=True):
         super(Npc, self).__init__(location)
@@ -373,17 +571,17 @@ class Npc(DungeonObject):
         return "&{}@{}:{}".format(char, self.location, status)
 
 
-class Dungeon(object):
+class World(object):
     """
-    Class representing an entire dungeon.
+    Class representing an entire world.
 
-    Contains a dungeon map, the state of doors and chests, and changes the
+    Contains a world map, the state of doors and chests, and changes the
     environment when needed.
     """
 
     def __init__(self, dim):
         """
-        Initialize a blank dungeon of size `dim`x`dim`.
+        Initialize a blank world of size `dim`x`dim`.
         """
         assert type(dim) is int, "dim must be an int"
 
@@ -424,7 +622,7 @@ class Dungeon(object):
 
     @property
     def objects(self):
-        """Return a list of all dungeon objects."""
+        """Return a list of all world objects."""
         objects = []
         for loc in self.floor:
             objects += self.floor[loc]
@@ -519,8 +717,8 @@ class Dungeon(object):
 
     def add_object(self, obj):
         """Add the given object to the map. Does NOT pay attention to spacing rules."""
-        if not isinstance(obj, DungeonObject):
-            raise Exception("obj {} should be a DungeonObject, but is {}".format(obj, type(obj)))
+        if not isinstance(obj, WorldObject):
+            raise Exception("obj {} should be a WorldObject, but is {}".format(obj, type(obj)))
         objLoc = obj.location
         if objLoc in self.floor:
             if obj in self.floor[objLoc]:
@@ -841,7 +1039,7 @@ class Dungeon(object):
         return True
 
     def apply_action(self, action, userID):
-        """Apply a PyHop generated action to the Dungeon."""
+        """Apply a PyHop generated action to the World."""
         actType = action.op
         args = action.args
 
@@ -1121,6 +1319,24 @@ class Dungeon(object):
         return (x, y)
 
     def save(self, filename):
+        """
+        Save the current world as a file.
+
+        This function writes the result of ``repr(self)`` to the file given in
+        ``filename`` suffixed with ``.dng``. It also writes the MIDCA state
+        representation of the world to the filename suffixed with ``.state``.
+
+        Note that the MIDCA state converter is not finished and likely will not
+        work properly.
+
+        Arguments:
+
+        ``filename``, *str*:
+            The name of the file which the dungeon state will be saved to. ``.dng``
+            and ``.state`` will be added by the code, and should not be inlcuded
+            in the argument.
+
+        """
         filename = "./dng_files/" + filename + ".dng"
         with open(filename, 'w') as saveFile:
             saveFile.write(repr(dng))
@@ -1130,9 +1346,9 @@ class Dungeon(object):
 
     def __str__(self):
         """
-        Convert the Dungeon to a string representation.
+        Convert the World to a string representation.
 
-        The Dungeon is returned as an ascii representation of the board state.
+        The World is returned as an ascii representation of the board state.
         This is merely a display, board state cannot be exactly recreated by
         this method. May implement a __rerpr__ later.
         """
@@ -1147,11 +1363,11 @@ class Dungeon(object):
         return ascii_board
 
     def __eq__(self, other):
-        """Check if two Dungeons are the same."""
+        """Check if two Worlds are the same."""
         return str(self) == str(other)
 
     def __repr__(self):
-        """Return a string which allows for reconstructing the Dungeon."""
+        """Return a string which allows for reconstructing the World."""
         retStr = "dim:{}\n".format(self.dim)
         for user in self.all_users:
             retStr += repr(user) + '\n'
@@ -1160,11 +1376,11 @@ class Dungeon(object):
         return retStr
 
 
-class DungeonMap(Dungeon):
+class WorldMap(World):
     """
-    Represents and allows manipulation of the Agent's knowledge of the Dungeon.
+    Represents and allows manipulation of the Agent's knowledge of the World.
 
-    Has many of the features of its parent class Dungeon, but is limited to what
+    Has many of the features of its parent class World, but is limited to what
     the Agent knows. It also doesn't have its own Agent to prevent recursion.
     """
 
@@ -1179,11 +1395,11 @@ class DungeonMap(Dungeon):
 
     def teleport_agent(self, dest):
         """Override a method the map shouldn't do."""
-        raise NotImplementedError("A DungeonMap can't teleport the agent!")
+        raise NotImplementedError("A WorldMap can't teleport the agent!")
 
     def generate(self, chests, doors, walls):
         """Override a method the map shouldn't do."""
-        raise NotImplementedError("A DungeonMap can't generate itself!")
+        raise NotImplementedError("A WorldMap can't generate itself!")
 
     def update_map(self, viewedObjs, viewedUsrs, center, vRange, operator=False):
         """Update the map based on what the Agent sees."""
@@ -1209,8 +1425,8 @@ class DungeonMap(Dungeon):
                     if obj.objType == NPC and not obj.civi:
                         self.floor[objLoc] = viewedObjs[objLoc]
 
-        for userName in viewedUsrs:
-            self.users[userName] = viewedUsrs[userName]
+        for user in viewedUsrs:
+            self.users[user.id] = user
 
     def navigate_to(self, origin, dest, doorsOpen=False):
         """
@@ -1303,12 +1519,12 @@ class Agent(object):
     agentCount = 0
     operatorCount = 0
 
-    def __init__(self, name, location, dungeonDim, vision=-1, userType=AGENT):
+    def __init__(self, name, location, worldDim, vision=-1, userType=AGENT):
         self.__name__ = name
         self.id = name
         self.at = location
         self.vision = vision
-        self.map = DungeonMap(dungeonDim, self)
+        self.map = WorldMap(worldDim, self)
         self.keys = []
         self.coins = 0
         self.health = 4
@@ -1331,7 +1547,7 @@ class Agent(object):
 
     @property
     def known_objects(self):
-        """Return a list of all dungeon objects."""
+        """Return a list of all world objects."""
         return self.map.objects
 
     def filter_objects(self, **kwargs):
@@ -1350,23 +1566,23 @@ class Agent(object):
                 filteredObjs.append(obj)
         return filteredObjs
 
-    def view(self, dungeon):
-        viewedObjs = dungeon.get_objects_around(self.at, self.vision)
-        viewedUsers = dungeon.get_users_around(self.at, self.vision)
+    def view(self, world):
+        viewedObjs = world.get_objects_around(self.at, self.vision)
+        usrs = world.all_users
 
         if self.userType == OPERATOR:
-            enemies = [e for e in dungeon.objects if e.objType == NPC and not e.civi]
+            enemies = [e for e in world.objects if e.objType == NPC and not e.civi]
             for e in enemies:
                 viewedObjs[e.location] = [e]
 
-        self.map.update_map(viewedObjs, viewedUsers, self.at, self.vision, operator=True)
+        self.map.update_map(viewedObjs, usrs, self.at, self.vision, operator=True)
 
     def update_knowledge(self, objOrAgent):
         """Add the given object or agent to the Agent's knowledge-base."""
         if isinstance(objOrAgent, Agent):
             self.map.users[objOrAgent.__name__] = objOrAgent
 
-        elif isinstance(objOrAgent, DungeonObject):
+        elif isinstance(objOrAgent, WorldObject):
             self.map.add_object(objOrAgent)
 
     def navigate_to(self, dest, doorsOpen=False):
@@ -1395,7 +1611,7 @@ class Agent(object):
         Move the agent 1 tile in `moveDir` direction, if possible.
 
         Note that this only affects the Agent and its map, this DOES NOT move
-        the Agent in the actual Dungeon.
+        the Agent in the actual World.
         """
         if moveDir == 'n':
             dest = (self.at[0], self.at[1]-1)
@@ -1420,9 +1636,9 @@ class Agent(object):
         """
         Take possession of a key at `keyLoc`.
 
-        Takes a key off the floor and keeps it. This removes it from the dungeon
+        Takes a key off the floor and keeps it. This removes it from the world
         permanently, and puts it in the agent's key list. Note that this DOES
-        NOT affect the actual Dungeon, only the Agent and its Map.
+        NOT affect the actual World, only the Agent and its Map.
         """
         if not self.map.loc_valid(keyLoc):
             raise ValueError("{} is not a valid location".format(keyLoc))
@@ -1444,9 +1660,9 @@ class Agent(object):
         """
         Take possession of a coin at `coinLoc`.
 
-        Takes a coin off the floor and keeps it. This removes it from the dungeon
+        Takes a coin off the floor and keeps it. This removes it from the world
         permanently, and increments the agent's coin amount by 1. Note that this
-        DOES NOT affect the actual Dungeon, only the Agent and its Map.
+        DOES NOT affect the actual World, only the Agent and its Map.
         """
         if not self.map.loc_valid(coinLoc):
             raise ValueError("{} is not a valid location".format(coinLoc))
@@ -1468,7 +1684,7 @@ class Agent(object):
 
         If there is a door at `target`, the door becomes unlocked and passable,
         if there is a chest, it becomes unlocked. As per usual, this method
-        DOES NOT affect the actual Dungeon, merely this Agent and its Map.
+        DOES NOT affect the actual World, merely this Agent and its Map.
         """
         if not self.map.loc_valid(target):
             raise ValueError("{} is not a valid location".format(target))
@@ -1613,14 +1829,14 @@ class Agent(object):
         return "{}@{}:{}:{}".format(char, self.at, self.vision, self.__name__)
 
 
-def draw_Dungeon(dng):
-    """Print the Dungeon board."""
+def draw_World(dng):
+    """Print the World board."""
     print(str(dng))
 
 
 def generate_random_drone_demo(dim, civilians, enemies, operators, agents):
-    """Create a blank Dungeon and populate it with appropriate NPCs and users."""
-    dng = Dungeon(dim)
+    """Create a blank World and populate it with appropriate NPCs and users."""
+    dng = World(dim)
     for _ in range(civilians):
         while not dng.place_object(NPC, dng.random_loc(), civi=True):
             pass
@@ -1644,11 +1860,11 @@ def generate_random_drone_demo(dim, civilians, enemies, operators, agents):
     return dng
 
 
-def build_Dungeon_from_str(dngStr):
-    """Take in a string and create a new Dungeon from it."""
+def build_World_from_str(dngStr):
+    """Take in a string and create a new World from it."""
     lines = dngStr.split('\n')
     dim = int(lines[0][4:])
-    dng = Dungeon(dim=dim)
+    dng = World(dim=dim)
     lines = lines[1:]
     objsMade = []
     while len(lines) > 0:
@@ -1724,20 +1940,20 @@ def build_Dungeon_from_str(dngStr):
     return dng
 
 
-def build_Dungeon_from_file(filename, MIDCA=False):
+def build_World_from_file(filename, MIDCA=False):
     """
-    Take in a text file and create a new Dungeon from it.
+    Take in a text file and create a new World from it.
 
-    Passes the text of the file into build_Dungeon_from_str.
+    Passes the text of the file into build_World_from_str.
     """
     with open(filename, 'r') as dngFile:
         dngStr = dngFile.read()
 
-    return build_Dungeon_from_str(dngStr)
+    return build_World_from_str(dngStr)
 
 
-def interactive_Dungeon_maker():
-    """Allow a user to build a Dungeon from scratch."""
+def interactive_World_maker():
+    """Allow a user to build a World from scratch."""
     def set_obj_attrib(target, attrib, val, objsMade):
         """Set the target attribute of the object to the given value, if possible."""
         if attrib not in dir(target):
@@ -1923,8 +2139,8 @@ def interactive_Dungeon_maker():
             print("Command {} not implemented yet".format(cmdAction))
             return False
 
-    dim = input("First, how big is the dungeon? ")
-    dng = Dungeon(dim)
+    dim = input("First, how big is the world? ")
+    dng = World(dim)
     objsMade = {}
     while True:
         os.system('clear')
@@ -1933,7 +2149,7 @@ def interactive_Dungeon_maker():
         \r\radd OBJTYPE POINT MISCDATA places an object at the given location
         \r\rset OBJID ATTRIBUTE VALUE changes the object's attribute
         \r\rrem OBJID removes the object with the given id
-        \r\rsave FILENAME writes the Dungeon to the given file
+        \r\rsave FILENAME writes the World to the given file
         \r\rquit
 
         \r\rObject IDs:\n""")
@@ -1947,7 +2163,7 @@ def interactive_Dungeon_maker():
                 print "{}\t|\t".format(repr(objsMade[objID])),
         command = raw_input("\nCommand>> ")
         if command.lower() in ['q', 'quit']:
-            print("Exiting dungeon maker...")
+            print("Exiting world maker...")
             return True
         try:
             result = parse_command(command, dng, objsMade)
@@ -1969,9 +2185,9 @@ def get_point_from_str(string):
 
 
 if __name__ == '__main__':
-    # dng = interactive_Dungeon_maker()
-    # dng = build_Dungeon_from_file('dng_files/test.dng')
-    dng = generate_random_drone_demo(10, 4, 5, 1, 1)
+    # dng = interactive_World_maker()
+    # dng = build_World_from_file('dng_files/test.dng')
+    dng = generate_random_drone_demo(10, 4, 5, 1, 3)
     print(dng)
     filename = raw_input("Save this as: ")
     if filename != "":

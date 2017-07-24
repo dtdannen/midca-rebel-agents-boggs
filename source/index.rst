@@ -10,8 +10,8 @@ Welcome to Rebel Agents's documentation!
    :maxdepth: 2
    :caption: Contents:
 
-   dungeon_utils
-   dungeon_server
+   world_utils
+   world_server
    pyhop
    modules
 

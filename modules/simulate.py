@@ -1,4 +1,4 @@
-"""Collection of dungeon-specific simulator modules for MIDCA."""
+"""Collection of world-specific simulator modules for MIDCA."""
 import socket
 
 from MIDCA import base
@@ -6,7 +6,7 @@ from PIL import Image
 
 
 class SimulateActions(base.BaseModule):
-    """Apply the actions given to the Dungeon."""
+    """Apply the actions given to the World."""
 
     def init(self, world, mem):
         """Initialize the MIDCA module by giving it access to world and memory."""
@@ -117,7 +117,7 @@ class WorldChanger(base.BaseModule):
 
 
 class ASCIIWorldViewer(base.BaseModule):
-    """Displays the Dungeon as an ASCII board."""
+    """Displays the World as an ASCII board."""
 
     def init(self, world, mem):
         self.mem = mem
