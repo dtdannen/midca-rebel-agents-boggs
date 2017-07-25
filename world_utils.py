@@ -1550,10 +1550,6 @@ class Agent(object):
         """Return a list of all world objects."""
         return self.map.objects
 
-    @property
-    def enemies(self):
-        return self.filter_objects(civi=False, alive=True)
-
     def filter_objects(self, **kwargs):
         """Return a list of known objects whose attributes fit the filters."""
         knownObjs = self.known_objects
