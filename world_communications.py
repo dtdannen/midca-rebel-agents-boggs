@@ -330,7 +330,7 @@ class OperatorClient(Client):
             elif policy is 1:
                 if len(self.msgs) == 0:
                     if len(self.enemies) > 0:
-                        for agent in self.map.agents
+                        for agent in self.map.
 
 
     def display(self):
