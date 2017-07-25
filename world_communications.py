@@ -486,47 +486,47 @@ class RemoteAgent(object):
         self.MIDCACycle.run(phaseDelay=1, verbose=RemoteAgent.VERBOSITY)
 
 
-class AutoOperator(object):
-    """
-    Represents an automatic operator, which directs agents based on a policy.
-
-    An ``AutoOperator`` object holds an ``OperatorClient`` of its own, and interacts
-    with the world through the client, following a pre-made policy given to the
-    operator at instantiation. The policy determines how, when, and which goals
-    the operator gives an agent, and how the operator responds to rebellion.
-
-    The policy given to the operator should be a function which takes in the world
-    state as the operator sees it and returns a list of strings (which can be emtpy)
-    such that each string is a valid operator command.
-
-    Instantiation::
-
-        autoOperator = AutoOperator(addr, port, userID, policy)
-
-    Arguments:
-
-    ``address``, *str*:
-        Indicates the IP address of the world simulation server.
-
-    ``port``, *int*:
-        Indicates the port number of the world simulation server.
-
-    ``userID``, *str*:
-        The ID of the operator which will be controlled by this object.
-
-    ``policy``, *function*:
-        The policy function for this operator, which is used to generate the next
-        commands issued by the operator. Should have one parameter and returns a
-        list of strings (which may be empty).
-    """
-
-    def __init__(self, addr, port, userID, policy):
-        """Instantiate an automatic operator with the given name and policy."""
-        self.client = OperatorClient(addr, port, userID)
-        self.userID = userID
-        self.policy = policy
-
-    def
+# class AutoOperator(object):
+#     """
+#     Represents an automatic operator, which directs agents based on a policy.
+#
+#     An ``AutoOperator`` object holds an ``OperatorClient`` of its own, and interacts
+#     with the world through the client, following a pre-made policy given to the
+#     operator at instantiation. The policy determines how, when, and which goals
+#     the operator gives an agent, and how the operator responds to rebellion.
+#
+#     The policy given to the operator should be a function which takes in the world
+#     state as the operator sees it and returns a list of strings (which can be emtpy)
+#     such that each string is a valid operator command.
+#
+#     Instantiation::
+#
+#         autoOperator = AutoOperator(addr, port, userID, policy)
+#
+#     Arguments:
+#
+#     ``address``, *str*:
+#         Indicates the IP address of the world simulation server.
+#
+#     ``port``, *int*:
+#         Indicates the port number of the world simulation server.
+#
+#     ``userID``, *str*:
+#         The ID of the operator which will be controlled by this object.
+#
+#     ``policy``, *function*:
+#         The policy function for this operator, which is used to generate the next
+#         commands issued by the operator. Should have one parameter and returns a
+#         list of strings (which may be empty).
+#     """
+#
+#     def __init__(self, addr, port, userID, policy):
+#         """Instantiate an automatic operator with the given name and policy."""
+#         self.client = OperatorClient(addr, port, userID)
+#         self.userID = userID
+#         self.policy = policy
+# it
+#     def
 
 
 
