@@ -274,21 +274,11 @@ class Client(object):
 
 class OperatorClient(Client):
     """
-    Client for a single operator, and can run an operator automatically if given a policy.
-
-    This client allows either human or computer operators to interact with agents
-    and the world. If the operator is a human, it allows the human to input commands
-    when appropriate. Otherwise, it uses the policy it's been given to issue commands
-    as it sees fit. The policy determines how, when, and which goals
-    the operator gives an agent, and how the operator responds to rebellion.
-
-    The policy given to the operator should be a function which takes in the world
-    state as the operator sees it and returns a list of strings (which can be emtpy)
-    such that each string is a valid operator command.
+    Client for a single operator.
 
     Instantiation::
 
-        autoOperator = AutoOperator(addr, port, userID, policy)
+        opClient = OperatorClient(addr, port, userID)
 
     Arguments:
 
@@ -301,37 +291,9 @@ class OperatorClient(Client):
     ``userID``, *str*:
         The ID of the operator which will be controlled by this object.
 
-    ``policy``, *???*:
-
     """
-    def __init__(self, addr, port, userID, policy=1):
+    def __init__(self, addr, port, userID):
         super(OperatorClient, self).__init__(addr, port, userID)
-        self.policy = policy
-        self.observe()
-        self.msgs = self.get_dialogs()
-        self.orders = dict([(agt, []) for agt in self.map.agents])
-
-    def run(self):
-        """
-        Begin the main loop of the operator.
-
-        If the policy is None, it presents world information on the terminal and
-        then asks the user for input, which it parses into a command. If the policy
-        does exist, it gives world information to the policy, executes the recommended
-        actions, then waits briefly before repeating.
-        """
-        while True:
-            self.observe()
-            self.msgs = self.get_dialogs()
-            if self.policy is 0:
-                self.display()
-                rawCmd = raw_input("Command>> ")
-                self.parse_command(rawCmd)
-            elif policy is 1:
-                if len(self.msgs) == 0:
-                    if len(self.enemies) > 0:
-                        for agent in self.map.agents
-
 
     def display(self):
         """
@@ -355,9 +317,7 @@ class OperatorClient(Client):
         """Have the operator observe the world. """
         self.send(WORLD_STATE_REQ)
         pickledWorld = self.socket.recv(2048)
-        self.map = loads(pickledWorld)
-        if display:
-            print(self.map)
+        return loads(pickledWorld)
 
     @msgSetup
     def operator(self):
@@ -371,7 +331,6 @@ class OperatorClient(Client):
             print(e)
         return optr
 
-
     def parse_command(self, cmd):
         """
         Parse an operator command and execute the appropriate action.
@@ -383,7 +342,6 @@ class OperatorClient(Client):
             direct recipientID predicate(args)
             say recipientID message
         """
-
         cmdData = cmd.split(" ")
 
         if cmdData[0] == "action":
@@ -526,10 +484,78 @@ class RemoteAgent(object):
         """
         self.MIDCACycle.init()
         self.MIDCACycle.initGoalGraph(cmpFunc=plan.worldGoalComparator)
-        self.MIDCACycle.run(phaseDelay=1, verbose=RemoteAgent.VERBOSITY)
+        self.MIDCACycle.run(phaseDelay=1., verbose=RemoteAgent.VERBOSITY)
 
 
-def aggression_policy()
+class AutoOperator(object):
+    """
+    Contains the MIDCA object and the OperatorClient which together will be an oeprator.
+
+    The ``AutoOperator`` class combines a MIDCA cycle with an operator client so
+    that fully automatic operators can be used for testing. The MIDCA cycle is
+    created on instantiation using a built-in ``dict`` of phases and accompanying
+    modules to use. If in automatic mode, the MIDCA cycle dictates how the operator
+    should interact with agents and the world.
+
+    The ``AutoOperator`` class does *not* take a pre-made MIDCA object as an
+    instantiaion argument, nor does it accept a list of phases or modules. Instead,
+    phases and modules are appended during instantion automatically. As such,
+    different agents cannot have different modules, at least at first.
+
+    Instantion::
+
+        autoOperator = AutoOperator(address, port, userID)
+
+    Arguments:
+
+    ``address``, *str*:
+        Indicates the IP address of the world simulation server.
+
+    ``port``, *int*:
+        Indicates the port number of the world simulation server.
+
+    ``userID``, *str*:
+        The ID of the agent which will be controlled by this object.
+    """
+
+    VERBOSITY = 2
+    PHASES = ["Perceive", "Interpret", "Eval", "Intend", "Plan", "Act"]
+    MODULES = {"Perceive": [perceive.OperatorObserver()],
+               "Interpret": [interpret.OperatorInterpret()],
+               "Eval": [evaluate.OperatorHandleRebelsFlexible()],
+               "Intend": [],
+               "Plan": [plan.OperatorPlanGoals()],
+               "Act": [act.OperatorGiveGoals()]}
+
+    def __init__(self, addr, port, userID):
+        """Instantiate ``AutoOperator`` object by creating appropriate MIDCA cycle."""
+        self.conAddr = (addr, int(port))
+        self.userID = userID
+        self.client = OperatorClient(addr, int(port), userID)
+
+        self.MIDCACycle = base.PhaseManager(self.client,
+                                            display=lambda x: str(x),
+                                            verbose=AutoOperator.VERBOSITY)
+
+        for phase in AutoOperator.PHASES:
+            self.MIDCACycle.append_phase(phase)
+            for module in AutoOperator.MODULES[phase]:
+                self.MIDCACycle.append_module(phase, module)
+
+        self.MIDCACycle.set_display_function(lambda x: str(x))
+
+        self.MIDCACycle.storeHistory = False
+        self.MIDCACycle.mem.logEachAccess = False
+
+    def run(self):
+        """
+        Begin the attached MIDCA cycle.
+
+        Initializes the MIDCA object and runs the cycle.
+        """
+        self.MIDCACycle.init()
+        self.MIDCACycle.initGoalGraph(cmpFunc=plan.worldGoalComparator)
+        self.MIDCACycle.run(phaseDelay=1, verbose=AutoOperator.VERBOSITY)
 
 
 if __name__ == '__main__':
@@ -548,7 +574,7 @@ if __name__ == '__main__':
 
     elif serveType == "operator":
         userID = sys.argv[3]
-        opClient = OperatorClient('localhost', port, userID)
+        opClient = AutoOperator('localhost', port, userID)
         opClient.run()
 
     elif serveType == "agent":

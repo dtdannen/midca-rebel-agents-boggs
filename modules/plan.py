@@ -1,6 +1,8 @@
 """Contains the plan validator for the World environemnt."""
 
 import copy
+import math
+from MIDCA import base, goals
 
 
 def worldPlanValidator(state, plan):
@@ -37,3 +39,76 @@ def worldGoalComparator(goal1, goal2):
     if 'parent' in goal2.kwargs.keys() and goal2.kwargs['parent'] == goal1:
         return 1
     return 0
+
+
+class OperatorPlanGoals(base.BaseModule):
+    """
+    Generate goals for various inactive agents and preliminarily assign them.
+
+    This module allows the automatic operator to generate a goal for each inactive
+    agent (i.e. an agent without a current goal). Currently it just tells each
+    agent to kill the living enemy closest to it. Once each goal is generated, it
+    stores the goal-agent pairs in MIDCA's memory.
+    """
+
+    def init(self, world, mem):
+        """Give the module crucial MIDCA information about memory and state."""
+        self.mem = mem
+        self.client = world
+
+    def get_closest_enemy(self, agt, enemies):
+        """
+        Return the enemy closest to the agent given.
+
+        Distance is calculated using the Pythagorean theorem, meaning it does not
+        factor in the actual number of tiles which need to be traversed.
+
+        Arguments:
+
+        ``agt``, *Agent*:
+            The ``Agent`` object which will be the subject of the goal.
+
+        ``enemeis``, *sequence*:
+            A list of ``Npc`` objects which are potential targets.
+
+        ``returns``, *Npc*:
+            The closest enemy to the given agent, as the crow flies.
+        """
+        invalidTargets = self.mem.get("INVALID_TARGETS")
+        if invalidTargets is None:
+            invalidTargets = []
+        agentObj = self.client.operator().map.get_user(agt)
+        closestVal = float("inf")
+        closest = None
+        for enemy in enemies:
+            if enemy.id in invalidTargets:
+                continue
+            dist = math.sqrt((agentObj.at[0] - enemy.location[0])**2 + (agentObj.at[1] - enemy.location[1])**2)
+            if dist < closestVal:
+                closestVal = dist
+                closest = enemy
+
+        return closest
+
+    def run(self, cycle, verbose=2):
+        """
+        Create a goal for each inactive agent and remember the pairings.
+
+        This function looks at each inactive agent, calculates the closest living
+        enemy to that agent, and assigns the goal of killing that enemy to the
+        agent. It does **not** actually order the agents to complete the goals,
+        though.
+        """
+        availAgents = self.mem.get("AVAIL_AGENTS")
+        enemies = self.mem.get("ENEMIES")
+        user = self.client.operator()
+        while user is None:
+            user = self.client.operator()
+
+        goalPairs = []
+        for agt in availAgents:
+            target = self.get_closest_enemy(agt, enemies)
+            goal = goals.Goal(target.id, predicate='killed', user=user.id)
+            goalPairs.append((agt, goal))
+
+        self.mem.set("PLANNED_GOALS", goalPairs)

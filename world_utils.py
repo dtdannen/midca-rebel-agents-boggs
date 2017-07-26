@@ -14,7 +14,7 @@ from pickle import dumps, loads
 import os
 import sys
 import traceback
-from MIDCA import plans
+from MIDCA import plans, goals
 
 AGENT = "AGENT"  #: Easily check if an Agent object is an agent
 OPERATOR = "OPERATOR"  #: Easily check if an Agent object is an operator
@@ -1551,6 +1551,11 @@ class Agent(object):
         return self.map.objects
 
     @property
+    def agents(self):
+        """Return a list of all agents known to this agent."""
+        return self.map.agents
+
+    @property
     def enemies(self):
         return self.filter_objects(civi=False, alive=True)
 
@@ -1931,7 +1936,7 @@ def build_World_from_str(dngStr):
 
         elif objType == NPC:
             living = miscData == "L"
-            civi = line[1] == "V"
+            civi = line[1] == "C"
             objsMade.append(dng.place_object(NPC, location, civi=civi, living=living))
 
         elif objType in [AGENT, OPERATOR]:
@@ -2186,6 +2191,44 @@ def get_point_from_str(string):
     coords = string.strip('()').split(',')
     point = (int(coords[0]), int(coords[1]))
     return point
+
+
+def goal_from_str(string):
+    """
+    Convert goal string representation to a goal.
+
+    Specifically, this function takes the result of ``str(goal)`` as input and
+    returns ``Goal goal``.
+
+    Note that each goal type needs to be custom added, so that the arguments for
+    the new goal are converted to their proper types.
+
+    Arguments:
+
+    ``string``, *str*:
+        String representation of a goal.
+
+    ``returns``, *Goal*:
+        The goal which the string represents.
+    """
+    args = []
+    kwargs = {}
+    strippedString = string[5:-1]
+    dataStrs = strippedString.split(',')
+    for dataStr in dataStrs:
+        if ':' in dataStr:
+            name, data = dataStr.split(':')
+            name = name.strip()
+            data = data.strip()
+            kwargs[name] = data
+        else:
+            data = dataStr.strip()
+            args.append(data)
+
+    if kwargs['predicate'] == 'killed':
+        resGoal = goals.Goal(args[0], predicate='killed', user=kwargs['user'])
+
+    return resGoal
 
 
 if __name__ == '__main__':

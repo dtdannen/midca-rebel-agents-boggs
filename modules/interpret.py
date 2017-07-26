@@ -1,6 +1,7 @@
 from MIDCA import base, goals
 import re
 import socket
+import world_utils as wu
 
 
 class StateDiscrepancyDetector(base.BaseModule):
@@ -464,7 +465,6 @@ class RemoteUserGoalInput(base.BaseModule):
             targetID = goalData[1].strip("()")
             target = None
             for obj in self.state.known_objects:
-                print(obj.id, targetID)
                 if obj.id == targetID:
                     target = obj
                     break
@@ -504,6 +504,7 @@ class CompletionEvaluator(base.BaseModule):
             for goal in goals:
                 if self.state.goal_complete(goal):
                     print("Goal {} completed!".format(goal))
+                    self.world.dialog(goal['user'], "Goal complete")
                     score = self.mem.get(self.mem.DELIVERED)
                     if score:
                         self.mem.set(self.mem.DELIVERED, score + 1)
@@ -527,3 +528,122 @@ class CompletionEvaluator(base.BaseModule):
             print("No current goals, skipping eval")
         if trace and goals_changed:
             trace.add_data("GOALS", goals)
+
+
+class OperatorInterpret(base.BaseModule):
+    """
+    A module which allows an automatic operator to interpret world state.
+
+    This module is responsible for all interpretation done by an automatic operator,
+    including interpreting incoming messages and identifying enemies and available
+    agents.
+    """
+
+    def init(self, world, mem):
+        """Give the MIDCA module access to important state and memory data."""
+        self.mem = mem
+        self.client = world
+
+    def interpret_rebellion_msg(self, msgBody):
+        """
+        Return rebellion information and alternate goals given.
+
+        This function uses a couple of RegEx patterns to scan for information
+        pertaining to the rebellion (e.g. the goal, the reason), and for alternate
+        goals. It reconstructs the alternate goals from the strings, and then
+        returns all of this information as a tuple.
+
+        Arguments:
+
+        ``msgBody``, *str*:
+            The message indicating an agent is rebelling.
+
+        ``return``, *tuple*:
+            A tuple containing all the information extracted from the message.
+            The elements are::
+
+                (Goal rebelGoal, str rebelReason, list rebelInfo, list altGoals)
+
+            such that ``rebelInfo`` is a list of strings which contain miscellaneous
+            rebellion info (e.g. civilians) and ``altGoals`` is a list of alternative
+            goals where the index of a goal corresponds to the numerical option of
+            that goal.
+        """
+        rebDataPattern = re.compile(r"\w+=.+")
+        altGoalsPattern = re.compile(r"\d+\) .*")
+
+        rebDataStrs = re.findall(rebDataPattern, msgBody)
+        altGoalsStrs = re.findall(altGoalsPattern, msgBody)
+
+        rebelInfo = []
+        for rebDataStr in rebDataStrs:
+            name, data = rebDataStr.split('=')
+            if name == 'goal':
+                rebelGoal = wu.goal_from_str(data)
+            elif name == 'reason':
+                rebelReason = data
+            else:
+                rebelInfo.append("=".join([name, data]))
+
+        altGoals = []
+        for altGoalStr in altGoalsStrs:
+            if "Goal" in altGoalStr:
+                altGoals.append(wu.goal_from_str(altGoalStr))
+            elif "Reject Rebellion" in altGoalStr:
+                altGoals.append("reject")
+            else:
+                altGoals.append("none")
+        return (rebelGoal, rebelReason, rebelInfo, altGoals)
+
+    def run(self, cycle, verbose=2):
+        """
+        Interpret the world state and remember it.
+
+        This module interprets the world state and new messages received by the
+        operator. It flags rebellions, living enemies, and unassigned operators
+        for handling later.
+        """
+        if self.mem.trace:
+            self.mem.trace.add_module(cycle, self.__class__.__name__)
+
+        msgs = self.mem.get("MESSAGES")
+        currOp = self.client.operator()
+
+        rebellions = {}
+        if msgs is not None:
+            for msg in msgs:
+                msgBody = msg[0]
+                msgSender = msg[1]
+                # TODO: Figure out why new, unified rebel message isn't catching.
+
+                # if a goal was successful added, that agent is now active
+                if msgBody == 'Goal added':
+                    self.mem.add("ACTIVE_AGENTS", msgSender)
+                    continue
+
+                # if a goal was cancelled, that agent is now inactive
+                elif msgBody == 'Goal complete' or 'invalid goal' in msgBody:
+                    # removing an agent from memory is a bit tricky
+                    activeAgents = self.mem.get("ACTIVE_AGENTS")
+                    for agt in activeAgents:
+                        if agt == msgSender:
+                            activeAgents.remove(agt)
+                    self.mem.set("ACTIVE_AGENTS", activeAgents)
+                    continue
+
+                # if there's a rebellion, we need to flag that
+                elif "rebellion" in msgBody:
+                    rebGoal, rebReason, rebInfo, altGoals = self.interpret_rebellion_msg(msgBody)
+                    self.mem.add("REBELLIONS", (rebGoal, rebReason, rebInfo, altGoals, msgSender))
+
+        self.mem.set("ENEMIES", currOp.enemies)
+
+        activeAgents = self.mem.get("ACTIVE_AGENTS")
+        print("Active agents: {}".format(activeAgents))
+        # activeAgents should be a dict with currently active agents as keys and
+        # their goals as values.
+        if activeAgents is None:
+            activeAgents = []
+        availAgents = set([agt.id for agt in currOp.map.agents]) - set(activeAgents)
+        print("Avail agents: {}".format(availAgents))
+        self.mem.set("AVAIL_AGENTS", availAgents)

@@ -134,6 +134,7 @@ class GoalManager(base.BaseModule):
                         goalGraph.add(newGoal)
                         if verbose >= 1:
                             print("added a new goal {}".format(newGoal))
+                            self.world.dialog(goal['user'], "added a new goal {}".format(newGoal))
                         if self.mem.trace:
                             self.mem.trace.add_data("ADDED GOAL", newGoal)
 
@@ -218,7 +219,6 @@ class HandleRebellion(base.BaseModule):
             reason = rebellion['reason']
             print("Rebelling because {}".format(reason))
             self.remove_goal(goal)
-            self.alert_user(rebellion)
 
             if reason == 'civi-in-AOE':
                 for civi in rebellion['civilians']:
@@ -228,7 +228,7 @@ class HandleRebellion(base.BaseModule):
             if self.mem.trace:
                 self.mem.trace.add_data("ALTERNATE GOALS", altGoals)
 
-            selectedGoal = self.get_response(goal['user'], altGoals)
+            selectedGoal = self.get_response(altGoals, goal['user'], rebellion)
             if selectedGoal is not None:
                 self.add_goal(selectedGoal)
 
@@ -238,8 +238,8 @@ class HandleRebellion(base.BaseModule):
         self.mem.set("REBELLION", None)
         return
 
-    def get_response(self, user, altGoals):
-        goalKey = self.relate_alt_goals(altGoals, user)
+    def get_response(self, altGoals, user, rebellion):
+        goalKey = self.relate_rebellion(altGoals, user, rebellion)
         response = self.world.wait_for_dialogs(user)[0]
         try:
             response = int(response)
@@ -257,15 +257,17 @@ class HandleRebellion(base.BaseModule):
         selectedGoal = goalKey[response]
         return selectedGoal
 
-    def relate_alt_goals(self, altGoals, senderID):
+    def relate_rebellion(self, altGoals, senderID, rebellion):
         """Relate possible alt goals to user and create lookup dict for response."""
         goalKey = {}
-        dialogStr = "Possible alternate goals:\n"
+        dialogStr = "Rebellion:\n{}\nPossible alternate goals:\n".format(str(rebellion))
         goalNum = 1
         for goal in altGoals:
             dialogStr += "\t{}) {}\n".format(goalNum, goal)
             goalKey[goalNum] = goal
             goalNum += 1
+        dialogStr += "\t{}) Reject Rebellion\n".format(goalNum)
+        goalNum += 1
         dialogStr += "\t{}) None".format(goalNum)
         goalKey[goalNum] = None
 
@@ -283,10 +285,6 @@ class HandleRebellion(base.BaseModule):
 
         return altGoals
 
-    def alert_user(self, rebellion):
-        """Inform the operator that the agent is rebelling, and why."""
-        self.world.dialog(rebellion.goal['user'], str(rebellion))
-
     def remove_goal(self, goal):
         goalGraph = self.mem.get(self.mem.GOAL_GRAPH)
         goalGraph.remove(goal)
@@ -296,3 +294,69 @@ class HandleRebellion(base.BaseModule):
     def add_goal(self, goal):
         goalGraph = self.mem.get(self.mem.GOAL_GRAPH)
         goalGraph.add(goal)
+
+
+class OperatorHandleRebelsFlexible(base.BaseModule):
+    """
+    Interact with agents which are rebelling, always choosing another goal.
+
+    This module checks whether there are any rebelling agents based on what
+    is in MIDCA's memory, and then interacts with each agent. This module
+    prefers to always choose a goal if given choices. Otherwise, it will
+    choose for the agent to have no goal.
+    """
+
+    def init(self, world, mem):
+        """Give the module criticial MIDCA information about state and memory."""
+        self.mem = mem
+        self.client = world
+
+    def run(self, cycle, verbose=2):
+        """
+        Handle any rebellions by choosing a new goal.
+
+        This function looks through MIDCA's memory to see if "REBELLION" has
+        any data stored in it, and, if so, handle that data. The function
+        identifies why the agent rebelled, examines the alternative goals
+        given by the agent, and chooses one to give the agent. The function
+        prefers to choose another goal over no goal, and no goal over overriding
+        the rebellion.
+        """
+        if self.mem.trace:
+            self.mem.trace.add_module(cycle, self.__class__.__name__)
+
+        invalidTargets = self.mem.get("INVALID_TARGETS")
+        if invalidTargets is None:
+            invalidTargets = []
+
+        rebellions = self.mem.get("REBELLIONS")
+        self.mem.set("REBELLIONS", [])
+        if rebellions is None:
+            return
+        # rebellions will be a list of tuples which include all pertinent
+        # data about each the rebellion, including which agent rebelled.
+        for rebellion in rebellions:
+            rebGoal, rebReason, rebInfo, altGoals, rebAgt = rebellion
+            responseOption = 1
+            if rebGoal['predicate'] == 'killed' and rebReason == 'civi-in-AOE':
+                invalidTargets.append(rebGoal[0])
+                # NOTE: Here is where the flexibility happens (i.e. operator personality)
+                for potentialGoal in altGoals:
+                    if isinstance(potentialGoal, goals.Goal):
+                        break
+                    elif potentialGoal == "none":
+                        break
+                    responseOption += 1
+            # NOTE: We can add more rebellion types later
+
+            self.client.dialog(rebAgt, str(responseOption))
+
+            if altGoals[responseOption-1] == "none":
+                # We need to remove the agent from the active agents list
+                activeAgents = self.mem.get("ACTIVE_AGENTS")
+                for agt in activeAgents:
+                    if agt == rebAgt:
+                        activeAgents.remove(agt)
+                self.mem.set("ACTIVE_AGENTS", activeAgents)
+
+            self.mem.set("INVALID_TARGETS", invalidTargets)
