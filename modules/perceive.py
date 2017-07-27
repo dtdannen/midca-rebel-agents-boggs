@@ -121,6 +121,11 @@ class OperatorObserver(base.BaseModule):
         self.mem.set(self.mem.STATE, optr)
 
         msgs = self.client.get_dialogs()
+        if msgs is None:
+            msgs = []
+        print("Messages:")
+        for msg in msgs:
+            print("{}:\n\t{}".format(msg[0], msg[1]))
         self.mem.set("MESSAGES", msgs)
 
         states = self.mem.get(self.mem.STATES)

@@ -82,6 +82,7 @@ class WorldServer(SS.TCPServer):
             print("Actors:")
             for u in self.server.world.all_users:
                 print("{} = {}".format(u.ascii_rep, repr(u)))
+            print("Enemies | Civis")
 
         def read_data(self):
             """Read incoming data until we see \254."""
@@ -93,6 +94,12 @@ class WorldServer(SS.TCPServer):
                 # print(data)
                 # time.sleep(0.5)
             return data
+
+        def send_data(self, data):
+            """Write data to the file-like connection, terminating with \254."""
+            if type(data) is not str:
+                data = str(data)
+            self.wfile.write(data + "\254")
 
         def handle(self):
             """
@@ -119,7 +126,7 @@ class WorldServer(SS.TCPServer):
                 user = dng.get_user(userID)
                 user.view(dng)
                 pickledMap = dumps(user.map)
-                self.wfile.write(pickledMap)
+                self.send_data(pickledMap)
 
             elif msgType == ACTION_SEND:
                 # Request format: ACTION_SEND:USERID:ACTIONSTR
@@ -142,7 +149,7 @@ class WorldServer(SS.TCPServer):
                     listStr = ""
                     for obj in objs:
                         listStr += "{} = {}\n".format(repr(obj), obj.id)
-                    self.wfile.write(listStr)
+                    self.send_data(listStr)
 
                 elif cmd == "send":
                     recipientID = msgData[1]
@@ -177,18 +184,18 @@ class WorldServer(SS.TCPServer):
             elif msgType == GOAL_REQ:
                 # Request format: GOAL_REQ:USERID
                 if userID not in qGoals:
-                    self.wfile.write("")
+                    self.send_data("")
                     return
                 goalStrs = qGoals[userID]
                 msgStr = ":".join(goalStrs)
-                self.wfile.write(msgStr)
+                self.send_data(msgStr)
                 del qGoals[userID]
 
             elif msgType == AGENT_REQ:
                 # Request format: AGENT_REQ:USERID
                 agent = dng.get_user(userID)
                 pickledAgent = dumps(agent)
-                self.wfile.write(pickledAgent)
+                self.send_data(pickledAgent)
 
             elif msgType == DIALOG_SEND:
                 recipientID = msgData[0]
@@ -201,7 +208,7 @@ class WorldServer(SS.TCPServer):
             elif msgType == DIALOG_REQ:
                 # Request format: GOAL_REQ:USERID[:SENDERID]
                 if userID not in msgs:
-                    self.wfile.write("")
+                    self.send_data("")
                     return
                 userMsgs = msgs[userID]
 
@@ -209,7 +216,7 @@ class WorldServer(SS.TCPServer):
                     userMsgs = [msg[0] for msg in userMsgs if msg[1] == msgData[0]]
 
                 pickledDialogs = dumps(userMsgs)
-                self.wfile.write(pickledDialogs)
+                self.send_data(pickledDialogs)
                 del msgs[userID]
 
             else:
@@ -231,14 +238,45 @@ class Client(object):
     def __init__(self, serverAddr, serverPort, userID):
         self.conAddr = (serverAddr, serverPort)
         self.userID = userID
+        self.lastData = ''
 
     def send(self, msgType, data=""):
         """Send given data as a message of the given type."""
         # print("sending {}:{}:{}\254".format(str(msgType), self.userID, data))
         self.socket.sendall("{}:{}:{}\254".format(str(msgType), self.userID, data))
 
-    def recv(self, bufSize=2048):
-        return self.socket.recv(bufSize)
+    def recv(self):
+        """
+        Read incoming data until we see \254.
+
+        Because some of the incoming messages will be rather large, it's terribly
+        inefficient to read data in the way the world server does. Instead, we read
+        in 2048 byte chunks and see if the terminal character is in the message.
+        If it is, we split the message at it, prepending whatever is currently in
+        ``self.lastData`` to the first portion and then storing the latter portion
+        in ``self.lastData``. If the terminal character is not found in the chunk,
+        the entire chunk is appended to ``self.lastData``.
+
+        This process means that ``self.lastData`` progressively builds up a message,
+        so that once the terminal character is read in we can prepend the rest of
+        the message.
+
+        Arguments:
+
+        ``returns``, *str*:
+            Returns an entire message sent to the socket, **without** the terminal
+            character.
+        """
+        data = ""
+        newChunk = self.socket.recv(2048)
+        while '\254' not in newChunk:
+            # build message until term char is found
+            self.lastData += newChunk
+            newChunk = self.socket.recv(2048)
+        msgEnd, nextMsgStart = newChunk.split('\254')
+        data = self.lastData + msgEnd
+        self.lastData = nextMsgStart
+        return data
 
     @msgSetup
     def inform(self, recipientID, objID):
@@ -265,10 +303,12 @@ class Client(object):
     @msgSetup
     def get_dialogs(self, senderID=""):
         self.send(DIALOG_REQ, senderID)
-        pickledDialogs = self.recv(4096)
+        pickledDialogs = self.recv()
         if pickledDialogs == "":
             return
         dialogs = loads(pickledDialogs)
+        if dialogs == []:
+            return
         return dialogs
 
 
@@ -316,14 +356,14 @@ class OperatorClient(Client):
     def observe(self, display=False):
         """Have the operator observe the world. """
         self.send(WORLD_STATE_REQ)
-        pickledWorld = self.socket.recv(2048)
+        pickledWorld = self.recv()
         return loads(pickledWorld)
 
     @msgSetup
     def operator(self):
         """Return the ``Agent`` object corresponding to the client's userID."""
         self.send(AGENT_REQ)
-        pickledOp = self.socket.recv(4096)
+        pickledOp = self.recv()
         try:
             optr = loads(pickledOp)
         except EOFError as e:
@@ -379,7 +419,7 @@ class MIDCAClient(Client):
     def agent(self):
         """Return the agent object corresponding to the client's userID."""
         self.send(AGENT_REQ)
-        pickledAgent = self.socket.recv(4096)
+        pickledAgent = self.recv()
         try:
             agent = loads(pickledAgent)
         except EOFError as e:
@@ -391,7 +431,7 @@ class MIDCAClient(Client):
     def observe(self, display=False):
         """Have the agent observe the world. """
         self.send(WORLD_STATE_REQ)
-        pickledWorld = self.socket.recv(2048)
+        pickledWorld = self.recv()
         self.map = loads(pickledWorld)
         if display:
             print(self.map)
@@ -400,7 +440,7 @@ class MIDCAClient(Client):
     def get_new_goals(self):
         """Retrieve any new goals the server has waiting for the agent."""
         self.send(GOAL_REQ)
-        msgStr = self.socket.recv(2048)
+        msgStr = self.recv()
         goalStrs = msgStr.split(":")
         return goalStrs
 
@@ -484,7 +524,7 @@ class RemoteAgent(object):
         """
         self.MIDCACycle.init()
         self.MIDCACycle.initGoalGraph(cmpFunc=plan.worldGoalComparator)
-        self.MIDCACycle.run(phaseDelay=1., verbose=RemoteAgent.VERBOSITY)
+        self.MIDCACycle.run(phaseDelay=0.25, verbose=RemoteAgent.VERBOSITY)
 
 
 class AutoOperator(object):
@@ -555,7 +595,7 @@ class AutoOperator(object):
         """
         self.MIDCACycle.init()
         self.MIDCACycle.initGoalGraph(cmpFunc=plan.worldGoalComparator)
-        self.MIDCACycle.run(phaseDelay=1, verbose=AutoOperator.VERBOSITY)
+        self.MIDCACycle.run(phaseDelay=0.25, verbose=AutoOperator.VERBOSITY)
 
 
 if __name__ == '__main__':

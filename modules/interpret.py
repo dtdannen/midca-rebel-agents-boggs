@@ -411,7 +411,11 @@ class RemoteUserGoalInput(base.BaseModule):
         for rawGoal in operatorInputs:
             if rawGoal == "":
                 continue
-            rawGoalStr, senderID = rawGoal.split(";")
+            try:
+                rawGoalStr, senderID = rawGoal.split(";")
+            except ValueError as e:
+                print("Invalid goal string {}".format(rawGoal))
+                continue
             try:
                 argsIndex = rawGoalStr.index('(')
             except ValueError:
@@ -609,32 +613,36 @@ class OperatorInterpret(base.BaseModule):
         msgs = self.mem.get("MESSAGES")
         currOp = self.client.operator()
 
+        activeAgents = self.mem.get("ACTIVE_AGENTS")
+        if activeAgents is None:
+            activeAgents = []
+
         rebellions = {}
-        if msgs is not None:
-            for msg in msgs:
-                msgBody = msg[0]
-                msgSender = msg[1]
-                # TODO: Figure out why new, unified rebel message isn't catching.
+        for msg in msgs:
+            msgBody = msg[0]
+            msgSender = msg[1]
+            # TODO: Figure out why new, unified rebel message isn't catching.
 
-                # if a goal was successful added, that agent is now active
-                if msgBody == 'Goal added':
+            # if a goal was successful added, that agent is now active
+            if msgBody == 'Goal added':
+                if msgSender not in activeAgents:
                     self.mem.add("ACTIVE_AGENTS", msgSender)
-                    continue
+                continue
 
-                # if a goal was cancelled, that agent is now inactive
-                elif msgBody == 'Goal complete' or 'invalid goal' in msgBody:
-                    # removing an agent from memory is a bit tricky
-                    activeAgents = self.mem.get("ACTIVE_AGENTS")
-                    for agt in activeAgents:
-                        if agt == msgSender:
-                            activeAgents.remove(agt)
-                    self.mem.set("ACTIVE_AGENTS", activeAgents)
-                    continue
+            # if a goal was cancelled, that agent is now inactive
+            elif 'Goal complete' in msgBody or 'invalid goal' in msgBody:
+                # removing an agent from memory is a bit tricky
+                activeAgents = self.mem.get("ACTIVE_AGENTS")
+                for agt in activeAgents:
+                    if agt == msgSender:
+                        activeAgents.remove(agt)
+                self.mem.set("ACTIVE_AGENTS", activeAgents)
+                continue
 
-                # if there's a rebellion, we need to flag that
-                elif "rebellion" in msgBody:
-                    rebGoal, rebReason, rebInfo, altGoals = self.interpret_rebellion_msg(msgBody)
-                    self.mem.add("REBELLIONS", (rebGoal, rebReason, rebInfo, altGoals, msgSender))
+            # if there's a rebellion, we need to flag that
+            elif "rebellion" in msgBody:
+                rebGoal, rebReason, rebInfo, altGoals = self.interpret_rebellion_msg(msgBody)
+                self.mem.add("REBELLIONS", (rebGoal, rebReason, rebInfo, altGoals, msgSender))
 
         self.mem.set("ENEMIES", currOp.enemies)
 

@@ -101,14 +101,16 @@ class OperatorPlanGoals(base.BaseModule):
         """
         availAgents = self.mem.get("AVAIL_AGENTS")
         enemies = self.mem.get("ENEMIES")
-        user = self.client.operator()
-        while user is None:
-            user = self.client.operator()
+        optr = self.client.operator()
+        while optr is None:
+            optr = self.client.operator()
 
         goalPairs = []
         for agt in availAgents:
             target = self.get_closest_enemy(agt, enemies)
-            goal = goals.Goal(target.id, predicate='killed', user=user.id)
+            if target is None:
+                continue
+            goal = goals.Goal(target.id, predicate='killed', user=optr.id)
             goalPairs.append((agt, goal))
 
         self.mem.set("PLANNED_GOALS", goalPairs)

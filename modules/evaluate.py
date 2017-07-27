@@ -240,7 +240,11 @@ class HandleRebellion(base.BaseModule):
 
     def get_response(self, altGoals, user, rebellion):
         goalKey = self.relate_rebellion(altGoals, user, rebellion)
-        response = self.world.wait_for_dialogs(user)[0]
+        response = self.world.wait_for_dialogs(user)
+        try:
+            response = response[0]
+        except IndexError:
+            print("ill-formed dialog response: {}".format(response))
         try:
             response = int(response)
         except ValueError:

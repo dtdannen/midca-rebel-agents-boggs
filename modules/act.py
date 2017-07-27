@@ -114,5 +114,7 @@ class OperatorGiveGoals(base.BaseModule):
             if goal['predicate'] == 'killed':
                 target = goal[0]
                 goalStr = 'killed({})'.format(target)
+                if verbose >= 1: print("Informed {} about {}".format(agt, target))
                 self.client.inform(agt, target)
             self.client.direct(agt, goalStr)
+            if verbose >= 1: print("Directed {} to have goal {}".format(agt, goalStr))

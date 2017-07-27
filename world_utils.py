@@ -554,7 +554,7 @@ class Npc(WorldObject):
     @property
     def predicates(self):
         retStr = ""
-        return "is-{}({})".format(self.civ_type, self.id)
+        return "is-{}({})\n".format(self.civ_type, self.id)
 
     @property
     def civ_type(self):
@@ -627,6 +627,30 @@ class World(object):
         for loc in self.floor:
             objects += self.floor[loc]
         return objects
+
+    @property
+    def enemies(self):
+        return self.filter_objects(objType=NPC, civi=False)
+
+    @property
+    def civilians(self):
+        return self.filter_objects(objType=NPC, civi=True)
+
+    def filter_objects(self, **kwargs):
+        """Return a list of known objects whose attributes fit the filters."""
+        knownObjs = self.objects
+        filteredObjs = []
+        for obj in knownObjs:
+            for attrib in kwargs:
+                try:
+                    valid = eval("obj.{}".format(attrib)) == kwargs[attrib]
+                except AttributeError:
+                    valid = False
+                if not valid:
+                    break
+            if valid:
+                filteredObjs.append(obj)
+        return filteredObjs
 
     def add_user(self, name, location, vision, userType):
         if not self.loc_valid(location):
@@ -1202,6 +1226,24 @@ class World(object):
             ascii_board += "\n"
         return ascii_board
 
+    def status_display(self):
+        """
+        Return a useful UI which displays the map, actors, and enemies/civis.
+
+        This function returns a string which can be printed to show critical
+        information about the state of the world. It should display the map first,
+        then list all actors (agents + operators), then show enemies and civilians,
+        as well as their status. All of this should be fairly compact, too.
+
+        Arguments:
+
+        ``return``, *str*:
+            A compact and concise but still complete view of the world state.
+        """
+        mapView = str(self)
+        enemies = self.enemies
+        civis = self.civilians
+
     def loc_valid(self, loc):
         x = loc[0]
         y = loc[1]
@@ -1353,10 +1395,11 @@ class World(object):
         this method. May implement a __rerpr__ later.
         """
         ascii_board = "  "
-        ascii_board += " |".join([str(c) for c in range(self.dim)])
+        for cNum in range(self.dim):
+            ascii_board += "|{:<2}".format(cNum)
         ascii_board += " |\n"
         for y in range(self.dim):
-            ascii_board += str(y) + "|"
+            ascii_board += "{:<2}|".format(y)
             for x in range(self.dim):
                 ascii_board += self.draw_ascii_tile((x, y)) + "|"
             ascii_board += "\n"
@@ -2233,8 +2276,9 @@ def goal_from_str(string):
 
 if __name__ == '__main__':
     # dng = interactive_World_maker()
-    # dng = build_World_from_file('dng_files/test.dng')
-    dng = generate_random_drone_demo(10, 4, 5, 1, 3)
+    # dng = build_World_from_file()
+    dng = generate_random_drone_demo(dim=25, civilians=15, enemies=30,
+                                     operators=1, agents=5)
     print(dng)
     filename = raw_input("Save this as: ")
     if filename != "":
