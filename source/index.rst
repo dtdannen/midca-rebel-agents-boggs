@@ -10,6 +10,7 @@ Welcome to Rebel Agents's documentation!
    :maxdepth: 2
    :caption: Contents:
 
+   progress_report
    world_utils
    world_server
    pyhop

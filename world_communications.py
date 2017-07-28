@@ -78,11 +78,7 @@ class WorldServer(SS.TCPServer):
         def setup(self):
             SS.StreamRequestHandler.setup(self)
             os.system('clear')
-            print(self.server.world)
-            print("Actors:")
-            for u in self.server.world.all_users:
-                print("{} = {}".format(u.ascii_rep, repr(u)))
-            print("Enemies | Civis")
+            print(self.server.world.status_display())
 
         def read_data(self):
             """Read incoming data until we see \254."""

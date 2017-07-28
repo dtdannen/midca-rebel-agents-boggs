@@ -26,15 +26,15 @@ Informed Agt3 about &51384
 Directed Agt3 to have goal killed(&51384)
 Messages:
 Goal added:
-	Agt2
-Goal added:
 	Agt1
 Goal added:
 	Agt0
 Goal added:
+	Agt2
+Goal added:
 	Agt4
 World observed.
-Active agents: ['Agt2', 'Agt1', 'Agt0', 'Agt4']
+Active agents: ['Agt1', 'Agt0', 'Agt2', 'Agt4']
 Avail agents: set(['Agt3'])
 Informed Agt3 about &51384
 Directed Agt3 to have goal killed(&51384)
@@ -42,19 +42,19 @@ Messages:
 Goal added:
 	Agt3
 World observed.
-Active agents: ['Agt2', 'Agt1', 'Agt0', 'Agt4', 'Agt3']
+Active agents: ['Agt1', 'Agt0', 'Agt2', 'Agt4', 'Agt3']
 Avail agents: set([])
 Messages:
 Goal complete:
 	Agt3
+Goal complete:
+	Agt1
 Goal added:
 	Agt3
 Goal complete:
-	Agt1
+	Agt0
 Goal complete:
 	Agt4
-Goal complete:
-	Agt0
 World observed.
 Active agents: ['Agt2', 'Agt3']
 Avail agents: set(['Agt4', 'Agt0', 'Agt1'])
@@ -86,29 +86,33 @@ Messages:
 Goal added:
 	Agt1
 Goal added:
-	Agt4
-Goal added:
 	Agt0
 Goal added:
-	Agt3
-Goal added:
-	Agt2
+	Agt4
 Goal added:
 	Agt1
 Goal added:
 	Agt0
 Goal added:
+	Agt2
+Goal added:
 	Agt4
 World observed.
-Active agents: ['Agt1', 'Agt4', 'Agt0', 'Agt3', 'Agt2']
+Active agents: ['Agt1', 'Agt0', 'Agt4', 'Agt2']
+Avail agents: set(['Agt3'])
+Informed Agt3 about &-7086
+Directed Agt3 to have goal killed(&-7086)
+Messages:
+Goal added:
+	Agt3
+World observed.
+Active agents: ['Agt1', 'Agt0', 'Agt4', 'Agt2', 'Agt3']
 Avail agents: set([])
 Messages:
+Goal added:
+	Agt3
 World observed.
-Active agents: ['Agt1', 'Agt4', 'Agt0', 'Agt3', 'Agt2']
-Avail agents: set([])
-Messages:
-World observed.
-Active agents: ['Agt1', 'Agt4', 'Agt0', 'Agt3', 'Agt2']
+Active agents: ['Agt1', 'Agt0', 'Agt4', 'Agt2', 'Agt3']
 Avail agents: set([])
 Messages:
 Rebellion:
@@ -125,7 +129,7 @@ Goal complete:
 Goal complete:
 	Agt0
 World observed.
-Active agents: ['Agt4', 'Agt3', 'Agt2']
+Active agents: ['Agt4', 'Agt2', 'Agt3']
 Avail agents: set(['Agt0', 'Agt1'])
 Informed Agt0 about &14727
 Directed Agt0 to have goal killed(&14727)
@@ -141,18 +145,18 @@ Possible alternate goals:
 	1) Reject Rebellion
 	2) None:
 	Agt3
-Goal added:
-	Agt1
-Error; Don't know of target &14727:
-	Agt0
 World observed.
-Active agents: ['Agt3', 'Agt2', 'Agt1']
-Avail agents: set(['Agt4', 'Agt0'])
+Active agents: ['Agt2', 'Agt3']
+Avail agents: set(['Agt4', 'Agt0', 'Agt1'])
 Informed Agt4 about &29910
 Directed Agt4 to have goal killed(&29910)
 Informed Agt0 about &14727
 Directed Agt0 to have goal killed(&14727)
+Informed Agt1 about &53844
+Directed Agt1 to have goal killed(&53844)
 Messages:
+Goal added:
+	Agt1
 Goal added:
 	Agt0
 World observed.
@@ -165,6 +169,10 @@ Directed Agt3 to have goal killed(&29910)
 Messages:
 Goal added:
 	Agt4
+Goal added:
+	Agt1
+Goal added:
+	Agt0
 Goal complete:
 	Agt2
 World observed.
@@ -175,80 +183,68 @@ Directed Agt2 to have goal killed(&-6263)
 Informed Agt3 about &-6263
 Directed Agt3 to have goal killed(&-6263)
 Messages:
+Goal complete:
+	Agt4
+Goal added:
+	Agt4
 Goal added:
 	Agt3
-Goal complete:
-	Agt4
-Goal added:
-	Agt4
-Error; Don't know of target &-6263:
-	Agt2
-Goal complete:
-	Agt1
 World observed.
-Active agents: ['Agt0', 'Agt3', 'Agt4']
-Avail agents: set(['Agt1', 'Agt2'])
-Informed Agt1 about &72244
-Directed Agt1 to have goal killed(&72244)
+Active agents: ['Agt1', 'Agt0', 'Agt4', 'Agt3']
+Avail agents: set(['Agt2'])
 Informed Agt2 about &-6263
 Directed Agt2 to have goal killed(&-6263)
 Messages:
 Goal complete:
+	Agt4
+Goal complete:
 	Agt3
 Goal added:
 	Agt3
 Goal complete:
-	Agt4
+	Agt1
+Goal added:
+	Agt2
 World observed.
-Active agents: ['Agt0', 'Agt3']
-Avail agents: set(['Agt4', 'Agt1', 'Agt2'])
+Active agents: ['Agt0', 'Agt3', 'Agt2']
+Avail agents: set(['Agt4', 'Agt1'])
 Informed Agt4 about &-6263
 Directed Agt4 to have goal killed(&-6263)
 Informed Agt1 about &72244
 Directed Agt1 to have goal killed(&72244)
-Informed Agt2 about &-6263
-Directed Agt2 to have goal killed(&-6263)
 Messages:
-Goal added:
-	Agt2
-Goal added:
-	Agt1
 Goal complete:
 	Agt0
+Goal added:
+	Agt2
 World observed.
-Active agents: ['Agt3', 'Agt2', 'Agt1']
-Avail agents: set(['Agt4', 'Agt0'])
+Active agents: ['Agt3', 'Agt2']
+Avail agents: set(['Agt4', 'Agt0', 'Agt1'])
 Informed Agt4 about &-6263
 Directed Agt4 to have goal killed(&-6263)
 Informed Agt0 about &-7944
 Directed Agt0 to have goal killed(&-7944)
+Informed Agt1 about &72244
+Directed Agt1 to have goal killed(&72244)
 Messages:
 Goal added:
 	Agt4
 Goal added:
-	Agt2
-Goal added:
 	Agt1
-Error; Don't know of target &-7944:
-	Agt0
 World observed.
-Active agents: ['Agt3', 'Agt2', 'Agt1', 'Agt4']
+Active agents: ['Agt3', 'Agt2', 'Agt4', 'Agt1']
 Avail agents: set(['Agt0'])
 Informed Agt0 about &-7944
 Directed Agt0 to have goal killed(&-7944)
 Messages:
 Goal added:
 	Agt4
-World observed.
-Active agents: ['Agt3', 'Agt2', 'Agt1', 'Agt4']
-Avail agents: set(['Agt0'])
-Informed Agt0 about &-7944
-Directed Agt0 to have goal killed(&-7944)
-Messages:
+Goal added:
+	Agt1
 Goal added:
 	Agt0
 World observed.
-Active agents: ['Agt3', 'Agt2', 'Agt1', 'Agt4', 'Agt0']
+Active agents: ['Agt3', 'Agt2', 'Agt4', 'Agt1', 'Agt0']
 Avail agents: set([])
 Messages:
 Goal complete:
@@ -256,29 +252,15 @@ Goal complete:
 Goal added:
 	Agt0
 World observed.
-Active agents: ['Agt3', 'Agt1', 'Agt4', 'Agt0']
+Active agents: ['Agt3', 'Agt4', 'Agt1', 'Agt0']
 Avail agents: set(['Agt2'])
 Informed Agt2 about &-1908
 Directed Agt2 to have goal killed(&-1908)
 Messages:
 Goal complete:
-	Agt3
-Goal complete:
 	Agt4
 Goal complete:
-	Agt1
-World observed.
-Active agents: ['Agt0']
-Avail agents: set(['Agt4', 'Agt1', 'Agt2', 'Agt3'])
-Informed Agt4 about &-1908
-Directed Agt4 to have goal killed(&-1908)
-Informed Agt1 about &-4595
-Directed Agt1 to have goal killed(&-4595)
-Informed Agt2 about &-1908
-Directed Agt2 to have goal killed(&-1908)
-Informed Agt3 about &-1908
-Directed Agt3 to have goal killed(&-1908)
-Messages:
+	Agt3
 Rebellion:
 rebellion(goal=Goal(&-7944, predicate: killed, user: Op0)
           reason=civi-in-AOE
@@ -288,44 +270,66 @@ Possible alternate goals:
 	1) Reject Rebellion
 	2) None:
 	Agt0
-Goal added:
-	Agt2
 World observed.
-Active agents: ['Agt0', 'Agt2']
-Avail agents: set(['Agt4', 'Agt1', 'Agt3'])
+Active agents: ['Agt1', 'Agt0']
+Avail agents: set(['Agt4', 'Agt2', 'Agt3'])
 Informed Agt4 about &-1908
 Directed Agt4 to have goal killed(&-1908)
-Informed Agt1 about &-4595
-Directed Agt1 to have goal killed(&-4595)
+Informed Agt2 about &-1908
+Directed Agt2 to have goal killed(&-1908)
 Informed Agt3 about &-1908
 Directed Agt3 to have goal killed(&-1908)
 Messages:
 Goal added:
-	Agt3
+	Agt2
+World observed.
+Active agents: ['Agt1', 'Agt2']
+Avail agents: set(['Agt4', 'Agt0', 'Agt3'])
+Informed Agt4 about &-1908
+Directed Agt4 to have goal killed(&-1908)
+Informed Agt0 about &-2163
+Directed Agt0 to have goal killed(&-2163)
+Informed Agt3 about &-1908
+Directed Agt3 to have goal killed(&-1908)
+Messages:
 Goal added:
 	Agt4
+Goal added:
+	Agt3
+Goal complete:
+	Agt1
 Goal added:
 	Agt2
-Goal added:
-	Agt1
 World observed.
-Active agents: ['Agt2', 'Agt3', 'Agt4', 'Agt1']
-Avail agents: set(['Agt0'])
+Active agents: ['Agt2', 'Agt4', 'Agt3']
+Avail agents: set(['Agt0', 'Agt1'])
 Informed Agt0 about &-2163
 Directed Agt0 to have goal killed(&-2163)
+Informed Agt1 about &-4595
+Directed Agt1 to have goal killed(&-4595)
 Messages:
-Goal added:
-	Agt3
 Goal added:
 	Agt4
 Goal added:
+	Agt3
+Goal added:
+	Agt0
+World observed.
+Active agents: ['Agt2', 'Agt4', 'Agt3', 'Agt0']
+Avail agents: set(['Agt1'])
+Informed Agt1 about &-4595
+Directed Agt1 to have goal killed(&-4595)
+Messages:
+Goal added:
+	Agt0
+Goal added:
 	Agt1
 World observed.
-Active agents: ['Agt2', 'Agt3', 'Agt4', 'Agt1']
-Avail agents: set(['Agt0'])
-Informed Agt0 about &-2163
-Directed Agt0 to have goal killed(&-2163)
+Active agents: ['Agt2', 'Agt4', 'Agt3', 'Agt0', 'Agt1']
+Avail agents: set([])
 Messages:
+Goal added:
+	Agt1
 Rebellion:
 rebellion(goal=Goal(&-4595, predicate: killed, user: Op0)
           reason=civi-in-AOE
@@ -337,14 +341,6 @@ Possible alternate goals:
 	3) Reject Rebellion
 	4) None:
 	Agt1
-Goal added:
-	Agt0
-World observed.
-Active agents: ['Agt2', 'Agt3', 'Agt4', 'Agt1', 'Agt0']
-Avail agents: set([])
-Messages:
-Goal added:
-	Agt0
 Rebellion:
 rebellion(goal=Goal(&-1908, predicate: killed, user: Op0)
           reason=civi-in-AOE
@@ -355,23 +351,8 @@ Possible alternate goals:
 	2) None:
 	Agt2
 World observed.
-Active agents: ['Agt2', 'Agt3', 'Agt4', 'Agt1', 'Agt0']
+Active agents: ['Agt2', 'Agt4', 'Agt3', 'Agt0', 'Agt1']
 Avail agents: set([])
-Messages:
-Rebellion:
-rebellion(goal=Goal(&-1908, predicate: killed, user: Op0)
-          reason=civi-in-AOE
-          civilians=[&C@(5, 12):L]
-         )
-Possible alternate goals:
-	1) Reject Rebellion
-	2) None:
-	Agt3
-World observed.
-Active agents: ['Agt3', 'Agt4', 'Agt1', 'Agt0']
-Avail agents: set(['Agt2'])
-Informed Agt2 about &-6469
-Directed Agt2 to have goal killed(&-6469)
 Messages:
 Goal complete:
 	Agt0
@@ -383,7 +364,15 @@ rebellion(goal=Goal(&-1908, predicate: killed, user: Op0)
 Possible alternate goals:
 	1) Reject Rebellion
 	2) None:
-	Agt4
+	Agt3
+World observed.
+Active agents: ['Agt4', 'Agt3', 'Agt1']
+Avail agents: set(['Agt0', 'Agt2'])
+Informed Agt0 about &-2660
+Directed Agt0 to have goal killed(&-2660)
+Informed Agt2 about &-6469
+Directed Agt2 to have goal killed(&-6469)
+Messages:
 World observed.
 Active agents: ['Agt4', 'Agt1']
 Avail agents: set(['Agt0', 'Agt2', 'Agt3'])
@@ -395,23 +384,30 @@ Informed Agt3 about &-6469
 Directed Agt3 to have goal killed(&-6469)
 Messages:
 Goal added:
+	Agt0
+Goal added:
 	Agt2
+Rebellion:
+rebellion(goal=Goal(&-1908, predicate: killed, user: Op0)
+          reason=civi-in-AOE
+          civilians=[&C@(5, 12):L]
+         )
+Possible alternate goals:
+	1) Reject Rebellion
+	2) None:
+	Agt4
 World observed.
-Active agents: ['Agt1', 'Agt2']
-Avail agents: set(['Agt4', 'Agt0', 'Agt3'])
-Informed Agt4 about &-6469
-Directed Agt4 to have goal killed(&-6469)
-Informed Agt0 about &-2660
-Directed Agt0 to have goal killed(&-2660)
+Active agents: ['Agt4', 'Agt1', 'Agt0', 'Agt2']
+Avail agents: set(['Agt3'])
 Informed Agt3 about &-6469
 Directed Agt3 to have goal killed(&-6469)
 Messages:
 Goal added:
 	Agt0
 Goal added:
-	Agt2
-Goal added:
 	Agt3
+Goal added:
+	Agt2
 Rebellion:
 rebellion(goal=Goal(&-6469, predicate: killed, user: Op0)
           reason=civi-in-AOE
@@ -422,16 +418,12 @@ Possible alternate goals:
 	2) None:
 	Agt2
 World observed.
-Active agents: ['Agt1', 'Agt2', 'Agt0', 'Agt3']
+Active agents: ['Agt1', 'Agt0', 'Agt2', 'Agt3']
 Avail agents: set(['Agt4'])
 Informed Agt4 about &44821
 Directed Agt4 to have goal killed(&44821)
 Messages:
 Goal added:
-	Agt4
-Goal added:
-	Agt0
-Goal added:
 	Agt3
 Rebellion:
 rebellion(goal=Goal(&-6469, predicate: killed, user: Op0)
@@ -443,22 +435,14 @@ Possible alternate goals:
 	2) None:
 	Agt3
 World observed.
-Active agents: ['Agt1', 'Agt0', 'Agt3', 'Agt4']
-Avail agents: set(['Agt2'])
+Active agents: ['Agt1', 'Agt0', 'Agt3']
+Avail agents: set(['Agt4', 'Agt2'])
+Informed Agt4 about &44821
+Directed Agt4 to have goal killed(&44821)
 Informed Agt2 about &44821
 Directed Agt2 to have goal killed(&44821)
 Messages:
 Goal added:
-	Agt4
-Rebellion:
-rebellion(goal=Goal(&-6469, predicate: killed, user: Op0)
-          reason=civi-in-AOE
-          civilians=[&C@(6, 12):L, &C@(5, 12):L]
-         )
-Possible alternate goals:
-	1) Goal(&44821, predicate: killed, user: Op0)
-	2) Reject Rebellion
-	3) None:
 	Agt4
 World observed.
 Active agents: ['Agt1', 'Agt0', 'Agt4']
@@ -469,6 +453,8 @@ Informed Agt3 about &44821
 Directed Agt3 to have goal killed(&44821)
 Messages:
 Goal added:
+	Agt4
+Goal added:
 	Agt2
 World observed.
 Active agents: ['Agt1', 'Agt0', 'Agt4', 'Agt2']
@@ -476,235 +462,73 @@ Avail agents: set(['Agt3'])
 Informed Agt3 about &44821
 Directed Agt3 to have goal killed(&44821)
 Messages:
+Goal complete:
+	Agt0
+Goal added:
+	Agt3
 Goal added:
 	Agt2
+World observed.
+Active agents: ['Agt1', 'Agt4', 'Agt2', 'Agt3']
+Avail agents: set(['Agt0'])
+Informed Agt0 about &82806
+Directed Agt0 to have goal killed(&82806)
+Messages:
 Goal added:
 	Agt3
 World observed.
-Active agents: ['Agt1', 'Agt0', 'Agt4', 'Agt2', 'Agt3']
-Avail agents: set([])
+Active agents: ['Agt1', 'Agt4', 'Agt2', 'Agt3']
+Avail agents: set(['Agt0'])
+Informed Agt0 about &82806
+Directed Agt0 to have goal killed(&82806)
 Messages:
-Goal complete:
+Goal added:
 	Agt0
 Goal complete:
 	Agt1
-Goal added:
-	Agt3
 World observed.
-Active agents: ['Agt4', 'Agt2', 'Agt3']
-Avail agents: set(['Agt0', 'Agt1'])
-Informed Agt0 about &82806
-Directed Agt0 to have goal killed(&82806)
+Active agents: ['Agt4', 'Agt2', 'Agt3', 'Agt0']
+Avail agents: set(['Agt1'])
 Informed Agt1 about &46639
 Directed Agt1 to have goal killed(&46639)
 Messages:
+Goal added:
+	Agt0
+Rebellion:
+rebellion(goal=Goal(&44821, predicate: killed, user: Op0)
+          reason=civi-in-AOE
+          civilians=[&C@(4, 16):L]
+         )
+Possible alternate goals:
+	1) Reject Rebellion
+	2) None:
+	Agt4
 World observed.
-Active agents: ['Agt4', 'Agt2', 'Agt3']
-Avail agents: set(['Agt0', 'Agt1'])
-Informed Agt0 about &82806
-Directed Agt0 to have goal killed(&82806)
+Active agents: ['Agt4', 'Agt2', 'Agt3', 'Agt0']
+Avail agents: set(['Agt1'])
 Informed Agt1 about &46639
 Directed Agt1 to have goal killed(&46639)
 Messages:
 Goal added:
-	Agt0
-Goal added:
 	Agt1
 World observed.
-Active agents: ['Agt4', 'Agt2', 'Agt3', 'Agt0', 'Agt1']
-Avail agents: set([])
-Messages:
-Goal added:
-	Agt0
-Goal added:
-	Agt1
-World observed.
-Active agents: ['Agt4', 'Agt2', 'Agt3', 'Agt0', 'Agt1']
-Avail agents: set([])
-Messages:
-Rebellion:
-rebellion(goal=Goal(&44821, predicate: killed, user: Op0)
-          reason=civi-in-AOE
-          civilians=[&C@(4, 16):L]
-         )
-Possible alternate goals:
-	1) Reject Rebellion
-	2) None:
-	Agt2
-Rebellion:
-rebellion(goal=Goal(&44821, predicate: killed, user: Op0)
-          reason=civi-in-AOE
-          civilians=[&C@(4, 16):L]
-         )
-Possible alternate goals:
-	1) Reject Rebellion
-	2) None:
-	Agt4
-World observed.
-Active agents: ['Agt4', 'Agt2', 'Agt3', 'Agt0', 'Agt1']
-Avail agents: set([])
-Messages:
-Rebellion:
-rebellion(goal=Goal(&44821, predicate: killed, user: Op0)
-          reason=civi-in-AOE
-          civilians=[&C@(4, 16):L]
-         )
-Possible alternate goals:
-	1) Reject Rebellion
-	2) None:
-	Agt3
-World observed.
-Active agents: ['Agt3', 'Agt0', 'Agt1']
-Avail agents: set(['Agt4', 'Agt2'])
+Active agents: ['Agt2', 'Agt3', 'Agt0', 'Agt1']
+Avail agents: set(['Agt4'])
 Informed Agt4 about &72557
 Directed Agt4 to have goal killed(&72557)
-Informed Agt2 about &72557
-Directed Agt2 to have goal killed(&72557)
 Messages:
-World observed.
-Active agents: ['Agt0', 'Agt1']
-Avail agents: set(['Agt4', 'Agt2', 'Agt3'])
-Informed Agt4 about &72557
-Directed Agt4 to have goal killed(&72557)
-Informed Agt2 about &72557
-Directed Agt2 to have goal killed(&72557)
-Informed Agt3 about &72557
-Directed Agt3 to have goal killed(&72557)
-Messages:
-Goal added:
-	Agt2
-Goal added:
-	Agt4
-World observed.
-Active agents: ['Agt0', 'Agt1', 'Agt2', 'Agt4']
-Avail agents: set(['Agt3'])
-Informed Agt3 about &72557
-Directed Agt3 to have goal killed(&72557)
-Messages:
-Goal added:
-	Agt3
-Goal added:
-	Agt2
-Goal added:
-	Agt4
-World observed.
-Active agents: ['Agt0', 'Agt1', 'Agt2', 'Agt4', 'Agt3']
-Avail agents: set([])
-Messages:
-Goal added:
-	Agt3
-World observed.
-Active agents: ['Agt0', 'Agt1', 'Agt2', 'Agt4', 'Agt3']
-Avail agents: set([])
-Messages:
-Rebellion:
-rebellion(goal=Goal(&82806, predicate: killed, user: Op0)
-          reason=civi-in-AOE
-          civilians=[&C@(16, 4):L]
-         )
-Possible alternate goals:
-	1) Reject Rebellion
-	2) None:
-	Agt0
-World observed.
-Active agents: ['Agt0', 'Agt1', 'Agt2', 'Agt4', 'Agt3']
-Avail agents: set([])
-Messages:
-World observed.
-Active agents: ['Agt1', 'Agt2', 'Agt4', 'Agt3']
-Avail agents: set(['Agt0'])
-Informed Agt0 about &46639
-Directed Agt0 to have goal killed(&46639)
-Messages:
-World observed.
-Active agents: ['Agt1', 'Agt2', 'Agt4', 'Agt3']
-Avail agents: set(['Agt0'])
-Informed Agt0 about &46639
-Directed Agt0 to have goal killed(&46639)
-Messages:
-Goal complete:
-	Agt3
-Goal complete:
-	Agt2
-Goal complete:
-	Agt4
-Goal added:
-	Agt0
-World observed.
-Active agents: ['Agt1', 'Agt0']
-Avail agents: set(['Agt4', 'Agt2', 'Agt3'])
-Informed Agt4 about &-2399
-Directed Agt4 to have goal killed(&-2399)
-Informed Agt2 about &-2399
-Directed Agt2 to have goal killed(&-2399)
-Informed Agt3 about &-2399
-Directed Agt3 to have goal killed(&-2399)
-Messages:
-Goal complete:
-	Agt1
-Goal complete:
-	Agt0
-Goal added:
-	Agt0
-World observed.
-Active agents: ['Agt0']
-Avail agents: set(['Agt4', 'Agt1', 'Agt2', 'Agt3'])
-Informed Agt4 about &-2399
-Directed Agt4 to have goal killed(&-2399)
-Informed Agt1 about &-2399
-Directed Agt1 to have goal killed(&-2399)
-Informed Agt2 about &-2399
-Directed Agt2 to have goal killed(&-2399)
-Informed Agt3 about &-2399
-Directed Agt3 to have goal killed(&-2399)
-Messages:
-Goal added:
-	Agt3
-Goal added:
-	Agt2
-Goal added:
-	Agt4
-Goal complete:
-	Agt0
-World observed.
-Active agents: ['Agt3', 'Agt2', 'Agt4']
-Avail agents: set(['Agt0', 'Agt1'])
-Informed Agt0 about &-2399
-Directed Agt0 to have goal killed(&-2399)
-Informed Agt1 about &-2399
-Directed Agt1 to have goal killed(&-2399)
-Messages:
-Goal added:
-	Agt3
-Goal added:
-	Agt2
-Goal added:
-	Agt4
 Goal added:
 	Agt1
 Rebellion:
-rebellion(goal=Goal(&-2399, predicate: killed, user: Op0)
+rebellion(goal=Goal(&44821, predicate: killed, user: Op0)
           reason=civi-in-AOE
-          civilians=[&C@(4, 22):D]
-         )
-Possible alternate goals:
-	1) Reject Rebellion
-	2) None:
-	Agt3
-Rebellion:
-rebellion(goal=Goal(&-2399, predicate: killed, user: Op0)
-          reason=civi-in-AOE
-          civilians=[&C@(4, 22):D]
+          civilians=[&C@(4, 16):L]
          )
 Possible alternate goals:
 	1) Reject Rebellion
 	2) None:
 	Agt2
-Rebellion:
-rebellion(goal=Goal(&-2399, predicate: killed, user: Op0)
-          reason=civi-in-AOE
-          civilians=[&C@(4, 22):D]
-         )
-Possible alternate goals:
-	1) Reject Rebellion
-	2)
+World observed.
+Active agents: ['Agt2', 'Agt3', 'Agt0', 'Agt1']
+Avail agents: set(['Agt4'])
+Informed Agt4 ab

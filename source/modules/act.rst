@@ -8,3 +8,4 @@ Act Modules
     :caption: Modules
 
     act/simple_act
+    act/operator_give_goals
