@@ -9,4 +9,10 @@ Perceive Modules
 
     perceive/show_map
     perceive/remote_observer
+    perceive/operator_observer
+
+.. toctree::
+    :maxdepth: 2
+    :caption: Deprecated Modules
+
     perceive/observer

@@ -12,5 +12,11 @@ Interpret Modules
     interpret/discrepancy_explainer
     interpret/remote_user_goal_input
     interpret/completion_evaluator
+    interpret/operator_interpret
+
+.. toctree::
+    :maxdepth: 2
+    :caption: Deprecated Modules
+    
     interpret/user_goal_input
     interpret/primitive_remote_user_goal_input

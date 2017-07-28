@@ -14,7 +14,7 @@ from pickle import dumps, loads
 import os
 import sys
 import traceback
-from MIDCA import plans
+from MIDCA import plans, goals
 
 AGENT = "AGENT"  #: Easily check if an Agent object is an agent
 OPERATOR = "OPERATOR"  #: Easily check if an Agent object is an operator
@@ -554,7 +554,7 @@ class Npc(WorldObject):
     @property
     def predicates(self):
         retStr = ""
-        return "is-{}({})".format(self.civ_type, self.id)
+        return "is-{}({})\n".format(self.civ_type, self.id)
 
     @property
     def civ_type(self):
@@ -627,6 +627,30 @@ class World(object):
         for loc in self.floor:
             objects += self.floor[loc]
         return objects
+
+    @property
+    def enemies(self):
+        return self.filter_objects(objType=NPC, civi=False)
+
+    @property
+    def civilians(self):
+        return self.filter_objects(objType=NPC, civi=True)
+
+    def filter_objects(self, **kwargs):
+        """Return a list of known objects whose attributes fit the filters."""
+        knownObjs = self.objects
+        filteredObjs = []
+        for obj in knownObjs:
+            for attrib in kwargs:
+                try:
+                    valid = eval("obj.{}".format(attrib)) == kwargs[attrib]
+                except AttributeError:
+                    valid = False
+                if not valid:
+                    break
+            if valid:
+                filteredObjs.append(obj)
+        return filteredObjs
 
     def add_user(self, name, location, vision, userType):
         if not self.loc_valid(location):
@@ -1202,6 +1226,93 @@ class World(object):
             ascii_board += "\n"
         return ascii_board
 
+    def status_display(self):
+        """
+        Return a useful UI which displays the map, actors, and enemies/civis.
+
+        This function returns a string which can be printed to show critical
+        information about the state of the world. It should display the map first,
+        then list all actors (agents + operators), then show enemies and civilians,
+        as well as their status. All of this should be fairly compact, too.
+
+        Currently, should look like::
+
+            map map map map map map | Agents    | Optrs
+            map map map map map map | agt0      | op0
+            map map map map map map | agt1      | op1
+            map map map map map map | ...       | ...
+            map map map map map map | Enemies   | Civis
+            map map map map map map | enemy0    | civi0
+            map map map map map map | enemy1    | civi1
+            map map map map map map | ...       | ...
+
+
+        Arguments:
+
+        ``return``, *str*:
+            A compact and concise but still complete view of the world state.
+        """
+        mapViewStrs = str(self).split("\n")[:-1]
+        enemyStrs = [repr(e) for e in self.enemies]
+        civiStrs = [repr(c) for c in self.civilians]
+        agentStrs = [repr(a) for a in self.agents]
+        optrStrs = [repr(o) for o in self.operators]
+
+        mapHeight = len(mapViewStrs)
+        agtEnmHeight = len(agentStrs) + len(enemyStrs)
+        optrCiviHeight = len(optrStrs) + len(civiStrs)
+
+        mapWidth = len(mapViewStrs[0])
+        agtWidth = max([len(aStr) for aStr in agentStrs])
+        optrWidth = max([len(oStr) for oStr in optrStrs])
+        enemyWidth = max([len(eStr) for eStr in enemyStrs])
+        civiWidth = max([len(cStr) for cStr in civiStrs])
+
+        agtEnmWidth = max(agtWidth, enemyWidth)
+        optrCiviWidth = max(optrWidth, civiWidth)
+
+        finalDisplay = "{:^{mW}} | {:<{agW}} | {:<{opW}}\n".format("Map", "Agents", "Optrs",
+                                                                   mW=mapWidth,
+                                                                   agW=agtEnmWidth,
+                                                                   opW=optrCiviWidth)
+
+        totalHgt = max(mapHeight, agtEnmHeight, optrCiviHeight)
+
+        for line in range(totalHgt):
+            # Add the next line of the map
+            if line < len(mapViewStrs):
+                finalDisplay += mapViewStrs[line] + " | "
+            else:
+                finalDisplay += " " * mapWidth + " | "
+
+            # Add the next agent or enemy string
+            if line < len(agentStrs):
+                agentOrEnemy = agentStrs[line]
+            elif line == len(agentStrs):
+                agentOrEnemy = "Enemies"
+            elif line < agtEnmHeight:
+                enemyIndex = line - len(agentStrs) - 1
+                agentOrEnemy = enemyStrs[enemyIndex]
+            else:
+                agentOrEnemy = " " * agtEnmWidth + " | "
+
+            # Add the next operator or civilian string
+            if line < len(optrStrs):
+                optrOrCivi = optrStrs[line]
+            elif line == len(optrStrs):
+                optrOrCivi = "Civilians"
+            elif line < optrCiviHeight:
+                civiIndex = line - len(optrStrs) - 1
+                optrOrCivi = civiStrs[civiIndex]
+            else:
+                optrOrCivi = " " * optrCiviHeight
+
+            finalDisplay += "{:<{aeWid}} | {:<{ocWid}}\n".format(agentOrEnemy, optrOrCivi,
+                                                                 aeWid=agtEnmWidth,
+                                                                 ocWid=optrCiviWidth)
+
+        return finalDisplay
+
     def loc_valid(self, loc):
         x = loc[0]
         y = loc[1]
@@ -1353,10 +1464,11 @@ class World(object):
         this method. May implement a __rerpr__ later.
         """
         ascii_board = "  "
-        ascii_board += " |".join([str(c) for c in range(self.dim)])
-        ascii_board += " |\n"
+        for cNum in range(self.dim):
+            ascii_board += "|{:<2}".format(cNum)
+        ascii_board += "|\n"
         for y in range(self.dim):
-            ascii_board += str(y) + "|"
+            ascii_board += "{:<2}|".format(y)
             for x in range(self.dim):
                 ascii_board += self.draw_ascii_tile((x, y)) + "|"
             ascii_board += "\n"
@@ -1549,6 +1661,15 @@ class Agent(object):
     def known_objects(self):
         """Return a list of all world objects."""
         return self.map.objects
+
+    @property
+    def agents(self):
+        """Return a list of all agents known to this agent."""
+        return self.map.agents
+
+    @property
+    def enemies(self):
+        return self.filter_objects(civi=False, alive=True)
 
     def filter_objects(self, **kwargs):
         """Return a list of known objects whose attributes fit the filters."""
@@ -1927,7 +2048,7 @@ def build_World_from_str(dngStr):
 
         elif objType == NPC:
             living = miscData == "L"
-            civi = line[1] == "V"
+            civi = line[1] == "C"
             objsMade.append(dng.place_object(NPC, location, civi=civi, living=living))
 
         elif objType in [AGENT, OPERATOR]:
@@ -1953,7 +2074,74 @@ def build_World_from_file(filename, MIDCA=False):
 
 
 def interactive_World_maker():
-    """Allow a user to build a World from scratch."""
+    """
+    Allow a user to build a World from scratch.
+
+    This function begins a loop which displays the current state of the new map,
+    then asks the user for input. The user can add, remove, or modify objects and
+    actors on the map or save the map. This function does not accept arguments,
+    and only returns a boolean indicating execution success. In order to preserve
+    the new world, the user must utilize the `save` command.
+
+    Commands:
+
+    ``set``:
+        The ``set`` command allows the user to set object and actor attributes,
+        and the general format looks like::
+
+            set objID attrib newValue
+
+        ``objID``:
+            A valid ID code foran already-existing object or actor.
+
+        ``attrib``:
+            A valid attribute for the type of object or actor to which the ``objID``
+            refers. Although this is somewhat sketchy, a valid attribute is anything
+            in ``dir(targetObject)``.
+
+        ``newValue``:
+            The new value of the attribute, in a format which can be cast to the
+            proper type for the attribute. If the attribute is a ``bool``, 'None',
+            'f', 'F', 'false', 'False', and '0' all get cast to False.
+
+    ``add``:
+        The ``add`` command allows the user to add a new object or actor in the
+        world. The general format looks like::
+
+            add objType, location, miscData
+
+        ``objType``:
+            The object type string which corresponds to the desired object. The
+            string for an object type is given by the object's eponymous constant.
+
+        ``location``:
+            The location to add the new object at, given as ``'(x, y)'`` such that
+            the string can be converted to a point by :py:func:``~modules.world_utils.get_point_from_str``.
+
+        ``miscData``:
+            Any extra data needed to create the object. This is object-type specific.
+
+    ``rem``:
+        The ``rem`` command removes a specified object from the board completely.
+        Note that this is irreversible. The general format looks like::
+
+            rem objID
+
+        ``objID``:
+            A valid ID for the existing object which is to be removed.
+
+    ``save``:
+        The ``save`` command saves the current world to a file specified by the
+        user in two different formats: a format unique to this domain, and a less
+        powerful but more generalizable MIDCA state. The files will be saved in
+        ``dng_files/``. The general format looks like::
+
+            save filename
+
+        ``filename``:
+            The name of the file which the world should be saved to, **without**
+            a file type extension at the end.
+    """
     def set_obj_attrib(target, attrib, val, objsMade):
         """Set the target attribute of the object to the given value, if possible."""
         if attrib not in dir(target):
@@ -1974,6 +2162,8 @@ def interactive_World_maker():
             return True
         else:
             attribType = type(target.__dict__[attrib])
+            if attribType is bool:
+                val = False if val in ['None', 'f', 'F', 'false', 'False', '0'] else True
             target.__dict__[attrib] = attribType(val)
             return True
 
@@ -2178,17 +2368,67 @@ def interactive_World_maker():
 
 
 def get_point_from_str(string):
-    """Convert a string of form '(x, y)' into a pair of ints."""
+    """
+    Convert a string of form '(x, y)' into a pair of ints.
+
+    Arguments:
+
+    ``string``, *str*:
+        A string of form `'(x, y)'`, where `x` and `y` are able to be cast as
+        ints by the `int` method.
+
+    ``return``, *tuple*:
+        A pair of ints which correspond to `x` and `y`.
+    """
     coords = string.strip('()').split(',')
     point = (int(coords[0]), int(coords[1]))
     return point
 
 
+def goal_from_str(string):
+    """
+    Convert goal string representation to a goal.
+
+    Specifically, this function takes the result of ``str(goal)`` as input and
+    returns ``Goal goal``.
+
+    Note that each goal type needs to be custom added, so that the arguments for
+    the new goal are converted to their proper types.
+
+    Arguments:
+
+    ``string``, *str*:
+        String representation of a goal.
+
+    ``returns``, *Goal*:
+        The goal which the string represents.
+    """
+    args = []
+    kwargs = {}
+    strippedString = string[5:-1]
+    dataStrs = strippedString.split(',')
+    for dataStr in dataStrs:
+        if ':' in dataStr:
+            name, data = dataStr.split(':')
+            name = name.strip()
+            data = data.strip()
+            kwargs[name] = data
+        else:
+            data = dataStr.strip()
+            args.append(data)
+
+    if kwargs['predicate'] == 'killed':
+        resGoal = goals.Goal(args[0], predicate='killed', user=kwargs['user'])
+
+    return resGoal
+
+
 if __name__ == '__main__':
     # dng = interactive_World_maker()
-    # dng = build_World_from_file('dng_files/test.dng')
-    dng = generate_random_drone_demo(10, 4, 5, 1, 3)
-    print(dng)
+    # dng = build_World_from_file()
+    dng = generate_random_drone_demo(dim=25, civilians=15, enemies=30,
+                                     operators=1, agents=5)
+    print(dng.status_display())
     filename = raw_input("Save this as: ")
     if filename != "":
         dng.save(filename)

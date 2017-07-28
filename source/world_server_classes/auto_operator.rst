@@ -1,5 +1,5 @@
-Automatic Operator
-******************
+Autonomous Operator
+*******************
 
 .. autoclass:: world_communications.AutoOperator
     :members:

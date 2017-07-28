@@ -46,3 +46,5 @@ Miscellaneous Functions
 .. autofunction:: world_utils.interactive_World_maker
 
 .. autofunction:: world_utils.get_point_from_str
+
+.. autofunction:: world_utils.goal_from_str

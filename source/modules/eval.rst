@@ -10,3 +10,4 @@ Evaluate Modules
     eval/goal_manager
     eval/handle_rebellion
     eval/rebellion
+    eval/operator_handle_rebels_flexible

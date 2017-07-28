@@ -1,4 +1,5 @@
-import copy, os
+import copy
+import os
 
 from MIDCA import base
 
@@ -93,3 +94,50 @@ class RemoteObserver(base.BaseModule):
             trace.add_module(cycle, self.__class__.__name__)
             trace.add_data("WORLD", agentCopy)
             trace.add_data("CURR WORLD", agentCopy)
+
+
+class OperatorObserver(base.BaseModule):
+    """
+    Observation and update module for an operator running automatically.
+
+    This module updates MIDCA's memory with knowledge of the operator's current
+    state and any new messages the operator received.
+
+    The current operator instance is stored in "STATE", and a copy of the current
+    operator is appended to "STATES".
+    """
+
+    def init(self, world, mem):
+        """Give critical information to the module to initialize it."""
+        self.mem = mem
+        self.client = world
+
+    def run(self, cycle, verbose=2):
+        """Update world state information in MIDCA's memory."""
+        self.client.observe()
+        optr = self.client.operator()
+        optrCopy = copy.deepcopy(optr)
+        self.mem.add(self.mem.STATES, optrCopy)
+        self.mem.set(self.mem.STATE, optr)
+
+        msgs = self.client.get_dialogs()
+        if msgs is None:
+            msgs = []
+        print("Messages:")
+        for msg in msgs:
+            print("{}:\n\t{}".format(msg[0], msg[1]))
+        self.mem.set("MESSAGES", msgs)
+
+        states = self.mem.get(self.mem.STATES)
+        if len(states) > 400:
+            states = states[200:]
+            self.mem.set(self.mem.STATES, states)
+
+        if verbose >= 1:
+            print "World observed."
+
+        trace = self.mem.trace
+        if trace:
+            trace.add_module(cycle, self.__class__.__name__)
+            trace.add_data("WORLD", optrCopy)
+            trace.add_data("MESSAGES", msgs)

@@ -79,3 +79,42 @@ class SimpleAct(base.BaseModule):
 
             if trace:
                 trace.add_data("ACTION", None)
+
+
+class OperatorGiveGoals(base.BaseModule):
+    """
+    Allows an automatic operator to impart generated goals on agents.
+
+    This module looks in MIDCA's memory for a planned mapping of goals to available
+    agents and the gives each goal to its proper agent.
+    """
+
+    def init(self, world, mem):
+        """Give the module critical MIDCA data about world state and memory."""
+        self.mem = mem
+        self.client = world
+
+    def run(self, cycle, verbose=2):
+        """
+        Impart each remembered goal on the appropriate agent.
+
+        In MIDCA's memory, planned goals are stored as a pair where the first
+        element is the agent which should carry out the goal and the second is
+        the ``Goal`` which should be given to the agent. This function converts
+        each ``Goal`` into a string parseable by the agent and then sends any
+        pertinent information (e.g. enemy to target) to the agent, before sending
+        the goal string.
+        """
+        plannedGoals = self.mem.get("PLANNED_GOALS")
+        if plannedGoals is None:
+            return
+        for pGoal in plannedGoals:
+            agt = pGoal[0]
+            goal = pGoal[1]
+            if goal['predicate'] == 'killed':
+                target = goal[0]
+                goalStr = 'killed({})'.format(target)
+                if verbose >= 1: print("Informed {} about {}".format(agt, target))
+                self.client.inform(agt, target)
+            self.client.direct(agt, goalStr)
+            if verbose >= 1: print("Directed {} to have goal {}".format(agt, goalStr))

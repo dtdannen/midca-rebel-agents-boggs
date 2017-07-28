@@ -78,10 +78,7 @@ class WorldServer(SS.TCPServer):
         def setup(self):
             SS.StreamRequestHandler.setup(self)
             os.system('clear')
-            print(self.server.world)
-            print("Actors:")
-            for u in self.server.world.all_users:
-                print("{} = {}".format(u.ascii_rep, repr(u)))
+            print(self.server.world.status_display())
 
         def read_data(self):
             """Read incoming data until we see \254."""
@@ -93,6 +90,12 @@ class WorldServer(SS.TCPServer):
                 # print(data)
                 # time.sleep(0.5)
             return data
+
+        def send_data(self, data):
+            """Write data to the file-like connection, terminating with \254."""
+            if type(data) is not str:
+                data = str(data)
+            self.wfile.write(data + "\254")
 
         def handle(self):
             """
@@ -119,7 +122,7 @@ class WorldServer(SS.TCPServer):
                 user = dng.get_user(userID)
                 user.view(dng)
                 pickledMap = dumps(user.map)
-                self.wfile.write(pickledMap)
+                self.send_data(pickledMap)
 
             elif msgType == ACTION_SEND:
                 # Request format: ACTION_SEND:USERID:ACTIONSTR
@@ -142,15 +145,13 @@ class WorldServer(SS.TCPServer):
                     listStr = ""
                     for obj in objs:
                         listStr += "{} = {}\n".format(repr(obj), obj.id)
-                    self.wfile.write(listStr)
+                    self.send_data(listStr)
 
                 elif cmd == "send":
                     recipientID = msgData[1]
                     recipient = dng.get_user(recipientID)
                     objID = ":".join(msgData[2:])
                     obj = dng.get_object(objID)
-                    print(recipientID, recipient)
-                    print(objID, obj)
                     if obj is None:
                         if userID in msgs:
                             msgs[userID].append("Updating error: {} not found".format(objID))
@@ -179,18 +180,18 @@ class WorldServer(SS.TCPServer):
             elif msgType == GOAL_REQ:
                 # Request format: GOAL_REQ:USERID
                 if userID not in qGoals:
-                    self.wfile.write("")
+                    self.send_data("")
                     return
                 goalStrs = qGoals[userID]
                 msgStr = ":".join(goalStrs)
-                self.wfile.write(msgStr)
+                self.send_data(msgStr)
                 del qGoals[userID]
 
             elif msgType == AGENT_REQ:
                 # Request format: AGENT_REQ:USERID
                 agent = dng.get_user(userID)
                 pickledAgent = dumps(agent)
-                self.wfile.write(pickledAgent)
+                self.send_data(pickledAgent)
 
             elif msgType == DIALOG_SEND:
                 recipientID = msgData[0]
@@ -203,7 +204,7 @@ class WorldServer(SS.TCPServer):
             elif msgType == DIALOG_REQ:
                 # Request format: GOAL_REQ:USERID[:SENDERID]
                 if userID not in msgs:
-                    self.wfile.write("")
+                    self.send_data("")
                     return
                 userMsgs = msgs[userID]
 
@@ -211,7 +212,7 @@ class WorldServer(SS.TCPServer):
                     userMsgs = [msg[0] for msg in userMsgs if msg[1] == msgData[0]]
 
                 pickledDialogs = dumps(userMsgs)
-                self.wfile.write(pickledDialogs)
+                self.send_data(pickledDialogs)
                 del msgs[userID]
 
             else:
@@ -233,14 +234,45 @@ class Client(object):
     def __init__(self, serverAddr, serverPort, userID):
         self.conAddr = (serverAddr, serverPort)
         self.userID = userID
+        self.lastData = ''
 
     def send(self, msgType, data=""):
         """Send given data as a message of the given type."""
         # print("sending {}:{}:{}\254".format(str(msgType), self.userID, data))
         self.socket.sendall("{}:{}:{}\254".format(str(msgType), self.userID, data))
 
-    def recv(self, bufSize=2048):
-        return self.socket.recv(bufSize)
+    def recv(self):
+        """
+        Read incoming data until we see \254.
+
+        Because some of the incoming messages will be rather large, it's terribly
+        inefficient to read data in the way the world server does. Instead, we read
+        in 2048 byte chunks and see if the terminal character is in the message.
+        If it is, we split the message at it, prepending whatever is currently in
+        ``self.lastData`` to the first portion and then storing the latter portion
+        in ``self.lastData``. If the terminal character is not found in the chunk,
+        the entire chunk is appended to ``self.lastData``.
+
+        This process means that ``self.lastData`` progressively builds up a message,
+        so that once the terminal character is read in we can prepend the rest of
+        the message.
+
+        Arguments:
+
+        ``returns``, *str*:
+            Returns an entire message sent to the socket, **without** the terminal
+            character.
+        """
+        data = ""
+        newChunk = self.socket.recv(2048)
+        while '\254' not in newChunk:
+            # build message until term char is found
+            self.lastData += newChunk
+            newChunk = self.socket.recv(2048)
+        msgEnd, nextMsgStart = newChunk.split('\254')
+        data = self.lastData + msgEnd
+        self.lastData = nextMsgStart
+        return data
 
     @msgSetup
     def inform(self, recipientID, objID):
@@ -267,108 +299,113 @@ class Client(object):
     @msgSetup
     def get_dialogs(self, senderID=""):
         self.send(DIALOG_REQ, senderID)
-        pickledDialogs = self.recv(4096)
+        pickledDialogs = self.recv()
         if pickledDialogs == "":
             return
         dialogs = loads(pickledDialogs)
+        if dialogs == []:
+            return
         return dialogs
 
 
 class OperatorClient(Client):
-    """Client for operators."""
+    """
+    Client for a single operator.
 
-    def run(self):
-        """Run both the input and update loops."""
-        # inputThread = threading.Thread(target=self.__input_loop)
-        updateThread = threading.Thread(target=self.__update_loop)
-        updateThread.start()
-        # inputThread.start()
+    Instantiation::
 
-    def __input_loop(self):
-        """Run a loop which allows the operator interact with the world."""
-        while True:
-            cmd = raw_input("")
-            self.parse_command(cmd)
+        opClient = OperatorClient(addr, port, userID)
 
-    def __update_loop(self):
-        """Run a loop which constantly feeds the user world state info."""
-        while True:
-            os.system('clear')
-            print("Operator {}".format(self.userID))
-            self.draw_perception()
-            print("Messages: ")
-            self.read_dialogs()
-            # sleep(15)
-            cmd = raw_input("Command>> ")
-            self.parse_command(cmd)
+    Arguments:
+
+    ``address``, *str*:
+        Indicates the IP address of the world simulation server.
+
+    ``port``, *int*:
+        Indicates the port number of the world simulation server.
+
+    ``userID``, *str*:
+        The ID of the operator which will be controlled by this object.
+
+    """
+    def __init__(self, addr, port, userID):
+        super(OperatorClient, self).__init__(addr, port, userID)
+
+    def display(self):
+        """
+        Print the operator's world knowledge on the screen for the user.
+
+        This is only useful when the operator is a human. It prints out the name
+        of the operator, the operator's dungeon map, and lists known objects.
+        """
+        os.system('clear')
+        print("Operator {}".format(self.userID))
+        print(self.map)
+        print("Messages:")
+        for msg in self.msgs:
+            print("{}:\n\t{}".format(msg[1], msg[0]))
+        print("Known Objects")
+        for obj in self.map.objects:
+            print("{} = {}".format(obj, obj.id))
+
+    @msgSetup
+    def observe(self, display=False):
+        """Have the operator observe the world. """
+        self.send(WORLD_STATE_REQ)
+        pickledWorld = self.recv()
+        return loads(pickledWorld)
+
+    @msgSetup
+    def operator(self):
+        """Return the ``Agent`` object corresponding to the client's userID."""
+        self.send(AGENT_REQ)
+        pickledOp = self.recv()
+        try:
+            optr = loads(pickledOp)
+        except EOFError as e:
+            print(pickledOp)
+            print(e)
+        return optr
 
     def parse_command(self, cmd):
         """
         Parse an operator command and execute the appropriate action.
 
-        Command formats:
-        action op(args)
-        inform
-        direct recipientID predicate(args)
-        say recipientID message
-        """
+        Command formats::
 
+            action op(args)
+            inform recipientID objID
+            direct recipientID predicate(args)
+            say recipientID message
+        """
         cmdData = cmd.split(" ")
 
         if cmdData[0] == "action":
             self.send_action(cmdData[1])
 
         if cmdData[0] == "inform":
-            self.send_inform()
+            self.inform(cmdData[1], cmdData[2])
 
         if cmdData[0] == "direct":
-            self.direct(cmdData[1:])
+            self.direct(*cmdData[1:])
 
         if cmdData[0] == "say":
             self.dialog(cmdData[1], " ".join(cmdData[2:]))
 
     @msgSetup
-    def direct(self, goalData):
-        """Allow user to give a MIDCA agent a goal."""
-        self.send(GOAL_SEND, "{}:{}".format(goalData[0], goalData[1]))
+    def direct(self, recipientID, goalStr):
+        """
+        Give the specified MIDCA agent a goal.
 
-    def draw_perception(self):
-        worldView = self.get_perception()
-        print(worldView)
-        print("Known objects:")
-        self.get_object_list()
+        Arguments:
 
-    def read_dialogs(self):
-        dialogs = self.get_dialogs()
-        if dialogs is None:
-            return
-        for dialog in dialogs:
-            print("From {}".format(dialog[1]))
-            print("\t" + dialog[0])
+        ``recipientID``, *str*:
+            The ID of the agent which should be given the goal.
 
-    def send_inform(self):
-        """Allow user to give information to another user."""
-        # Indicate to server which information the user is giving, and id of recipient
-        objID = raw_input("Input object ID\n>> ")
-        recipientID = raw_input("Input recipient ID\n>> ")
-        self.inform(recipientID, objID)
-
-    @msgSetup
-    def get_perception(self):
-        self.send(WORLD_STATE_REQ, "")
-        sleep(0.1)
-        pickledWorld = self.socket.recv(4096)
-        self.map = loads(pickledWorld)
-        return self.map
-
-    @msgSetup
-    def get_object_list(self):
-        """Get and print a list of objects known to the user"""
-        # Ask server for all pieces of info operator can give
-        self.send(UPDATE_SEND, "list")
-        objsList = self.socket.recv(1024)
-        # List these for user and ask user to select one
-        print(objsList)
+        ``goalStr``, *str*:
+            A properly formatted goal string.
+        """
+        self.send(GOAL_SEND, "{}:{}".format(recipientID, goalStr))
 
 
 class MIDCAClient(Client):
@@ -378,7 +415,7 @@ class MIDCAClient(Client):
     def agent(self):
         """Return the agent object corresponding to the client's userID."""
         self.send(AGENT_REQ)
-        pickledAgent = self.socket.recv(4096)
+        pickledAgent = self.recv()
         try:
             agent = loads(pickledAgent)
         except EOFError as e:
@@ -390,16 +427,16 @@ class MIDCAClient(Client):
     def observe(self, display=False):
         """Have the agent observe the world. """
         self.send(WORLD_STATE_REQ)
+        pickledWorld = self.recv()
+        self.map = loads(pickledWorld)
         if display:
-            worldView = self.socket.recv(2048)
-            os.system('clear')
-            print(worldView)
+            print(self.map)
 
     @msgSetup
     def get_new_goals(self):
         """Retrieve any new goals the server has waiting for the agent."""
         self.send(GOAL_REQ)
-        msgStr = self.socket.recv(2048)
+        msgStr = self.recv()
         goalStrs = msgStr.split(":")
         return goalStrs
 
@@ -483,51 +520,78 @@ class RemoteAgent(object):
         """
         self.MIDCACycle.init()
         self.MIDCACycle.initGoalGraph(cmpFunc=plan.worldGoalComparator)
-        self.MIDCACycle.run(phaseDelay=1, verbose=RemoteAgent.VERBOSITY)
+        self.MIDCACycle.run(phaseDelay=0.25, verbose=RemoteAgent.VERBOSITY)
 
 
-# class AutoOperator(object):
-#     """
-#     Represents an automatic operator, which directs agents based on a policy.
-#
-#     An ``AutoOperator`` object holds an ``OperatorClient`` of its own, and interacts
-#     with the world through the client, following a pre-made policy given to the
-#     operator at instantiation. The policy determines how, when, and which goals
-#     the operator gives an agent, and how the operator responds to rebellion.
-#
-#     The policy given to the operator should be a function which takes in the world
-#     state as the operator sees it and returns a list of strings (which can be emtpy)
-#     such that each string is a valid operator command.
-#
-#     Instantiation::
-#
-#         autoOperator = AutoOperator(addr, port, userID, policy)
-#
-#     Arguments:
-#
-#     ``address``, *str*:
-#         Indicates the IP address of the world simulation server.
-#
-#     ``port``, *int*:
-#         Indicates the port number of the world simulation server.
-#
-#     ``userID``, *str*:
-#         The ID of the operator which will be controlled by this object.
-#
-#     ``policy``, *function*:
-#         The policy function for this operator, which is used to generate the next
-#         commands issued by the operator. Should have one parameter and returns a
-#         list of strings (which may be empty).
-#     """
-#
-#     def __init__(self, addr, port, userID, policy):
-#         """Instantiate an automatic operator with the given name and policy."""
-#         self.client = OperatorClient(addr, port, userID)
-#         self.userID = userID
-#         self.policy = policy
-# it
-#     def
+class AutoOperator(object):
+    """
+    Contains the MIDCA object and the OperatorClient which together will be an oeprator.
 
+    The ``AutoOperator`` class combines a MIDCA cycle with an operator client so
+    that fully automatic operators can be used for testing. The MIDCA cycle is
+    created on instantiation using a built-in ``dict`` of phases and accompanying
+    modules to use. If in automatic mode, the MIDCA cycle dictates how the operator
+    should interact with agents and the world.
+
+    The ``AutoOperator`` class does *not* take a pre-made MIDCA object as an
+    instantiaion argument, nor does it accept a list of phases or modules. Instead,
+    phases and modules are appended during instantion automatically. As such,
+    different agents cannot have different modules, at least at first.
+
+    Instantion::
+
+        autoOperator = AutoOperator(address, port, userID)
+
+    Arguments:
+
+    ``address``, *str*:
+        Indicates the IP address of the world simulation server.
+
+    ``port``, *int*:
+        Indicates the port number of the world simulation server.
+
+    ``userID``, *str*:
+        The ID of the agent which will be controlled by this object.
+    """
+
+    VERBOSITY = 2
+    PHASES = ["Perceive", "Interpret", "Eval", "Intend", "Plan", "Act"]
+    MODULES = {"Perceive": [perceive.OperatorObserver()],
+               "Interpret": [interpret.OperatorInterpret()],
+               "Eval": [evaluate.OperatorHandleRebelsFlexible()],
+               "Intend": [],
+               "Plan": [plan.OperatorPlanGoals()],
+               "Act": [act.OperatorGiveGoals()]}
+
+    def __init__(self, addr, port, userID):
+        """Instantiate ``AutoOperator`` object by creating appropriate MIDCA cycle."""
+        self.conAddr = (addr, int(port))
+        self.userID = userID
+        self.client = OperatorClient(addr, int(port), userID)
+
+        self.MIDCACycle = base.PhaseManager(self.client,
+                                            display=lambda x: str(x),
+                                            verbose=AutoOperator.VERBOSITY)
+
+        for phase in AutoOperator.PHASES:
+            self.MIDCACycle.append_phase(phase)
+            for module in AutoOperator.MODULES[phase]:
+                self.MIDCACycle.append_module(phase, module)
+
+        self.MIDCACycle.set_display_function(lambda x: str(x))
+
+        self.MIDCACycle.storeHistory = False
+        self.MIDCACycle.mem.logEachAccess = False
+
+    def run(self):
+        """
+        Begin the attached MIDCA cycle.
+
+        Initializes the MIDCA object and runs the cycle.
+        """
+        self.MIDCACycle.init()
+        self.MIDCACycle.initGoalGraph(cmpFunc=plan.worldGoalComparator)
+        self.MIDCACycle.run(phaseDelay=0.25, verbose=AutoOperator.VERBOSITY)
 
 
 if __name__ == '__main__':
@@ -546,7 +610,7 @@ if __name__ == '__main__':
 
     elif serveType == "operator":
         userID = sys.argv[3]
-        opClient = OperatorClient('localhost', port, userID)
+        opClient = AutoOperator('localhost', port, userID)
         opClient.run()
 
     elif serveType == "agent":
