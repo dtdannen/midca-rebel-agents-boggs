@@ -114,7 +114,7 @@ def generate_optr_modules(opID, rejectionProb=0.0):
     return modules
 
 
-def run_visible_test(world, moveLimit=500):
+def run_visible_test(world, limit=500):
     """
     Run a test using the given world for the given time, then record the results.
     """
@@ -122,7 +122,7 @@ def run_visible_test(world, moveLimit=500):
     serverExists = False
     for port in SERVER_PORTS:
         try:
-            server = wc.WorldServer((SERVER_ADDR, port), world, score, limit=moveLimit)
+            server = wc.WorldServer((SERVER_ADDR, port), world, score, limit=limit)
             serverThread = threading.Thread(target=server.serve_forever)
             serverThread.start()
             time.sleep(1)
@@ -164,7 +164,7 @@ def run_visible_test(world, moveLimit=500):
     return score
 
 
-def run_test(world, moveLimit=500, rebel=True, rejectionProb=0.0):
+def run_test(world, limit=500, rebel=True, rejectionProb=0.0):
     """
     Run a test using the given world, agent, and operator, then record the results.
     """
@@ -172,7 +172,7 @@ def run_test(world, moveLimit=500, rebel=True, rejectionProb=0.0):
     serverExists = False
     for port in SERVER_PORTS:
         try:
-            server = wc.WorldServer((SERVER_ADDR, port), world, score, limit=moveLimit)
+            server = wc.WorldServer((SERVER_ADDR, port), world, score, limit=limit)
             serverThread = threading.Thread(target=server.serve_forever)
             serverThread.start()
             time.sleep(1)

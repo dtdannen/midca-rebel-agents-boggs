@@ -1,6 +1,6 @@
 Operator Handle Rebels Flexible Module
 **************************************
 
-.. autoclass:: modules.evaluate.OperatorHandleRebelsFlexible
+.. autoclass:: modules.evaluate.OperatorHandleRebelsStochastic
     :members:
     :undoc-members:

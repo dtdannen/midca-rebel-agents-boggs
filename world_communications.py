@@ -11,7 +11,7 @@ from cPickle import dumps, loads
 import SocketServer as SS
 import socket
 import os
-from time import sleep
+from time import sleep, time
 import sys
 import logging
 
@@ -96,10 +96,8 @@ class WorldServer(SS.TCPServer):
             os.system('clear')
             worldState = self.server.world.status_display()
             print(worldState)
-            print(self.server.actsLeft)
             score = self.server.world.score
             print("Enemies: {} | Civis: {}".format(score[0], score[1]))
-            self.server.log.info("Ticks left: {}".format(self.server.actsLeft))
             self.server.log.info("Enemies: {} | Civis: {}".format(score[0], score[1]))
             self.server.scoreObj[0] = score[0]
             self.server.scoreObj[1] = score[1]
@@ -151,13 +149,11 @@ class WorldServer(SS.TCPServer):
                 user.view(dng)
                 pickledMap = dumps(user.map)
                 self.send_data(pickledMap)
-                self.server.actsLeft -= 1
 
                 log.info("\tSent world state to {}".format(user))
-                log.info("\tSteps left: {}".format(self.server.actsLeft))
 
-                if self.server.actsLeft <= 0:
-                    log.info("Shutting down server")
+                if self.server.timeLeft <= 0:
+                    log.info("Shutting down server, time out")
                     self.server.server_close()
 
             elif msgType == ACTION_SEND:
@@ -172,7 +168,7 @@ class WorldServer(SS.TCPServer):
                         msgs[userID] = [("Action success", userID)]
                 self.display()
                 if self.server.scoreObj[0] == 1.0:
-                    log.info("Shutting down server")
+                    log.info("Shutting down server, all enemies dead")
                     self.server.server_close()
 
             elif msgType == UPDATE_SEND:
@@ -279,7 +275,9 @@ class WorldServer(SS.TCPServer):
         self.world = world
         self.queuedGoals = {}
         self.messages = {}
-        self.actsLeft = limit
+        self.timeLimit = limit
+        self.startTime = time()
+        self.endTime = self.startTime + self.timeLimit
         self.scoreObj = scoreObj
 
         # Logging stuff
@@ -291,6 +289,11 @@ class WorldServer(SS.TCPServer):
                                       datefmt="%H:%M:%S")
         handler.setFormatter(formatter)
         self.log.addHandler(handler)
+
+    @property
+    def timeLeft(self):
+        """Indicate how much time is left for the world simulation to run."""
+        return self.endTime - time()
 
 
 class Client(object):

@@ -5,6 +5,18 @@ Progress Report
 Milestones
 ==========
 
+August 4
+--------
+
+We have just completed adding code which allows us to run multiple,
+configurable tests sequentially with minimal effort. The testing code
+allows us to specify a variety of options, including the size of the
+board, the number of enemies, civilians, or agents, and the length of
+time each test should run for. The testing code records the resulting
+score of each test (currently the proportion of enemies killed and the
+proportion of civilians alive), and stores the results of all tests in a
+file.
+
 July 27
 -------
 
@@ -95,7 +107,7 @@ they are run:
 
 #. Plan phase
 
-   -  :py:class:`MIDCA.planning.GenericPyhopPlanner` module
+   -  :py:class:`~modules.plan.GenericPyhopPlanner` module
 
 #. Act phase
 
@@ -172,7 +184,7 @@ order they are run:
 
 #. Eval phase
 
-   -  :py:class:`~modules.evaluate.OperatorHandleRebelsFlexible` module
+   -  :py:class:`~modules.evaluate.OperatorHandleRebelsStochastic` module
 
 #. Plan phase
 
@@ -184,6 +196,38 @@ order they are run:
 
 Changes to Previous Version
 ===========================
+
+August 4
+--------
+
+Easy Testing
+~~~~~~~~~~~~
+
+We have added testing code which allows us to run multiple tests in one
+go and collect the results. The testing functions are in ``testing.py``,
+and are called from the demo code. There are two primary functions for
+this: ``run_visible_test`` and ``run_test``. ``run_visible_test`` is
+somewhat deprecated, but still kept around because, as the name
+suggests, it allows us to run tests where each agent is opened in a
+different (and thus easily visible) terminal. The ``run_test`` function
+runs each agent in an invisible ``Process`` using python's
+``multiprocessing`` library.The function takes as input a world to run
+the test on, a time limit for running the test (in seconds), a ``bool``
+which determines whether agents should rebel or not, and a ``float``
+between 0.0 and 1.0 which determines the probability that an operator
+rejects a rebellion. The function returns the final score of the world
+as given by ``world.score``.
+
+Logging
+~~~~~~~
+
+As part of making tests easier, they also became invisible, and so we
+added logging functionality into the code. A single python ``Logger``
+object is created for each agent and operator at the beginning of a run
+of tests, and every MIDCA module takes the ``Logger`` as input. Each
+module logs important info, which is stored in a ``.log`` file named for
+the agent in question. The world server and the ``World`` object itself
+also log info which is useful to know.
 
 July 27
 -------
