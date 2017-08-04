@@ -13,7 +13,7 @@ import socket
 import os
 from time import sleep
 import sys
-import threading
+import logging
 
 from MIDCA import base
 from MIDCA.modules import planning
@@ -34,6 +34,37 @@ DIALOG_SEND = 7
 DIALOG_REQ = 8
 
 
+DECLARE_METHODS_FUNC = d_mthds.declare_methods
+DECLARE_OPERATORS_FUNC = d_ops.declare_operators
+PLAN_VALIDATOR = plan.worldPlanValidator
+DISPLAY_FUNC = world_utils.draw_World
+VERBOSITY = 0
+PHASES = ["Perceive", "Interpret", "Eval", "Intend", "Plan", "Act"]
+AGENT_MODULES = {"Perceive":  [perceive.RemoteObserver(),
+                               perceive.ShowMap()],
+                 "Interpret": [interpret.CompletionEvaluator(),
+                               interpret.StateDiscrepancyDetector(),
+                               interpret.GoalValidityChecker(),
+                               interpret.DiscrepancyExplainer(),
+                               interpret.RemoteUserGoalInput()],
+                 "Eval":      [evaluate.GoalManager(),
+                               evaluate.HandleRebellion()],
+                 "Intend":    [intend.QuickIntend()],
+                 "Plan":      [planning.GenericPyhopPlanner(DECLARE_METHODS_FUNC,
+                                                            DECLARE_OPERATORS_FUNC,
+                                                            PLAN_VALIDATOR,
+                                                            verbose=VERBOSITY)],
+                 "Act":       [act.SimpleAct()]
+                 }
+AUTO_OP_MODULES = {"Perceive": [perceive.OperatorObserver()],
+                   "Interpret": [interpret.OperatorInterpret()],
+                   "Eval": [evaluate.OperatorHandleRebelsStochastic()],
+                   "Intend": [],
+                   "Plan": [plan.OperatorPlanGoals()],
+                   "Act": [act.OperatorGiveGoals()]
+                   }
+
+
 def msgSetup(func):
     """Open a connection before the func and close it after."""
     def fullMsgFunc(self, *args, **kwargs):
@@ -49,27 +80,10 @@ class WorldServer(SS.TCPServer):
     """
     Special TCP server class which simulates the world.
 
-    Network interactions:
-    User asking for world state --> World
-        World replying with world state --> User
-
-    Agent asking for world state --> World
-        World replying with world state --> Agent
-
-    User sending action --> World
-        World simulates action
-
-    Agent sending action --> World
-        World simulates action
-
-    User sending MIDCA an update --> World
-        World updates specified MIDCA agent's knowledge
-
-    Agent sending update to user --> World
-        World updates specified user's knowledge
-
-    User sending MIDCA a command --> World
-        World gives the command to the specified MIDCA agent
+    Contains a copy of the world and a handler class which is able to interpret
+    and appropriately reply to requests. It also limits the number of times it
+    can receive an action before the server quits and the simulation ends, allowing
+    us to limit the length of the simulations.
     """
 
     class HandlerClass(SS.StreamRequestHandler):
@@ -77,8 +91,18 @@ class WorldServer(SS.TCPServer):
 
         def setup(self):
             SS.StreamRequestHandler.setup(self)
+
+        def display(self):
             os.system('clear')
-            print(self.server.world.status_display())
+            worldState = self.server.world.status_display()
+            print(worldState)
+            print(self.server.actsLeft)
+            score = self.server.world.score
+            print("Enemies: {} | Civis: {}".format(score[0], score[1]))
+            self.server.log.info("Ticks left: {}".format(self.server.actsLeft))
+            self.server.log.info("Enemies: {} | Civis: {}".format(score[0], score[1]))
+            self.server.scoreObj[0] = score[0]
+            self.server.scoreObj[1] = score[1]
 
         def read_data(self):
             """Read incoming data until we see \254."""
@@ -110,8 +134,12 @@ class WorldServer(SS.TCPServer):
             dng = self.server.world
             qGoals = self.server.queuedGoals
             msgs = self.server.messages
+            log = self.server.log
 
             self.data = self.read_data()
+
+            log.info("Data recv'd: {}".format(self.data))
+
             self.data = self.data.split(':')
             msgType = int(self.data[0])
             userID = self.data[1]
@@ -123,15 +151,29 @@ class WorldServer(SS.TCPServer):
                 user.view(dng)
                 pickledMap = dumps(user.map)
                 self.send_data(pickledMap)
+                self.server.actsLeft -= 1
+
+                log.info("\tSent world state to {}".format(user))
+                log.info("\tSteps left: {}".format(self.server.actsLeft))
+
+                if self.server.actsLeft <= 0:
+                    log.info("Shutting down server")
+                    self.server.server_close()
 
             elif msgType == ACTION_SEND:
                 # Request format: ACTION_SEND:USERID:ACTIONSTR
                 success = dng.apply_action_str(msgData[0], userID)
                 if success:
                     if userID in msgs:
+                        log.info("\tSuccessfully applied action")
                         msgs[userID].append(("Action success", userID))
                     else:
+                        log.info("\Failed to applied action")
                         msgs[userID] = [("Action success", userID)]
+                self.display()
+                if self.server.scoreObj[0] == 1.0:
+                    log.info("Shutting down server")
+                    self.server.server_close()
 
             elif msgType == UPDATE_SEND:
                 # Request format: UPDATE_SEND:USERID:COMMAND
@@ -146,6 +188,7 @@ class WorldServer(SS.TCPServer):
                     for obj in objs:
                         listStr += "{} = {}\n".format(repr(obj), obj.id)
                     self.send_data(listStr)
+                    log.info("\tSent list of objects to {}".format(userID))
 
                 elif cmd == "send":
                     recipientID = msgData[1]
@@ -155,9 +198,12 @@ class WorldServer(SS.TCPServer):
                     if obj is None:
                         if userID in msgs:
                             msgs[userID].append("Updating error: {} not found".format(objID))
+                            log.warn("\tObject {} not found for inform command".format(objID))
                         else:
                             msgs[userID] = ["Updating error: {} not found".format(objID)]
+                            log.warn("\tObject {} not found for inform command".format(objID))
                     recipient.update_knowledge(obj)
+                    log.info("\t{} informed {} of {}".format(userID, recipientID, obj))
 
                 else:
                     raise NotImplementedError("UPDATE_SEND prefix {}".format(cmd))
@@ -168,14 +214,17 @@ class WorldServer(SS.TCPServer):
                 if recipientID not in [a.id for a in dng.agents]:
                     if userID in msgs:
                         msgs[userID].append("Sending error: {} not found".format(recipientID))
+                        log.warn("\tRecipient {} not found to give goal".format(recipientID))
                     else:
                         msgs[userID] = ["Sending error: {} not found".format(recipientID)]
+                        log.warn("\tRecipient {} not found to give goal".format(recipientID))
                     return
                 goalStr = "{};{}".format(msgData[1], userID)
                 if recipientID in qGoals:
                     qGoals[recipientID].append(goalStr)
                 else:
                     qGoals[recipientID] = [goalStr]
+                log.info("\t{} gave {} the goal {}".format(userID, recipientID, goalStr))
 
             elif msgType == GOAL_REQ:
                 # Request format: GOAL_REQ:USERID
@@ -186,6 +235,7 @@ class WorldServer(SS.TCPServer):
                 msgStr = ":".join(goalStrs)
                 self.send_data(msgStr)
                 del qGoals[userID]
+                log.info("\t{} received goal {}".format(userID, goalStrs))
 
             elif msgType == AGENT_REQ:
                 # Request format: AGENT_REQ:USERID
@@ -200,6 +250,7 @@ class WorldServer(SS.TCPServer):
                     msgs[recipientID].append((message, userID))
                 else:
                     msgs[recipientID] = [(message, userID)]
+                log.info("\t{} sent message {} to {}".format(userID, message, recipientID))
 
             elif msgType == DIALOG_REQ:
                 # Request format: GOAL_REQ:USERID[:SENDERID]
@@ -210,22 +261,36 @@ class WorldServer(SS.TCPServer):
 
                 if msgData[0] != "":
                     userMsgs = [msg[0] for msg in userMsgs if msg[1] == msgData[0]]
+                else:
+                    del msgs[userID]
 
                 pickledDialogs = dumps(userMsgs)
                 self.send_data(pickledDialogs)
-                del msgs[userID]
+                log.info("\t{} got messages {}".format(userID, userMsgs))
 
             else:
                 raise NotImplementedError("Message type {}".format(msgType))
 
             return
 
-    def __init__(self, server_address, world, bind_and_activate=True):
+    def __init__(self, server_address, world, scoreObj, limit=None, logFile='logs/worldServer.log'):
         """Create server class."""
-        SS.TCPServer.__init__(self, server_address, WorldServer.HandlerClass, bind_and_activate)
+        SS.TCPServer.__init__(self, server_address, WorldServer.HandlerClass, bind_and_activate=True)
         self.world = world
         self.queuedGoals = {}
         self.messages = {}
+        self.actsLeft = limit
+        self.scoreObj = scoreObj
+
+        # Logging stuff
+        self.log = logging.getLogger("world_sim")
+        self.log.setLevel(logging.INFO)
+        handler = logging.FileHandler(logFile, mode='w')
+        handler.setLevel(logging.INFO)
+        formatter = logging.Formatter(fmt="%(asctime)s: %(message)s",
+                                      datefmt="%H:%M:%S")
+        handler.setFormatter(formatter)
+        self.log.addHandler(handler)
 
 
 class Client(object):
@@ -468,46 +533,27 @@ class RemoteAgent(object):
 
     ``userID``, *str*:
         The ID of the agent which will be controlled by this object.
+
+    ``modules``, *dict*:
+        A dictionary assigning MIDCA module objects to a phase.
     """
 
-    DECLARE_METHODS_FUNC = d_mthds.declare_methods
-    DECLARE_OPERATORS_FUNC = d_ops.declare_operators
-    PLAN_VALIDATOR = plan.worldPlanValidator
-    DISPLAY_FUNC = world_utils.draw_World
-    VERBOSITY = 2
-    PHASES = ["Perceive", "Interpret", "Eval", "Intend", "Plan", "Act"]
-    MODULES = {"Perceive":  [perceive.RemoteObserver(),
-                             perceive.ShowMap()],
-               "Interpret": [interpret.CompletionEvaluator(),
-                             interpret.StateDiscrepancyDetector(),
-                             interpret.GoalValidityChecker(),
-                             interpret.DiscrepancyExplainer(),
-                             interpret.RemoteUserGoalInput()],
-               "Eval":      [evaluate.GoalManager(),
-                             evaluate.HandleRebellion()],
-               "Intend":    [intend.QuickIntend()],
-               "Plan":      [planning.GenericPyhopPlanner(DECLARE_METHODS_FUNC,
-                                                          DECLARE_OPERATORS_FUNC,
-                                                          PLAN_VALIDATOR,
-                                                          verbose=VERBOSITY)],
-               "Act":       [act.SimpleAct()]}
-
-    def __init__(self, addr, port, userID):
+    def __init__(self, addr, port, userID, modules=AGENT_MODULES):
         """Instantiate ``RemoteAgent`` object by creating appropriate MIDCA cycle."""
         self.conAddr = (addr, int(port))
         self.userID = userID
         self.client = MIDCAClient(addr, int(port), userID)
 
         self.MIDCACycle = base.PhaseManager(self.client,
-                                            display=RemoteAgent.DISPLAY_FUNC,
-                                            verbose=RemoteAgent.VERBOSITY)
+                                            display=DISPLAY_FUNC,
+                                            verbose=VERBOSITY)
 
-        for phase in RemoteAgent.PHASES:
+        for phase in PHASES:
             self.MIDCACycle.append_phase(phase)
-            for module in RemoteAgent.MODULES[phase]:
+            for module in modules[phase]:
                 self.MIDCACycle.append_module(phase, module)
 
-        self.MIDCACycle.set_display_function(RemoteAgent.DISPLAY_FUNC)
+        self.MIDCACycle.set_display_function(DISPLAY_FUNC)
 
         self.MIDCACycle.storeHistory = False
         self.MIDCACycle.mem.logEachAccess = False
@@ -520,7 +566,7 @@ class RemoteAgent(object):
         """
         self.MIDCACycle.init()
         self.MIDCACycle.initGoalGraph(cmpFunc=plan.worldGoalComparator)
-        self.MIDCACycle.run(phaseDelay=0.25, verbose=RemoteAgent.VERBOSITY)
+        self.MIDCACycle.run(phaseDelay=0.25, verbose=VERBOSITY)
 
 
 class AutoOperator(object):
@@ -552,18 +598,12 @@ class AutoOperator(object):
 
     ``userID``, *str*:
         The ID of the agent which will be controlled by this object.
+
+    ``modules``, *dict*:
+        A dictionary assigning MIDCA module objects to a phase.
     """
 
-    VERBOSITY = 2
-    PHASES = ["Perceive", "Interpret", "Eval", "Intend", "Plan", "Act"]
-    MODULES = {"Perceive": [perceive.OperatorObserver()],
-               "Interpret": [interpret.OperatorInterpret()],
-               "Eval": [evaluate.OperatorHandleRebelsFlexible()],
-               "Intend": [],
-               "Plan": [plan.OperatorPlanGoals()],
-               "Act": [act.OperatorGiveGoals()]}
-
-    def __init__(self, addr, port, userID):
+    def __init__(self, addr, port, userID, modules=AUTO_OP_MODULES):
         """Instantiate ``AutoOperator`` object by creating appropriate MIDCA cycle."""
         self.conAddr = (addr, int(port))
         self.userID = userID
@@ -571,11 +611,11 @@ class AutoOperator(object):
 
         self.MIDCACycle = base.PhaseManager(self.client,
                                             display=lambda x: str(x),
-                                            verbose=AutoOperator.VERBOSITY)
+                                            verbose=VERBOSITY)
 
-        for phase in AutoOperator.PHASES:
+        for phase in PHASES:
             self.MIDCACycle.append_phase(phase)
-            for module in AutoOperator.MODULES[phase]:
+            for module in modules[phase]:
                 self.MIDCACycle.append_module(phase, module)
 
         self.MIDCACycle.set_display_function(lambda x: str(x))
@@ -591,7 +631,7 @@ class AutoOperator(object):
         """
         self.MIDCACycle.init()
         self.MIDCACycle.initGoalGraph(cmpFunc=plan.worldGoalComparator)
-        self.MIDCACycle.run(phaseDelay=0.25, verbose=AutoOperator.VERBOSITY)
+        self.MIDCACycle.run(phaseDelay=0.25, verbose=VERBOSITY)
 
 
 if __name__ == '__main__':

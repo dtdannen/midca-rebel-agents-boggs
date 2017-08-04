@@ -3,53 +3,46 @@ MIDCA demo using a world-ish environment.
 
 Agent explores a world with a limited view.
 """
-import subprocess
-import time
-import threading
 
-# import MIDCA
-from MIDCA import base
-from MIDCA.modules import planning
+import json
+import logging
 
 # Domain Specific Imports
 import world_utils
-import world_communications as wc
-import world_operators as d_ops
-import world_methods as d_mthds
-from modules import perceive, interpret, evaluate, intend, act, plan
+import testing
+
+WORLD_FILE = './dng_files/largeMultiAgent.dng'
+world = world_utils.build_World_from_file(WORLD_FILE)
+
+TEST_NUM = 10
+REJECTION_PROB_STEP = 0.5
+
+WORLD_LOGGER = logging.getLogger("WorldEvents")
+handler = logging.FileHandler("logs/world_events.log")
+formatter = logging.Formatter(fmt="%(asctime)s:%(funcName)s: %(message)s",
+                              datefmt="%M:%S")
+WORLD_LOGGER.setLevel(logging.INFO)
+handler.setLevel(logging.INFO)
+handler.setFormatter(formatter)
+WORLD_LOGGER.addHandler(handler)
 
 
-DUNGEON_FILE = './dng_files/largeMultiAgent.dng'
-dng = world_utils.build_World_from_file(DUNGEON_FILE)
+rejectionProb = 0.0
+scores = {}
+while rejectionProb <= 1.0:
+    scores[rejectionProb] = []
+    for test in range(TEST_NUM):
+        world = world_utils.generate_random_drone_demo(dim=15,
+                                                       civilians=12,
+                                                       enemies=10,
+                                                       operators=1,
+                                                       agents=5,
+                                                       log=WORLD_LOGGER)
+        score = testing.run_test(world, moveLimit=100, rebel=True, rejectionProb=rejectionProb)
+        scores[rejectionProb].append(score)
+        print(score, test, rejectionProb)
+    rejectionProb += REJECTION_PROB_STEP
 
-SERVER_ADDR = 'localhost'
-SERVER_PORT = 9990
-# SERVER_ARGS = ["python", "./world_communications.py", "sim", str(SERVER_PORT), DUNGEON_FILE, " 2> serverError.log; sleep 5"]
-# server_call = ["xterm", "-e", " ".join(SERVER_ARGS)]
-# server = subprocess.Popen(server_call)
-server = wc.WorldServer((SERVER_ADDR, SERVER_PORT), dng)
-serverThread = threading.Thread(target=server.serve_forever)
-serverThread.start()
-time.sleep(1)
-
-
-operators = dng.operators
-agents = dng.agents
-
-opProcesses = []
-for op in operators:
-    outFileName = "logs/{}-Log.txt".format(op.id)
-    client_args = ["python", "./world_communications.py",
-                   "operator", str(SERVER_PORT), op.id,
-                   ">", outFileName, "; sleep 5"]
-    op_call = ["xterm", "-e", " ".join(client_args)]
-    opProcesses.append(subprocess.Popen(op_call))
-
-agtProcesses = []
-for agt in agents:
-    outFileName = "logs/{}-Log.txt".format(agt.id)
-    client_args = ["python", "./world_communications.py",
-                   "agent", str(SERVER_PORT), agt.id,
-                   "> ", outFileName, "; sleep 5"]
-    agt_call = ["xterm", "-e", " ".join(client_args)]
-    agtProcesses.append(subprocess.Popen(agt_call))
+print(scores)
+with open('results.txt', 'w') as resFile:
+    json.dump(scores, resFile)

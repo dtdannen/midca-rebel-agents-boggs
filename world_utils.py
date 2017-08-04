@@ -11,6 +11,7 @@ in some way.
 from copy import deepcopy
 from random import randint
 from pickle import dumps, loads
+import logging
 import os
 import sys
 import traceback
@@ -575,11 +576,11 @@ class World(object):
     """
     Class representing an entire world.
 
-    Contains a world map, the state of doors and chests, and changes the
-    environment when needed.
+    Contains a world map and all objects on it, and handles any changing of or
+    accessing data from the world.
     """
 
-    def __init__(self, dim):
+    def __init__(self, dim, log=logging.getLogger("dummy")):
         """
         Initialize a blank world of size `dim`x`dim`.
         """
@@ -589,6 +590,9 @@ class World(object):
         self.dim = self.hgt = self.wdt = dim
         self.floor = {}
         self.users = {}
+        self.log = log
+        self.log.info("\n\n")
+        self.log.info("New world made")
 
     @property
     def all_users(self):
@@ -635,6 +639,17 @@ class World(object):
     @property
     def civilians(self):
         return self.filter_objects(objType=NPC, civi=True)
+
+    @property
+    def score(self):
+        """
+        Return a pair which indicates the current score.
+        """
+        enemiesDead = len(self.filter_objects(civi=False, alive=False))
+        civisAlive = len(self.filter_objects(civi=True, alive=True))
+        enemyKillRatio = float(enemiesDead)/len(self.enemies)
+        civiLiveRatio = float(civisAlive)/len(self.civilians)
+        return (enemyKillRatio, civiLiveRatio)
 
     def filter_objects(self, **kwargs):
         """Return a list of known objects whose attributes fit the filters."""
@@ -730,6 +745,8 @@ class World(object):
             self.floor[location].append(obj)
         else:
             self.floor[location] = [obj]
+
+        self.log.info("Placed object {}".format(obj))
         return obj
 
     def remove_object(self, objID):
@@ -750,6 +767,7 @@ class World(object):
             self.floor[objLoc].append(obj)
         else:
             self.floor[objLoc] = [obj]
+        self.log.info("Added {}".format(obj))
 
     def remove_object_at(self, objType, loc):
         """Remove the object at the given location."""
@@ -763,12 +781,15 @@ class World(object):
         for obj in self.floor[loc]:
             if obj.objType == objType:
                 remove_index = self.floor[loc].index(obj)
+                break
         if remove_index == -1:
             print("There's no {} at {}".format(objType, loc))
             return False
         del self.floor[loc][remove_index]
         if len(self.floor[loc]) == 0:
             del self.floor[loc]
+
+        self.log.info("Removed obj {}".format(obj))
         return True
 
     def teleport_agent(self, dest, userID):
@@ -781,6 +802,8 @@ class World(object):
             print("Can't move the agent to {}".format(dest))
             return False
         user.at = dest
+
+        self.log.info("Teleported agent {} to {}".format(user, dest))
         return True
 
     def move_agent(self, moveDir, userID):
@@ -806,6 +829,8 @@ class World(object):
 
         self.take_damage(dest, userID)
         user.move(moveDir)
+
+        self.log.info("Agent {} moved {} to {}".format(user, moveDir, dest))
         return True
 
     def take_damage(self, loc, userID):
@@ -842,6 +867,7 @@ class World(object):
             key.taken = True
             key.location = None
             user.take_key(keyLoc)
+            self.log.info("Agent {} took {}".format(user, key))
             return True
         print("There's no key at {}".format(keyLoc))
         return False
@@ -865,6 +891,7 @@ class World(object):
         if coin:
             self.remove_object_at(COIN, coinLoc)
             user.take_coin(coinLoc)
+            self.log.info("Agent {} took {}".format(user, coin))
             return True
         print("There's no coin at {}".format(coinLoc))
         return False
@@ -895,6 +922,7 @@ class World(object):
                 if obj.objType == DOOR:
                     obj.passable = True
                 user.unlock(target)
+                self.log.info("Agent {} unlocked {}".format(user, obj))
                 return True
         print("There's no locked object at {}".format(target))
         return False
@@ -905,6 +933,7 @@ class World(object):
         target = user.at
         killed = self.bombed_at(target)
         user.bomb()
+        self.log.info("Agent {} bombed {}, killing {}".format(user, target, killed))
         return killed
 
     def bombed_at(self, target):
@@ -913,10 +942,11 @@ class World(object):
         surroundingObjs = self.get_objects_around(target, BOMB_RANGE, makeCopy=False)
         for loc in surroundingObjs:
             for obj in surroundingObjs[loc]:
-                if obj.objType == NPC:
+                if obj.objType == NPC and obj.alive:
                     killed += 1
                     obj.alive = False
                     obj.passable = True
+                    self.log.info("Bomb at {} killed {}".format(target, obj))
         return killed
 
     def unlock(self, target, key=None):
@@ -1504,6 +1534,7 @@ class WorldMap(World):
         self.floor = {}
         self.users = {agent.id: agent}
         self.agent = agent
+        self.log = DummyLog()
 
     def teleport_agent(self, dest):
         """Override a method the map shouldn't do."""
@@ -1612,6 +1643,8 @@ class WorldMap(World):
                 return (False, 'no-target')
 
             bombLoc = self.get_closest_adjacent(target.location, self.agent.at)
+            if bombLoc is None:
+                return (False, 'no-access')
             objsAroundTarget = self.get_objects_around(bombLoc, BOMB_RANGE)
             for loc in objsAroundTarget:
                 for obj in objsAroundTarget[loc]:
@@ -1885,7 +1918,7 @@ class Agent(object):
         """
         diffs = {}
         if self.__name__ != other.__name__:
-            diffs['__name__': (self.__name, other.__name__)]
+            diffs['__name__': (self.__name__, other.__name__)]
         if self.at != other.at:
             diffs['at': (self.at, other.at)]
         if self.vision != other.vision:
@@ -1955,9 +1988,9 @@ def draw_World(dng):
     print(str(dng))
 
 
-def generate_random_drone_demo(dim, civilians, enemies, operators, agents):
+def generate_random_drone_demo(dim, civilians, enemies, operators, agents, log=logging.getLogger("dummy")):
     """Create a blank World and populate it with appropriate NPCs and users."""
-    dng = World(dim)
+    dng = World(dim, log)
     for _ in range(civilians):
         while not dng.place_object(NPC, dng.random_loc(), civi=True):
             pass
@@ -1974,7 +2007,7 @@ def generate_random_drone_demo(dim, civilians, enemies, operators, agents):
 
     for agnNum in range(agents):
         agnName = "Agt" + str(agnNum)
-        vision = randint(1, MAX_VISION_RANGE)
+        vision = randint(BOMB_RANGE, MAX_VISION_RANGE)
         while not dng.add_user(agnName, dng.random_loc(), vision, AGENT):
             pass
 
@@ -2405,7 +2438,7 @@ def goal_from_str(string):
     """
     args = []
     kwargs = {}
-    strippedString = string[5:-1]
+    strippedString = string[string.index("Goal")+4:].strip('()')
     dataStrs = strippedString.split(',')
     for dataStr in dataStrs:
         if ':' in dataStr:
@@ -2422,6 +2455,17 @@ def goal_from_str(string):
 
     return resGoal
 
+
+def goals_equal(goal1, goal2):
+    """Indicate whether two goals are equal."""
+    return str(goal1) == str(goal2)
+
+
+class DummyLog(object):
+    """This is my greatest shame. Used to take the place of a log in a world map."""
+
+    def info(self, val):
+        pass
 
 if __name__ == '__main__':
     # dng = interactive_World_maker()

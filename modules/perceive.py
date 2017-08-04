@@ -1,5 +1,6 @@
 import copy
 import os
+import logging
 
 from MIDCA import base
 
@@ -42,7 +43,12 @@ class Observer(base.BaseModule):
 
 
 class ShowMap(base.BaseModule):
-    """Lets MIDCA show the agent's map of the world."""
+    """Displays the MIDCA agent's perception of the world map."""
+
+    def __init__(self, logger=logging.getLogger("dummy")):
+        """Instantiate a ``ShowMap`` module; with a logger if desired."""
+        super(ShowMap, self).__init__()
+        self.logger = logger
 
     def init(self, world, mem):
         self.mem = mem
@@ -53,7 +59,7 @@ class ShowMap(base.BaseModule):
             os.system('clear')
         agent = self.mem.get(self.mem.STATE)
         agent.draw_map()
-        print("Health: {}".format(agent.damage))
+        self.logger.info("\n" + str(agent.map))
 
 
 class RemoteObserver(base.BaseModule):
@@ -65,26 +71,55 @@ class RemoteObserver(base.BaseModule):
     have direct access to the world.
     """
 
+    def __init__(self, logger=logging.getLogger("dummy")):
+        """Instantiate a ``RemoteObserver`` module; with a logger if desired."""
+        super(RemoteObserver, self).__init__()
+        self.logger = logger
+
     def init(self, world, mem):
+        """Give module access to critical MIDCA information."""
         self.mem = mem
         self.client = world
 
     def observe(self):
         """Tell the agent to look at its surroundings."""
         return self.client.observe()
+        self.logger.info("Observed world")
 
     def run(self, cycle, verbose=2):
+        """Agent gets updated map info and messages."""
+        self.logger.info("Started cycle {}".format(cycle))
+
         self.observe()
         currAgent = self.client.agent()
         agentCopy = copy.deepcopy(currAgent)
         self.mem.add(self.mem.STATES, agentCopy)
         self.mem.set(self.mem.STATE, currAgent)
+        self.logger.info("Recorded current state")
+
         states = self.mem.get(self.mem.STATES)
         if len(states) > 400:
             # print "trimmed off 200 old stale states"
             states = states[200:]
             self.mem.set(self.mem.STATES, states)
+            self.logger.info("Trimmed 200 old states")
         # End Memory Usage Optimization
+
+        msgs = self.client.get_dialogs()
+        if msgs is None:
+            msgs = []
+        self.logger.info("Got messages:")
+
+        if verbose >= 1:
+            print("Messages:")
+        for msg in msgs:
+            msgLogStr = "\t{}:\n\t{}".format(msg[1], msg[0])
+            if verbose >= 1:
+                print(msgLogStr)
+            self.logger.info(msgLogStr)
+
+        self.mem.set("MESSAGES", msgs)
+        self.logger.info("Remembered messages")
 
         if verbose >= 1:
             print "World observed."
@@ -93,7 +128,7 @@ class RemoteObserver(base.BaseModule):
         if trace:
             trace.add_module(cycle, self.__class__.__name__)
             trace.add_data("WORLD", agentCopy)
-            trace.add_data("CURR WORLD", agentCopy)
+            trace.add_data("MESSAGES", msgs)
 
 
 class OperatorObserver(base.BaseModule):
@@ -107,6 +142,11 @@ class OperatorObserver(base.BaseModule):
     operator is appended to "STATES".
     """
 
+    def __init__(self, logger=logging.getLogger("dummy")):
+        """Instantiate an ``OperatorObserver`` module; with a logger if desired."""
+        super(OperatorObserver, self).__init__()
+        self.logger = logger
+
     def init(self, world, mem):
         """Give critical information to the module to initialize it."""
         self.mem = mem
@@ -114,24 +154,36 @@ class OperatorObserver(base.BaseModule):
 
     def run(self, cycle, verbose=2):
         """Update world state information in MIDCA's memory."""
+        self.logger.info("Started cycle {}".format(cycle))
+
         self.client.observe()
         optr = self.client.operator()
         optrCopy = copy.deepcopy(optr)
         self.mem.add(self.mem.STATES, optrCopy)
         self.mem.set(self.mem.STATE, optr)
+        self.logger.info("Recorded current state")
 
         msgs = self.client.get_dialogs()
         if msgs is None:
             msgs = []
-        print("Messages:")
+        self.logger.info("Got messages:")
+
+        if verbose >= 1:
+            print("Messages:")
         for msg in msgs:
-            print("{}:\n\t{}".format(msg[0], msg[1]))
+            msgLogStr = "\t{}:\n\t{}".format(msg[1], msg[0])
+            if verbose >= 1:
+                print(msgLogStr)
+            self.logger.info(msgLogStr)
+
         self.mem.set("MESSAGES", msgs)
+        self.logger.info("Remembered messages")
 
         states = self.mem.get(self.mem.STATES)
         if len(states) > 400:
             states = states[200:]
             self.mem.set(self.mem.STATES, states)
+            self.logger.debug("Trimmed 200 old states")
 
         if verbose >= 1:
             print "World observed."

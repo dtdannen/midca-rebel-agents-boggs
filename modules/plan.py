@@ -2,7 +2,11 @@
 
 import copy
 import math
-from MIDCA import base, goals
+import logging
+import traceback
+
+from MIDCA import base, goals, plans
+from MIDCA.modules import _plan
 
 
 def worldPlanValidator(state, plan):
@@ -51,10 +55,48 @@ class OperatorPlanGoals(base.BaseModule):
     stores the goal-agent pairs in MIDCA's memory.
     """
 
+    def __init__(self, logger=logging.getLogger("dummy")):
+        """Instantiate a ``OperatorPlanGoals`` module; with a logger if desired."""
+        super(OperatorPlanGoals, self).__init__()
+        self.logger = logger
+
     def init(self, world, mem):
         """Give the module crucial MIDCA information about memory and state."""
         self.mem = mem
         self.client = world
+
+    def check_enemy_valid(self, agt, enemy):
+        """
+        Ensure that the given enemy is a valid target for the agent.
+
+        The enemy is not valid if there exists an invalid goal which has the agent
+        targetting the enemy. ``invalidGoals`` will be a list of pairs, where the
+        first element is an ```Agent`` and the second is a ``Goal``.
+
+        Arguments:
+            ``agt``, *Agent*:
+                The ``Agent`` object which will be the subject of the goal.
+
+            ``enemy``, *Npc*:
+                The enemy which the agent will be targetting.
+
+            ``return``, *bool*:
+                Whether the enemy is valid or not.
+        """
+        self.logger.info("Checking if {} is valid target for {}".format(enemy, agt))
+        valid = True
+        invalidGoals = self.mem.get("INVALID_GOALS")
+        self.logger.debug("Got invalid goals {}".format(invalidGoals))
+        if not invalidGoals:
+            valid = True
+        else:
+            for goalPair in invalidGoals:
+                self.logger.info("Comparing invalid goal {} to Agent {} and enemy {}".format(goalPair, agt.id, enemy.id))
+                if goalPair[0] == agt.id and goalPair[1][0] == enemy.id:
+                    valid = False
+
+        self.logger.info("{} is a valid target: {}".format(enemy, valid))
+        return valid
 
     def get_closest_enemy(self, agt, enemies):
         """
@@ -65,8 +107,8 @@ class OperatorPlanGoals(base.BaseModule):
 
         Arguments:
 
-        ``agt``, *Agent*:
-            The ``Agent`` object which will be the subject of the goal.
+        ``agt``, *str*:
+            The ID string of the ``Agent`` which will receive the goal.
 
         ``enemeis``, *sequence*:
             A list of ``Npc`` objects which are potential targets.
@@ -74,20 +116,19 @@ class OperatorPlanGoals(base.BaseModule):
         ``returns``, *Npc*:
             The closest enemy to the given agent, as the crow flies.
         """
-        invalidTargets = self.mem.get("INVALID_TARGETS")
-        if invalidTargets is None:
-            invalidTargets = []
+        self.logger.info("Getting closest enemy to {}".format(agt))
         agentObj = self.client.operator().map.get_user(agt)
         closestVal = float("inf")
         closest = None
         for enemy in enemies:
-            if enemy.id in invalidTargets:
+            if not self.check_enemy_valid(agentObj, enemy):
                 continue
             dist = math.sqrt((agentObj.at[0] - enemy.location[0])**2 + (agentObj.at[1] - enemy.location[1])**2)
             if dist < closestVal:
                 closestVal = dist
                 closest = enemy
 
+        self.logger.info("Closest enemy is {}".format(closest))
         return closest
 
     def run(self, cycle, verbose=2):
@@ -99,6 +140,7 @@ class OperatorPlanGoals(base.BaseModule):
         agent. It does **not** actually order the agents to complete the goals,
         though.
         """
+        self.logger.info("Retrieving available agents, living enemies, and the op")
         availAgents = self.mem.get("AVAIL_AGENTS")
         enemies = self.mem.get("ENEMIES")
         optr = self.client.operator()
@@ -107,10 +149,127 @@ class OperatorPlanGoals(base.BaseModule):
 
         goalPairs = []
         for agt in availAgents:
+            self.logger.info("Finding goal for {}".format(agt))
             target = self.get_closest_enemy(agt, enemies)
             if target is None:
                 continue
             goal = goals.Goal(target.id, predicate='killed', user=optr.id)
+            self.logger.info("Found goal {}".format(goal))
             goalPairs.append((agt, goal))
 
         self.mem.set("PLANNED_GOALS", goalPairs)
+        self.logger.info("Saved planned goals")
+
+
+class GenericPyhopPlanner(base.BaseModule):
+    """
+    Whereas the PyHopPlanner class below is optimized for use with MIDCA's
+    built-in world simulator, this planner is more generalized. It assumes that
+    the world state stored in MIDCA's memory is also the world state that will
+    be expected by the planning methods and operators. Also, it expects to
+    receive 'declare_methods' and 'declare_operators' methods as arguments.
+    These should initialize pyhop for the desired planning domain. The
+    plan_validator arg should be a method which takes a world state and a plan
+    as args and returns whether the plan should be used. This will only be
+    called on old plans that are retrieved.
+    """
+
+    def __init__(self, declare_methods, declare_operators, plan_validator=None, verbose=2):
+        declare_methods()
+        declare_operators()
+        self.working = True
+        self.verbose = verbose
+        self.validate_plan = plan_validator
+        # note by default (no plan validator)
+        # plans execute to completion unless goals change
+
+    def get_old_plan(self, state, goals, verbose):
+        verbose = self.verbose
+        try:
+            plan = self.mem.get(self.mem.GOAL_GRAPH).getMatchingPlan(goals)
+            if not plan:
+                return None
+            try:
+                if self.validate_plan:
+                    valid = self.validate_plan(state, plan)
+                    if valid:
+                        if verbose >= 2:
+                            print "Old plan found that tests as valid:", plan
+                    else:
+                        if verbose >= 2:
+                            print "Old plan found that tests as invalid:", plan, ". removing from stored plans."
+                        self.mem.get(self.mem.GOAL_GRAPH).removePlan(plan)
+                else:
+                    if verbose >= 2:
+                        print "no validity check specified. assumingeold plan is valid."
+                    valid = True
+            except Exception as e:
+                if verbose >= 2:
+                    print "Error validating plan:", plan, e
+                    self.mem.get(self.mem.GOAL_GRAPH).removePlan(plan)
+                valid = False
+        except AttributeError:
+            print "Error checking for old plans"
+            plan = None
+            valid = False
+        if valid:
+            return plan
+        return None
+
+    def get_new_plan(self, state, goals, verbose):
+        '''
+            Calls the pyhop planner to generate a new plan.
+        '''
+        verbose = self.verbose
+
+        if verbose >= 2:
+            print "Planning..."
+        try:
+            plan = _plan.pyhop.pyhop(state, [("achieve_goals", goals)], verbose=verbose)
+            # note: MIDCA does not convert its state and goals to pyhop state and
+            # goal objects. Therefore, pyhop will not print correctly if verbose is
+            # set to other than 0.
+        except:
+            if verbose >= 1:
+                print "Error in planning:", traceback.format_exc(), "\n-Planning failed."
+            return None
+        return plan
+
+    def run(self, cycle, verbose=2):
+        verbose = self.verbose
+        state = self.mem.get(self.mem.STATE)
+        if not state:
+            states = self.mem.get(self.mem.STATES)
+            if states:
+                state = states[-1]
+            else:
+                if verbose >= 1:
+                    print "No world state loaded. Skipping planning."
+                return
+        # now state is the most recent (or only) state and is non-null
+        goals = self.mem.get(self.mem.CURRENT_GOALS)
+        if not goals:
+            if verbose >= 2:
+                print "No goals received by planner. Skipping planning."
+            return
+        plan = self.get_old_plan(state, goals, verbose)
+        if verbose >= 2:
+            if plan:
+                print "Will not replan"
+            else:
+                print "Planning from scratch"
+        if not plan:
+            plan = self.get_new_plan(state, goals, verbose)
+            if not plan and plan != []:
+                return
+            # convert to MIDCA plan format
+            plan = plans.Plan(
+                              [plans.Action(action[0], *action[1:]) for
+                               action in plan], goals)
+            if verbose >= 1:
+                print "Planning complete."
+        if verbose >= 2:
+            print "Plan: ", plan
+        # save new plan
+        if plan is not None:
+            self.mem.get(self.mem.GOAL_GRAPH).addPlan(plan)

@@ -1,7 +1,9 @@
+"""Contains the MIDCA modules which relate to interpreting the world state."""
 from MIDCA import base, goals
 import re
 import socket
 import world_utils as wu
+import logging
 
 
 class StateDiscrepancyDetector(base.BaseModule):
@@ -14,6 +16,11 @@ class StateDiscrepancyDetector(base.BaseModule):
     between the simulated map of the old Agent and the real map of the current
     Agent.
     """
+
+    def __init__(self, logger=logging.getLogger("dummy")):
+        """Instantiate a ``StateDiscrepancyDetector`` module; with a logger if desired."""
+        super(StateDiscrepancyDetector, self).__init__()
+        self.logger = logger
 
     def init(self, world, mem):
         """Give module critical MIDCA data."""
@@ -46,32 +53,47 @@ class StateDiscrepancyDetector(base.BaseModule):
         discrepancies = self.mem.get(self.mem.DISCREPANCY)
         if discrepancies is None:
             discrepancies = {}
+        self.logger.info("Retrieved existing discrepancies:\n{}".format(discrepancies))
 
         if self.mem.trace:
             self.mem.trace.add_module(cycle, self.__class__.__name__)
 
         if verbose >= 1:
             print("\nDiscrepancy Check...")
+        self.logger.info("checking for discrepancies")
+
         currState = self.mem.get(self.mem.STATE)
         if self.mem.get(self.mem.ACTIONS):
             actions = self.mem.get(self.mem.ACTIONS)[-1]
+            self.logger.info("Retrieved executed actions: {}".format(actions))
+
             diffs = {}
             for action in actions:
                 expected = self.get_expected(action)
                 if not expected:
                     if verbose >= 1:
                         print("No previous state to expect from!")
+                        self.logger.warn("No previous state to check for discrepancies")
                         return
+
                 diffs = currState.diff(expected)
             if len(diffs) == 0:
                 self.mem.trace.add_data("DISCREPANCIES", None)
+                self.logger.info("No discrepancies found")
                 return
+
             if verbose >= 1:
                 print("Found {} discrepancies".format(len(diffs.keys())))
+            self.logger.info("Found {} discrepancies:".format(len(diffs)))
+
             if verbose >= 2:
                 print("Discrepancies found are {}".format(diffs))
+            for diff in diffs:
+                self.logger.info("{} : {}".format(diff, diffs[diff]))
+
             self.mem.set(self.mem.DISCREPANCY, diffs)
             self.mem.trace.add_data("DISCREPANCIES", diffs)
+            self.logger.info("Remembered discrepancies")
 
         else:
             if verbose >= 1:
@@ -86,6 +108,11 @@ class GoalValidityChecker(base.BaseModule):
     current state, and reports any goals which are not valid.
     """
 
+    def __init__(self, logger=logging.getLogger("dummy")):
+        """Instantiate a ``GoalValidityChecker`` module; with a logger if desired."""
+        super(GoalValidityChecker, self).__init__()
+        self.logger = logger
+
     def init(self, world, mem):
         self.mem = mem
         self.world = world
@@ -97,29 +124,37 @@ class GoalValidityChecker(base.BaseModule):
         discrepancies = self.mem.get(self.mem.DISCREPANCY)
         if discrepancies is None:
             discrepancies = {}
+        self.logger.info("Retrieved discrepancies")
 
         state = self.mem.get(self.mem.STATE)
         if state is None:
             if verbose >= 1:
                 print("No state to check goal validity against, continuing")
+            self.logger.warn("No state to diff against")
             return
+        self.logger.info("Retrieved state")
 
         currGoals = self.mem.get(self.mem.CURRENT_GOALS)
         if currGoals is None:
             if verbose >= 1:
                 print("No current goals to check validity, continuing")
+            self.logger.info("Retrieved discrepancies")
             return
+        self.logger.info("Retrieved current goals")
 
+        self.logger.info("Checking for discrepancies")
         for goal in currGoals:
             goalValid = state.valid_goal(goal)
             if not goalValid[0]:
                 discrepancies[goal] = goalValid[1]
                 if verbose >= 2:
                     print("Found goal discrepancy: {}={}".format(goal, goalValid[1]))
+                self.logger.info("Found goal discrepancy: {}={}".format(goal, goalValid[1]))
 
         self.mem.set(self.mem.DISCREPANCY, discrepancies)
         if self.mem.trace:
             self.mem.trace.add_data("DISCREPANCIES", discrepancies)
+        self.logger.info("Remembered discrepancies")
 
         if verbose >= 1:
                     print("End discrepancy check...\n")
@@ -127,6 +162,11 @@ class GoalValidityChecker(base.BaseModule):
 
 class DiscrepancyExplainer(base.BaseModule):
     """Allows MIDCA to explain discrepancies in the state."""
+
+    def __init__(self, logger=logging.getLogger("dummy")):
+        """Instantiate a ``DiscrepancyExplainer`` module; with a logger if desired."""
+        super(DiscrepancyExplainer, self).__init__()
+        self.logger = logger
 
     def init(self, world, mem):
         """Give module crucial MIDCA data, and clear explanations from mem."""
@@ -160,7 +200,7 @@ class DiscrepancyExplainer(base.BaseModule):
                 return 'no-object'
 
         if goalPred == 'killed':
-            if disc == 'no-target':
+            if disc == 'no-access' or disc == 'no-target':
                 return 'target-not-found'
             elif disc == 'civi-killed':
                 return 'civi-in-AOE'
@@ -188,6 +228,8 @@ class DiscrepancyExplainer(base.BaseModule):
         """
         self.mem.set(self.mem.EXPLANATION, None)
         self.mem.set(self.mem.EXPLANATION_VAL, None)
+        self.logger.info("Reset explanations")
+
         if self.mem.trace:
             self.mem.trace.add_module(cycle, self.__class__.__name__)
 
@@ -197,22 +239,31 @@ class DiscrepancyExplainer(base.BaseModule):
                 print("No discrepancies to explain.")
             self.mem.set(self.mem.EXPLANATION, None)
             self.mem.set(self.mem.EXPLANATION_VAL, None)
+            self.logger.info("No discrepancies to explain")
             return
+        self.logger.info("Found discrepancies")
 
+        self.logger.info("Beginning explanations")
         explanations = []
         for disc in discDict:
+            self.logger.info("Explaining discrepancy {}:{}".format(disc, discDict[disc]))
             explanations.append((disc, self.explain(disc, discDict[disc])))
 
+        self.logger.info("Explanations:")
         if verbose >= 2:
             print("Explanations:")
-            for explan in explanations:
-                print("  {}: {}".format(explan[0], explan[1]))
+        for explan in explanations:
+            explLogStr = "\t{}: {}".format(explan[0], explan[1])
+            if verbose >= 2:
+                print(explLogStr)
+            self.logger.info(explLogStr)
 
         self.mem.set(self.mem.DISCREPANCY, None)
         self.mem.set(self.mem.EXPLANATION, True)
         self.mem.set(self.mem.EXPLANATION_VAL, explanations)
         if self.mem.trace:
             self.mem.trace.add_data("EXPLANATIONS", explanations)
+        self.logger.info("Remembered explanations")
 
 
 class UserGoalInput(base.BaseModule):
@@ -380,7 +431,12 @@ class PrimitiveRemoteUserGoalInput(base.BaseModule):
 
 
 class RemoteUserGoalInput(base.BaseModule):
-    """Allows MIDCA to create a goal based on user input."""
+    """Allows the agent to receive goals from the server."""
+
+    def __init__(self, logger=logging.getLogger("dummy")):
+        """Instantiate a ``RemoteUserGoalInput`` module; with a logger if desired."""
+        super(RemoteUserGoalInput, self).__init__()
+        self.logger = logger
 
     def init(self, world, mem):
         self.mem = mem
@@ -394,7 +450,8 @@ class RemoteUserGoalInput(base.BaseModule):
         Currently, the user can tell the agent to move to a certain location or
         to open whatever is locked at the given objective point.
 
-        Goals are given as `goal-type args`, and currently valid goals are
+        Goals are given as `goal-type args`, and currently valid goals are::
+
             agent-at (x,y)
             open (x,y)
             killed targetID
@@ -404,33 +461,49 @@ class RemoteUserGoalInput(base.BaseModule):
 
         self.state = self.mem.get(self.mem.STATES)[-1]
 
+        self.logger.info("Gathering new goals")
         operatorInputs = self.world.get_new_goals()
         if not operatorInputs:
+            self.logger.info("No new goals, continuing")
             return
+        self.logger.info("Found new goal inputs:\n\t{}".format(operatorInputs))
 
         for rawGoal in operatorInputs:
             if rawGoal == "":
+                self.logger.info("Operator input is null")
                 continue
+
             try:
                 rawGoalStr, senderID = rawGoal.split(";")
             except ValueError as e:
-                print("Invalid goal string {}".format(rawGoal))
+                if verbose >= 1:
+                    print("Invalid goal string {}".format(rawGoal))
+                self.logger.info("Invalid goal string {}".format(rawGoal))
                 continue
+
             try:
                 argsIndex = rawGoalStr.index('(')
             except ValueError:
-                print("Invalid goal string {}".format(rawGoalStr))
+                if verbose >= 1:
+                    print("Invalid goal string {}".format(rawGoal))
+                self.logger.info("Invalid goal string {}".format(rawGoal))
                 continue
+
             goalStr = " ".join((rawGoalStr[:argsIndex], rawGoalStr[argsIndex:]))
+            self.logger.info("Operator goal input: {}".format(goalStr))
+
             goal, error = self.parse_input(goalStr, senderID)
             if goal:
-                print("User added goal; {}".format(goal))
+                if verbose >= 1:
+                    print("User added goal; {}".format(goal))
                 self.world.dialog(senderID, "Goal added")
             else:
+                self.logger.warn("Error with goal: {}".format(error))
                 self.world.dialog(senderID, "Error; {}".format(error))
 
             if goal:
                 self.mem.get(self.mem.GOAL_GRAPH).insert(goal)
+                self.logger.info("Added goal {}".format(goal))
                 if self.mem.trace:
                     self.mem.trace.add_data("ADDED GOAL", goal)
 
@@ -442,6 +515,7 @@ class RemoteUserGoalInput(base.BaseModule):
             return userIn
 
         goalData = userIn.split()
+        self.logger.info("Recv'd goal data {}".format(goalData))
 
         if goalData[0] not in acceptable_goals:
             error = "{} is not a valid goal command".format(goalData[0])
@@ -484,6 +558,11 @@ class RemoteUserGoalInput(base.BaseModule):
 class CompletionEvaluator(base.BaseModule):
     """Evaluates whether goals have been completed and new goals are needed."""
 
+    def __init__(self, logger=logging.getLogger("dummy")):
+        """Instantiate a ``CompletionEvaluator`` module; with a logger if desired."""
+        super(CompletionEvaluator, self).__init__()
+        self.logger = logger
+
     def init(self, world, mem):
         """Give the module critical MIDCA data."""
         self.mem = mem
@@ -496,40 +575,47 @@ class CompletionEvaluator(base.BaseModule):
             goals = self.mem.get(self.mem.CURRENT_GOALS)
         except KeyError:
             goals = []
+        self.logger.info("Retrieved state and goals")
 
         trace = self.mem.trace
         if trace:
             trace.add_module(cycle, self.__class__.__name__)
 
         goalGraph = self.mem.get(self.mem.GOAL_GRAPH)
+        self.logger.info("Retrieved goal graph")
 
         goals_changed = False
         if goals:
+            self.logger.info("Beginning completion check")
             for goal in goals:
                 if self.state.goal_complete(goal):
-                    print("Goal {} completed!".format(goal))
+                    if verbose >= 1:
+                        print("Goal {} completed!".format(goal))
                     self.world.dialog(goal['user'], "Goal complete")
-                    score = self.mem.get(self.mem.DELIVERED)
-                    if score:
-                        self.mem.set(self.mem.DELIVERED, score + 1)
-                    else:
-                        self.mem.set(self.mem.DELIVERED, 1)
                     goalGraph.remove(goal)
                     if trace:
                         trace.add_data("REMOVED GOAL", goal)
                     goals_changed = True
+                    self.logger.info("Removed complted goal {}".format(goal))
 
                 else:
-                    print("Goal {} not completed yet".format(goal))
+                    if verbose >= 1:
+                        print("Goal {} not completed yet".format(goal))
+                    self.logger.info("Goal {} not completed yet".format(goal))
 
             numPlans = len(goalGraph.plans)
             goalGraph.removeOldPlans()
             newNumPlans = len(goalGraph.plans)
             if numPlans != newNumPlans and verbose >= 1:
-                print "Removed {} plans that no longer apply.".format(numPlans - newNumPlans)
+                if verbose >= 1:
+                    print "Removed {} plans that no longer apply.".format(numPlans - newNumPlans)
                 goals_changed = True
+                self.logger.info("Removed {} plans".format(numPlans - newNumPlans))
         else:
-            print("No current goals, skipping eval")
+            if verbose >= 1:
+                print("No current goals, skipping eval")
+            self.logger.info("No current goals to evaluate for completion")
+
         if trace and goals_changed:
             trace.add_data("GOALS", goals)
 
@@ -542,6 +628,11 @@ class OperatorInterpret(base.BaseModule):
     including interpreting incoming messages and identifying enemies and available
     agents.
     """
+
+    def __init__(self, logger=logging.getLogger("dummy")):
+        """Instantiate a ``OperatorInterpret`` module; with a logger if desired."""
+        super(OperatorInterpret, self).__init__()
+        self.logger = logger
 
     def init(self, world, mem):
         """Give the MIDCA module access to important state and memory data."""
@@ -588,6 +679,9 @@ class OperatorInterpret(base.BaseModule):
                 rebelReason = data
             else:
                 rebelInfo.append("=".join([name, data]))
+        self.logger.info("Rebellion goal:\n\t{}".format(rebelGoal))
+        self.logger.info("Rebellion reason:\n\t{}".format(rebelReason))
+        self.logger.info("Rebellion info:\n\t{}".format(rebelInfo))
 
         altGoals = []
         for altGoalStr in altGoalsStrs:
@@ -597,7 +691,9 @@ class OperatorInterpret(base.BaseModule):
                 altGoals.append("reject")
             else:
                 altGoals.append("none")
-        return (rebelGoal, rebelReason, rebelInfo, altGoals)
+        self.logger.info("Alt goals:\n{}".format(altGoals))
+
+        return rebelGoal, rebelReason, rebelInfo, altGoals
 
     def run(self, cycle, verbose=2):
         """
@@ -612,21 +708,24 @@ class OperatorInterpret(base.BaseModule):
 
         msgs = self.mem.get("MESSAGES")
         currOp = self.client.operator()
+        self.logger.info("Retrieved messages and operator")
 
         activeAgents = self.mem.get("ACTIVE_AGENTS")
         if activeAgents is None:
             activeAgents = []
+        self.logger.info("Retrieved active agents:\n\t{}".format(activeAgents))
 
         rebellions = {}
         for msg in msgs:
+            self.logger.info("Interpretting message {}".format(msg))
             msgBody = msg[0]
             msgSender = msg[1]
-            # TODO: Figure out why new, unified rebel message isn't catching.
 
             # if a goal was successful added, that agent is now active
             if msgBody == 'Goal added':
                 if msgSender not in activeAgents:
                     self.mem.add("ACTIVE_AGENTS", msgSender)
+                    self.logger.info("Added {} to active agents".format(msgSender))
                 continue
 
             # if a goal was cancelled, that agent is now inactive
@@ -637,21 +736,29 @@ class OperatorInterpret(base.BaseModule):
                     if agt == msgSender:
                         activeAgents.remove(agt)
                 self.mem.set("ACTIVE_AGENTS", activeAgents)
+                self.logger.info("Removed {} from active agents".format(msgSender))
                 continue
 
             # if there's a rebellion, we need to flag that
             elif "rebellion" in msgBody:
                 rebGoal, rebReason, rebInfo, altGoals = self.interpret_rebellion_msg(msgBody)
-                self.mem.add("REBELLIONS", (rebGoal, rebReason, rebInfo, altGoals, msgSender))
+                rebData = (rebGoal, rebReason, rebInfo, altGoals, msgSender)
+                self.mem.add("REBELLIONS", rebData)
+                self.logger.info("Remembered rebellion data:\n{}".format(rebData))
 
         self.mem.set("ENEMIES", currOp.enemies)
+        self.logger.info("Remembered enemies")
 
         activeAgents = self.mem.get("ACTIVE_AGENTS")
-        print("Active agents: {}".format(activeAgents))
+        if verbose >= 1:
+            print("Active agents: {}".format(activeAgents))
+
         # activeAgents should be a dict with currently active agents as keys and
         # their goals as values.
         if activeAgents is None:
             activeAgents = []
         availAgents = set([agt.id for agt in currOp.map.agents]) - set(activeAgents)
-        print("Avail agents: {}".format(availAgents))
+        if verbose >= 1:
+            print("Avail agents: {}".format(availAgents))
         self.mem.set("AVAIL_AGENTS", availAgents)
+        self.logger.info("Remembered active and available agents")

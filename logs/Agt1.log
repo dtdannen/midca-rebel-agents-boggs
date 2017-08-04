@@ -1,0 +1,1399 @@
+55:16:perceive:91: Started cycle 0
+55:16:perceive:98: Recorded current state
+55:16:perceive:111: Got messages:
+55:16:perceive:122: Remembered messages
+55:16:interpret:464: Gathering new goals
+55:16:interpret:469: Found new goal inputs:
+	['']
+55:16:interpret:473: Operator input is null
+55:16:interpret:578: Retrieved state and goals
+55:16:interpret:585: Retrieved goal graph
+55:16:interpret:617: No current goals to evaluate for completion
+55:16:interpret:56: Retrieved existing discrepancies:
+{}
+55:16:interpret:63: checking for discrepancies
+55:16:interpret:127: Retrieved discrepancies
+55:16:interpret:135: Retrieved state
+55:16:interpret:141: Retrieved discrepancies
+55:16:interpret:231: Reset explanations
+55:16:interpret:242: No discrepancies to explain
+55:16:evaluate:106: No explanations to manage, continuing
+55:16:evaluate:236: Retrieving rebellions
+55:16:evaluate:239: No rebellions to handle, continuing
+55:17:intend:69: Retrieving valid goals
+55:17:intend:28: Considering potential goals
+55:17:intend:73: Selected and memorized goal []
+55:17:intend:81: No goals selected
+55:17:act:49: Retrieving goals and plan
+55:17:act:27: Getting best plan
+55:17:act:41: Best plan is None
+55:17:act:97: There is no plan, MIDCA will not take an action
+55:17:perceive:91: Started cycle 1
+55:17:perceive:98: Recorded current state
+55:17:perceive:111: Got messages:
+55:17:perceive:122: Remembered messages
+55:18:interpret:464: Gathering new goals
+55:18:interpret:469: Found new goal inputs:
+	['killed(&-4594);Op0']
+55:18:interpret:493: Operator goal input: killed (&-4594)
+55:18:interpret:518: Recv'd goal data ['killed', '(&-4594)']
+55:18:interpret:506: Added goal Goal(&-4594, predicate: killed, user: Op0)
+55:18:interpret:578: Retrieved state and goals
+55:18:interpret:585: Retrieved goal graph
+55:18:interpret:617: No current goals to evaluate for completion
+55:18:interpret:56: Retrieved existing discrepancies:
+{}
+55:18:interpret:63: checking for discrepancies
+55:18:interpret:68: Retrieved executed actions: []
+55:18:interpret:82: No discrepancies found
+55:18:interpret:127: Retrieved discrepancies
+55:18:interpret:135: Retrieved state
+55:18:interpret:143: Retrieved current goals
+55:18:interpret:145: Checking for discrepancies
+55:18:interpret:157: Remembered discrepancies
+55:18:interpret:231: Reset explanations
+55:18:interpret:242: No discrepancies to explain
+55:18:evaluate:106: No explanations to manage, continuing
+55:18:evaluate:236: Retrieving rebellions
+55:18:evaluate:239: No rebellions to handle, continuing
+55:18:intend:69: Retrieving valid goals
+55:18:intend:28: Considering potential goals
+55:18:intend:36: 	Assessing goal Goal(&-4594, predicate: killed, user: Op0)
+55:18:intend:46: 	Goal score = 5
+55:18:intend:51: 	Currently, best goal is [Goal(&-4594, predicate: killed, user: Op0)]
+55:18:intend:73: Selected and memorized goal [Goal(&-4594, predicate: killed, user: Op0)]
+55:19:act:49: Retrieving goals and plan
+55:19:act:27: Getting best plan
+55:19:act:41: Best plan is [move(n)] move(n) bomb(2)
+55:19:act:77: Next action is: move(n) from plan:
+55:19:act:78: 	[move(n)] move(n) bomb(2)
+55:19:act:82: Executed and memorized action
+55:19:perceive:91: Started cycle 2
+55:19:perceive:98: Recorded current state
+55:19:perceive:111: Got messages:
+55:19:perceive:122: Remembered messages
+55:19:interpret:464: Gathering new goals
+55:19:interpret:469: Found new goal inputs:
+	['killed(&-4594);Op0']
+55:19:interpret:493: Operator goal input: killed (&-4594)
+55:19:interpret:518: Recv'd goal data ['killed', '(&-4594)']
+55:19:interpret:506: Added goal Goal(&-4594, predicate: killed, user: Op0)
+55:19:interpret:578: Retrieved state and goals
+55:19:interpret:585: Retrieved goal graph
+55:19:interpret:589: Beginning completion check
+55:19:interpret:604: Goal Goal(&-4594, predicate: killed, user: Op0) not completed yet
+55:19:interpret:56: Retrieved existing discrepancies:
+{}
+55:19:interpret:63: checking for discrepancies
+55:19:interpret:68: Retrieved executed actions: [<MIDCA.plans.Action instance at 0x7f180766acf8>]
+55:19:interpret:82: No discrepancies found
+55:19:interpret:127: Retrieved discrepancies
+55:19:interpret:135: Retrieved state
+55:19:interpret:143: Retrieved current goals
+55:19:interpret:145: Checking for discrepancies
+55:19:interpret:157: Remembered discrepancies
+55:19:interpret:231: Reset explanations
+55:19:interpret:242: No discrepancies to explain
+55:19:evaluate:106: No explanations to manage, continuing
+55:19:evaluate:236: Retrieving rebellions
+55:19:evaluate:239: No rebellions to handle, continuing
+55:20:intend:69: Retrieving valid goals
+55:20:intend:28: Considering potential goals
+55:20:intend:36: 	Assessing goal Goal(&-4594, predicate: killed, user: Op0)
+55:20:intend:46: 	Goal score = 5
+55:20:intend:51: 	Currently, best goal is [Goal(&-4594, predicate: killed, user: Op0)]
+55:20:intend:73: Selected and memorized goal [Goal(&-4594, predicate: killed, user: Op0)]
+55:20:act:49: Retrieving goals and plan
+55:20:act:27: Getting best plan
+55:20:act:41: Best plan is move(n) [move(n)] bomb(2)
+55:20:act:77: Next action is: move(n) from plan:
+55:20:act:78: 	move(n) [move(n)] bomb(2)
+55:20:act:82: Executed and memorized action
+55:20:perceive:91: Started cycle 3
+55:20:perceive:98: Recorded current state
+55:20:perceive:111: Got messages:
+55:20:perceive:122: Remembered messages
+55:21:interpret:464: Gathering new goals
+55:21:interpret:469: Found new goal inputs:
+	['']
+55:21:interpret:473: Operator input is null
+55:21:interpret:578: Retrieved state and goals
+55:21:interpret:585: Retrieved goal graph
+55:21:interpret:589: Beginning completion check
+55:21:interpret:604: Goal Goal(&-4594, predicate: killed, user: Op0) not completed yet
+55:21:interpret:56: Retrieved existing discrepancies:
+{}
+55:21:interpret:63: checking for discrepancies
+55:21:interpret:68: Retrieved executed actions: [<MIDCA.plans.Action instance at 0x7f18076753b0>]
+55:21:interpret:87: Found 1 discrepancies:
+55:21:interpret:92: (7, 9) : ([&C@(7, 9):L], None)
+55:21:interpret:96: Remembered discrepancies
+55:21:interpret:127: Retrieved discrepancies
+55:21:interpret:135: Retrieved state
+55:21:interpret:143: Retrieved current goals
+55:21:interpret:145: Checking for discrepancies
+55:21:interpret:157: Remembered discrepancies
+55:21:interpret:231: Reset explanations
+55:21:interpret:244: Found discrepancies
+55:21:interpret:246: Beginning explanations
+55:21:interpret:249: Explaining discrepancy (7, 9):([&C@(7, 9):L], None)
+55:21:interpret:252: Explanations:
+55:21:interpret:259: 	(7, 9): agent-move
+55:21:interpret:266: Remembered explanations
+55:21:evaluate:116: Getting explanations to handle
+55:21:evaluate:119: Handling explanation:
+	((7, 9), 'agent-move')
+55:21:evaluate:210: Done managing goals
+55:21:evaluate:236: Retrieving rebellions
+55:21:evaluate:239: No rebellions to handle, continuing
+55:21:intend:69: Retrieving valid goals
+55:21:intend:28: Considering potential goals
+55:21:intend:36: 	Assessing goal Goal(&-4594, predicate: killed, user: Op0)
+55:21:intend:46: 	Goal score = 5
+55:21:intend:51: 	Currently, best goal is [Goal(&-4594, predicate: killed, user: Op0)]
+55:21:intend:73: Selected and memorized goal [Goal(&-4594, predicate: killed, user: Op0)]
+55:22:act:49: Retrieving goals and plan
+55:22:act:27: Getting best plan
+55:22:act:41: Best plan is move(n) move(n) [bomb(2)]
+55:22:act:77: Next action is: bomb(2) from plan:
+55:22:act:78: 	move(n) move(n) [bomb(2)]
+55:22:act:82: Executed and memorized action
+55:22:perceive:91: Started cycle 4
+55:22:perceive:98: Recorded current state
+55:22:perceive:111: Got messages:
+55:22:perceive:122: Remembered messages
+55:22:interpret:464: Gathering new goals
+55:22:interpret:469: Found new goal inputs:
+	['']
+55:22:interpret:473: Operator input is null
+55:22:interpret:578: Retrieved state and goals
+55:22:interpret:585: Retrieved goal graph
+55:22:interpret:589: Beginning completion check
+55:22:interpret:599: Removed complted goal Goal(&-4594, predicate: killed, user: Op0)
+55:22:interpret:56: Retrieved existing discrepancies:
+{}
+55:22:interpret:63: checking for discrepancies
+55:22:interpret:68: Retrieved executed actions: [<MIDCA.plans.Action instance at 0x7f1807675ef0>]
+55:22:interpret:82: No discrepancies found
+55:22:interpret:127: Retrieved discrepancies
+55:22:interpret:135: Retrieved state
+55:22:interpret:143: Retrieved current goals
+55:22:interpret:145: Checking for discrepancies
+55:22:interpret:157: Remembered discrepancies
+55:22:interpret:231: Reset explanations
+55:22:interpret:242: No discrepancies to explain
+55:22:evaluate:106: No explanations to manage, continuing
+55:22:evaluate:236: Retrieving rebellions
+55:22:evaluate:239: No rebellions to handle, continuing
+55:23:intend:69: Retrieving valid goals
+55:23:intend:28: Considering potential goals
+55:23:intend:73: Selected and memorized goal []
+55:23:intend:81: No goals selected
+55:23:act:49: Retrieving goals and plan
+55:23:act:27: Getting best plan
+55:23:act:41: Best plan is None
+55:23:act:97: There is no plan, MIDCA will not take an action
+55:23:perceive:91: Started cycle 5
+55:24:perceive:98: Recorded current state
+55:24:perceive:111: Got messages:
+55:24:perceive:122: Remembered messages
+55:24:interpret:464: Gathering new goals
+55:24:interpret:469: Found new goal inputs:
+	['']
+55:24:interpret:473: Operator input is null
+55:24:interpret:578: Retrieved state and goals
+55:24:interpret:585: Retrieved goal graph
+55:24:interpret:617: No current goals to evaluate for completion
+55:24:interpret:56: Retrieved existing discrepancies:
+{}
+55:24:interpret:63: checking for discrepancies
+55:24:interpret:68: Retrieved executed actions: []
+55:24:interpret:82: No discrepancies found
+55:24:interpret:127: Retrieved discrepancies
+55:24:interpret:135: Retrieved state
+55:24:interpret:143: Retrieved current goals
+55:24:interpret:145: Checking for discrepancies
+55:24:interpret:157: Remembered discrepancies
+55:24:interpret:231: Reset explanations
+55:24:interpret:242: No discrepancies to explain
+55:24:evaluate:106: No explanations to manage, continuing
+55:24:evaluate:236: Retrieving rebellions
+55:24:evaluate:239: No rebellions to handle, continuing
+55:24:intend:69: Retrieving valid goals
+55:24:intend:28: Considering potential goals
+55:24:intend:73: Selected and memorized goal []
+55:24:intend:81: No goals selected
+55:25:act:49: Retrieving goals and plan
+55:25:act:27: Getting best plan
+55:25:act:41: Best plan is None
+55:25:act:97: There is no plan, MIDCA will not take an action
+55:25:perceive:91: Started cycle 6
+55:25:perceive:98: Recorded current state
+55:25:perceive:111: Got messages:
+55:25:perceive:122: Remembered messages
+55:25:interpret:464: Gathering new goals
+55:25:interpret:469: Found new goal inputs:
+	['']
+55:25:interpret:473: Operator input is null
+55:25:interpret:578: Retrieved state and goals
+55:25:interpret:585: Retrieved goal graph
+55:25:interpret:617: No current goals to evaluate for completion
+55:25:interpret:56: Retrieved existing discrepancies:
+{}
+55:25:interpret:63: checking for discrepancies
+55:25:interpret:68: Retrieved executed actions: []
+55:25:interpret:82: No discrepancies found
+55:25:interpret:127: Retrieved discrepancies
+55:25:interpret:135: Retrieved state
+55:25:interpret:143: Retrieved current goals
+55:25:interpret:145: Checking for discrepancies
+55:25:interpret:157: Remembered discrepancies
+55:25:interpret:231: Reset explanations
+55:25:interpret:242: No discrepancies to explain
+55:26:evaluate:106: No explanations to manage, continuing
+55:26:evaluate:236: Retrieving rebellions
+55:26:evaluate:239: No rebellions to handle, continuing
+55:26:intend:69: Retrieving valid goals
+55:26:intend:28: Considering potential goals
+55:26:intend:73: Selected and memorized goal []
+55:26:intend:81: No goals selected
+55:26:act:49: Retrieving goals and plan
+55:26:act:27: Getting best plan
+55:26:act:41: Best plan is None
+55:26:act:97: There is no plan, MIDCA will not take an action
+55:27:perceive:91: Started cycle 7
+55:27:perceive:98: Recorded current state
+55:27:perceive:111: Got messages:
+55:27:perceive:122: Remembered messages
+55:27:interpret:464: Gathering new goals
+55:27:interpret:469: Found new goal inputs:
+	['']
+55:27:interpret:473: Operator input is null
+55:27:interpret:578: Retrieved state and goals
+55:27:interpret:585: Retrieved goal graph
+55:27:interpret:617: No current goals to evaluate for completion
+55:27:interpret:56: Retrieved existing discrepancies:
+{}
+55:27:interpret:63: checking for discrepancies
+55:27:interpret:68: Retrieved executed actions: []
+55:27:interpret:82: No discrepancies found
+55:27:interpret:127: Retrieved discrepancies
+55:27:interpret:135: Retrieved state
+55:27:interpret:143: Retrieved current goals
+55:27:interpret:145: Checking for discrepancies
+55:27:interpret:157: Remembered discrepancies
+55:27:interpret:231: Reset explanations
+55:27:interpret:242: No discrepancies to explain
+55:27:evaluate:106: No explanations to manage, continuing
+55:27:evaluate:236: Retrieving rebellions
+55:27:evaluate:239: No rebellions to handle, continuing
+55:27:intend:69: Retrieving valid goals
+55:27:intend:28: Considering potential goals
+55:27:intend:73: Selected and memorized goal []
+55:27:intend:81: No goals selected
+55:28:act:49: Retrieving goals and plan
+55:28:act:27: Getting best plan
+55:28:act:41: Best plan is None
+55:28:act:97: There is no plan, MIDCA will not take an action
+55:28:perceive:91: Started cycle 8
+55:28:perceive:98: Recorded current state
+55:28:perceive:111: Got messages:
+55:28:perceive:122: Remembered messages
+55:28:interpret:464: Gathering new goals
+55:28:interpret:469: Found new goal inputs:
+	['']
+55:28:interpret:473: Operator input is null
+55:28:interpret:578: Retrieved state and goals
+55:28:interpret:585: Retrieved goal graph
+55:28:interpret:617: No current goals to evaluate for completion
+55:28:interpret:56: Retrieved existing discrepancies:
+{}
+55:28:interpret:63: checking for discrepancies
+55:28:interpret:68: Retrieved executed actions: []
+55:28:interpret:82: No discrepancies found
+55:28:interpret:127: Retrieved discrepancies
+55:28:interpret:135: Retrieved state
+55:28:interpret:143: Retrieved current goals
+55:28:interpret:145: Checking for discrepancies
+55:28:interpret:157: Remembered discrepancies
+55:28:interpret:231: Reset explanations
+55:28:interpret:242: No discrepancies to explain
+55:29:evaluate:106: No explanations to manage, continuing
+55:29:evaluate:236: Retrieving rebellions
+55:29:evaluate:239: No rebellions to handle, continuing
+55:29:intend:69: Retrieving valid goals
+55:29:intend:28: Considering potential goals
+55:29:intend:73: Selected and memorized goal []
+55:29:intend:81: No goals selected
+55:29:act:49: Retrieving goals and plan
+55:29:act:27: Getting best plan
+55:29:act:41: Best plan is None
+55:29:act:97: There is no plan, MIDCA will not take an action
+55:30:perceive:91: Started cycle 9
+55:30:perceive:98: Recorded current state
+55:30:perceive:111: Got messages:
+55:30:perceive:122: Remembered messages
+55:30:interpret:464: Gathering new goals
+55:30:interpret:469: Found new goal inputs:
+	['']
+55:30:interpret:473: Operator input is null
+55:30:interpret:578: Retrieved state and goals
+55:30:interpret:585: Retrieved goal graph
+55:30:interpret:617: No current goals to evaluate for completion
+55:30:interpret:56: Retrieved existing discrepancies:
+{}
+55:30:interpret:63: checking for discrepancies
+55:30:interpret:68: Retrieved executed actions: []
+55:30:interpret:82: No discrepancies found
+55:30:interpret:127: Retrieved discrepancies
+55:30:interpret:135: Retrieved state
+55:30:interpret:143: Retrieved current goals
+55:30:interpret:145: Checking for discrepancies
+55:30:interpret:157: Remembered discrepancies
+55:30:interpret:231: Reset explanations
+55:30:interpret:242: No discrepancies to explain
+55:30:evaluate:106: No explanations to manage, continuing
+55:30:evaluate:236: Retrieving rebellions
+55:30:evaluate:239: No rebellions to handle, continuing
+55:30:intend:69: Retrieving valid goals
+55:30:intend:28: Considering potential goals
+55:30:intend:73: Selected and memorized goal []
+55:30:intend:81: No goals selected
+55:31:act:49: Retrieving goals and plan
+55:31:act:27: Getting best plan
+55:31:act:41: Best plan is None
+55:31:act:97: There is no plan, MIDCA will not take an action
+55:31:perceive:91: Started cycle 10
+55:31:perceive:98: Recorded current state
+55:31:perceive:111: Got messages:
+55:31:perceive:122: Remembered messages
+55:31:interpret:464: Gathering new goals
+55:31:interpret:469: Found new goal inputs:
+	['']
+55:31:interpret:473: Operator input is null
+55:31:interpret:578: Retrieved state and goals
+55:31:interpret:585: Retrieved goal graph
+55:31:interpret:617: No current goals to evaluate for completion
+55:31:interpret:56: Retrieved existing discrepancies:
+{}
+55:31:interpret:63: checking for discrepancies
+55:31:interpret:68: Retrieved executed actions: []
+55:31:interpret:82: No discrepancies found
+55:31:interpret:127: Retrieved discrepancies
+55:31:interpret:135: Retrieved state
+55:31:interpret:143: Retrieved current goals
+55:31:interpret:145: Checking for discrepancies
+55:31:interpret:157: Remembered discrepancies
+55:31:interpret:231: Reset explanations
+55:31:interpret:242: No discrepancies to explain
+55:32:evaluate:106: No explanations to manage, continuing
+55:32:evaluate:236: Retrieving rebellions
+55:32:evaluate:239: No rebellions to handle, continuing
+55:32:intend:69: Retrieving valid goals
+55:32:intend:28: Considering potential goals
+55:32:intend:73: Selected and memorized goal []
+55:32:intend:81: No goals selected
+55:32:act:49: Retrieving goals and plan
+55:32:act:27: Getting best plan
+55:32:act:41: Best plan is None
+55:32:act:97: There is no plan, MIDCA will not take an action
+55:33:perceive:91: Started cycle 11
+55:33:perceive:98: Recorded current state
+55:33:perceive:111: Got messages:
+55:33:perceive:122: Remembered messages
+55:33:interpret:464: Gathering new goals
+55:33:interpret:469: Found new goal inputs:
+	['']
+55:33:interpret:473: Operator input is null
+55:33:interpret:578: Retrieved state and goals
+55:33:interpret:585: Retrieved goal graph
+55:33:interpret:617: No current goals to evaluate for completion
+55:33:interpret:56: Retrieved existing discrepancies:
+{}
+55:33:interpret:63: checking for discrepancies
+55:33:interpret:68: Retrieved executed actions: []
+55:33:interpret:82: No discrepancies found
+55:33:interpret:127: Retrieved discrepancies
+55:33:interpret:135: Retrieved state
+55:33:interpret:143: Retrieved current goals
+55:33:interpret:145: Checking for discrepancies
+55:33:interpret:157: Remembered discrepancies
+55:33:interpret:231: Reset explanations
+55:33:interpret:242: No discrepancies to explain
+55:33:evaluate:106: No explanations to manage, continuing
+55:33:evaluate:236: Retrieving rebellions
+55:33:evaluate:239: No rebellions to handle, continuing
+55:33:intend:69: Retrieving valid goals
+55:33:intend:28: Considering potential goals
+55:33:intend:73: Selected and memorized goal []
+55:33:intend:81: No goals selected
+55:34:act:49: Retrieving goals and plan
+55:34:act:27: Getting best plan
+55:34:act:41: Best plan is None
+55:34:act:97: There is no plan, MIDCA will not take an action
+55:34:perceive:91: Started cycle 12
+55:34:perceive:98: Recorded current state
+55:34:perceive:111: Got messages:
+55:34:perceive:122: Remembered messages
+55:34:interpret:464: Gathering new goals
+55:34:interpret:469: Found new goal inputs:
+	['']
+55:34:interpret:473: Operator input is null
+55:34:interpret:578: Retrieved state and goals
+55:34:interpret:585: Retrieved goal graph
+55:34:interpret:617: No current goals to evaluate for completion
+55:34:interpret:56: Retrieved existing discrepancies:
+{}
+55:34:interpret:63: checking for discrepancies
+55:34:interpret:68: Retrieved executed actions: []
+55:34:interpret:82: No discrepancies found
+55:34:interpret:127: Retrieved discrepancies
+55:34:interpret:135: Retrieved state
+55:34:interpret:143: Retrieved current goals
+55:34:interpret:145: Checking for discrepancies
+55:34:interpret:157: Remembered discrepancies
+55:34:interpret:231: Reset explanations
+55:34:interpret:242: No discrepancies to explain
+55:35:evaluate:106: No explanations to manage, continuing
+55:35:evaluate:236: Retrieving rebellions
+55:35:evaluate:239: No rebellions to handle, continuing
+55:35:intend:69: Retrieving valid goals
+55:35:intend:28: Considering potential goals
+55:35:intend:73: Selected and memorized goal []
+55:35:intend:81: No goals selected
+55:35:act:49: Retrieving goals and plan
+55:35:act:27: Getting best plan
+55:35:act:41: Best plan is None
+55:35:act:97: There is no plan, MIDCA will not take an action
+55:36:perceive:91: Started cycle 13
+55:36:perceive:98: Recorded current state
+55:36:perceive:111: Got messages:
+55:36:perceive:122: Remembered messages
+55:36:interpret:464: Gathering new goals
+55:36:interpret:469: Found new goal inputs:
+	['']
+55:36:interpret:473: Operator input is null
+55:36:interpret:578: Retrieved state and goals
+55:36:interpret:585: Retrieved goal graph
+55:36:interpret:617: No current goals to evaluate for completion
+55:36:interpret:56: Retrieved existing discrepancies:
+{}
+55:36:interpret:63: checking for discrepancies
+55:36:interpret:68: Retrieved executed actions: []
+55:36:interpret:82: No discrepancies found
+55:36:interpret:127: Retrieved discrepancies
+55:36:interpret:135: Retrieved state
+55:36:interpret:143: Retrieved current goals
+55:36:interpret:145: Checking for discrepancies
+55:36:interpret:157: Remembered discrepancies
+55:36:interpret:231: Reset explanations
+55:36:interpret:242: No discrepancies to explain
+55:36:evaluate:106: No explanations to manage, continuing
+55:36:evaluate:236: Retrieving rebellions
+55:36:evaluate:239: No rebellions to handle, continuing
+55:36:intend:69: Retrieving valid goals
+55:36:intend:28: Considering potential goals
+55:36:intend:73: Selected and memorized goal []
+55:36:intend:81: No goals selected
+55:37:act:49: Retrieving goals and plan
+55:37:act:27: Getting best plan
+55:37:act:41: Best plan is None
+55:37:act:97: There is no plan, MIDCA will not take an action
+55:37:perceive:91: Started cycle 14
+55:37:perceive:98: Recorded current state
+55:37:perceive:111: Got messages:
+55:37:perceive:122: Remembered messages
+55:38:interpret:464: Gathering new goals
+55:38:interpret:469: Found new goal inputs:
+	['']
+55:38:interpret:473: Operator input is null
+55:38:interpret:578: Retrieved state and goals
+55:38:interpret:585: Retrieved goal graph
+55:38:interpret:617: No current goals to evaluate for completion
+55:38:interpret:56: Retrieved existing discrepancies:
+{}
+55:38:interpret:63: checking for discrepancies
+55:38:interpret:68: Retrieved executed actions: []
+55:38:interpret:82: No discrepancies found
+55:38:interpret:127: Retrieved discrepancies
+55:38:interpret:135: Retrieved state
+55:38:interpret:143: Retrieved current goals
+55:38:interpret:145: Checking for discrepancies
+55:38:interpret:157: Remembered discrepancies
+55:38:interpret:231: Reset explanations
+55:38:interpret:242: No discrepancies to explain
+55:38:evaluate:106: No explanations to manage, continuing
+55:38:evaluate:236: Retrieving rebellions
+55:38:evaluate:239: No rebellions to handle, continuing
+55:38:intend:69: Retrieving valid goals
+55:38:intend:28: Considering potential goals
+55:38:intend:73: Selected and memorized goal []
+55:38:intend:81: No goals selected
+55:39:act:49: Retrieving goals and plan
+55:39:act:27: Getting best plan
+55:39:act:41: Best plan is None
+55:39:act:97: There is no plan, MIDCA will not take an action
+55:39:perceive:91: Started cycle 15
+55:39:perceive:98: Recorded current state
+55:39:perceive:111: Got messages:
+55:39:perceive:122: Remembered messages
+55:39:interpret:464: Gathering new goals
+55:39:interpret:469: Found new goal inputs:
+	['']
+55:39:interpret:473: Operator input is null
+55:39:interpret:578: Retrieved state and goals
+55:39:interpret:585: Retrieved goal graph
+55:39:interpret:617: No current goals to evaluate for completion
+55:39:interpret:56: Retrieved existing discrepancies:
+{}
+55:39:interpret:63: checking for discrepancies
+55:39:interpret:68: Retrieved executed actions: []
+55:39:interpret:82: No discrepancies found
+55:39:interpret:127: Retrieved discrepancies
+55:39:interpret:135: Retrieved state
+55:39:interpret:143: Retrieved current goals
+55:39:interpret:145: Checking for discrepancies
+55:39:interpret:157: Remembered discrepancies
+55:39:interpret:231: Reset explanations
+55:39:interpret:242: No discrepancies to explain
+55:39:evaluate:106: No explanations to manage, continuing
+55:39:evaluate:236: Retrieving rebellions
+55:39:evaluate:239: No rebellions to handle, continuing
+55:40:intend:69: Retrieving valid goals
+55:40:intend:28: Considering potential goals
+55:40:intend:73: Selected and memorized goal []
+55:40:intend:81: No goals selected
+55:40:act:49: Retrieving goals and plan
+55:40:act:27: Getting best plan
+55:40:act:41: Best plan is None
+55:40:act:97: There is no plan, MIDCA will not take an action
+55:40:perceive:91: Started cycle 16
+55:40:perceive:98: Recorded current state
+55:40:perceive:111: Got messages:
+55:40:perceive:122: Remembered messages
+55:41:interpret:464: Gathering new goals
+55:41:interpret:469: Found new goal inputs:
+	['']
+55:41:interpret:473: Operator input is null
+55:41:interpret:578: Retrieved state and goals
+55:41:interpret:585: Retrieved goal graph
+55:41:interpret:617: No current goals to evaluate for completion
+55:41:interpret:56: Retrieved existing discrepancies:
+{}
+55:41:interpret:63: checking for discrepancies
+55:41:interpret:68: Retrieved executed actions: []
+55:41:interpret:82: No discrepancies found
+55:41:interpret:127: Retrieved discrepancies
+55:41:interpret:135: Retrieved state
+55:41:interpret:143: Retrieved current goals
+55:41:interpret:145: Checking for discrepancies
+55:41:interpret:157: Remembered discrepancies
+55:41:interpret:231: Reset explanations
+55:41:interpret:242: No discrepancies to explain
+55:41:evaluate:106: No explanations to manage, continuing
+55:41:evaluate:236: Retrieving rebellions
+55:41:evaluate:239: No rebellions to handle, continuing
+55:41:intend:69: Retrieving valid goals
+55:41:intend:28: Considering potential goals
+55:41:intend:73: Selected and memorized goal []
+55:41:intend:81: No goals selected
+55:42:act:49: Retrieving goals and plan
+55:42:act:27: Getting best plan
+55:42:act:41: Best plan is None
+55:42:act:97: There is no plan, MIDCA will not take an action
+55:42:perceive:91: Started cycle 17
+55:42:perceive:98: Recorded current state
+55:42:perceive:111: Got messages:
+55:42:perceive:122: Remembered messages
+55:42:interpret:464: Gathering new goals
+55:42:interpret:469: Found new goal inputs:
+	['']
+55:42:interpret:473: Operator input is null
+55:42:interpret:578: Retrieved state and goals
+55:42:interpret:585: Retrieved goal graph
+55:42:interpret:617: No current goals to evaluate for completion
+55:42:interpret:56: Retrieved existing discrepancies:
+{}
+55:42:interpret:63: checking for discrepancies
+55:42:interpret:68: Retrieved executed actions: []
+55:42:interpret:82: No discrepancies found
+55:42:interpret:127: Retrieved discrepancies
+55:42:interpret:135: Retrieved state
+55:42:interpret:143: Retrieved current goals
+55:42:interpret:145: Checking for discrepancies
+55:42:interpret:157: Remembered discrepancies
+55:42:interpret:231: Reset explanations
+55:42:interpret:242: No discrepancies to explain
+55:42:evaluate:106: No explanations to manage, continuing
+55:42:evaluate:236: Retrieving rebellions
+55:42:evaluate:239: No rebellions to handle, continuing
+55:43:intend:69: Retrieving valid goals
+55:43:intend:28: Considering potential goals
+55:43:intend:73: Selected and memorized goal []
+55:43:intend:81: No goals selected
+55:43:act:49: Retrieving goals and plan
+55:43:act:27: Getting best plan
+55:43:act:41: Best plan is None
+55:43:act:97: There is no plan, MIDCA will not take an action
+55:43:perceive:91: Started cycle 18
+55:43:perceive:98: Recorded current state
+55:43:perceive:111: Got messages:
+55:43:perceive:122: Remembered messages
+55:45:perceive:91: Started cycle 0
+55:45:perceive:98: Recorded current state
+55:45:perceive:111: Got messages:
+55:45:perceive:122: Remembered messages
+55:45:interpret:464: Gathering new goals
+55:45:interpret:469: Found new goal inputs:
+	['']
+55:45:interpret:473: Operator input is null
+55:45:interpret:578: Retrieved state and goals
+55:45:interpret:585: Retrieved goal graph
+55:45:interpret:617: No current goals to evaluate for completion
+55:45:interpret:56: Retrieved existing discrepancies:
+{}
+55:45:interpret:63: checking for discrepancies
+55:45:interpret:127: Retrieved discrepancies
+55:45:interpret:135: Retrieved state
+55:45:interpret:141: Retrieved discrepancies
+55:45:interpret:231: Reset explanations
+55:45:interpret:242: No discrepancies to explain
+55:45:evaluate:106: No explanations to manage, continuing
+55:45:evaluate:236: Retrieving rebellions
+55:45:evaluate:239: No rebellions to handle, continuing
+55:46:intend:69: Retrieving valid goals
+55:46:intend:28: Considering potential goals
+55:46:intend:73: Selected and memorized goal []
+55:46:intend:81: No goals selected
+55:46:act:49: Retrieving goals and plan
+55:46:act:27: Getting best plan
+55:46:act:41: Best plan is None
+55:46:act:97: There is no plan, MIDCA will not take an action
+55:46:perceive:91: Started cycle 1
+55:46:perceive:98: Recorded current state
+55:46:perceive:111: Got messages:
+55:46:perceive:122: Remembered messages
+55:47:interpret:464: Gathering new goals
+55:47:interpret:469: Found new goal inputs:
+	['killed(&75800);Op0']
+55:47:interpret:493: Operator goal input: killed (&75800)
+55:47:interpret:518: Recv'd goal data ['killed', '(&75800)']
+55:47:interpret:506: Added goal Goal(&75800, predicate: killed, user: Op0)
+55:47:interpret:578: Retrieved state and goals
+55:47:interpret:585: Retrieved goal graph
+55:47:interpret:617: No current goals to evaluate for completion
+55:47:interpret:56: Retrieved existing discrepancies:
+{}
+55:47:interpret:63: checking for discrepancies
+55:47:interpret:68: Retrieved executed actions: []
+55:47:interpret:82: No discrepancies found
+55:47:interpret:127: Retrieved discrepancies
+55:47:interpret:135: Retrieved state
+55:47:interpret:143: Retrieved current goals
+55:47:interpret:145: Checking for discrepancies
+55:47:interpret:157: Remembered discrepancies
+55:47:interpret:231: Reset explanations
+55:47:interpret:242: No discrepancies to explain
+55:47:evaluate:106: No explanations to manage, continuing
+55:47:evaluate:236: Retrieving rebellions
+55:47:evaluate:239: No rebellions to handle, continuing
+55:47:intend:69: Retrieving valid goals
+55:47:intend:28: Considering potential goals
+55:47:intend:36: 	Assessing goal Goal(&75800, predicate: killed, user: Op0)
+55:47:intend:46: 	Goal score = 5
+55:47:intend:51: 	Currently, best goal is [Goal(&75800, predicate: killed, user: Op0)]
+55:47:intend:73: Selected and memorized goal [Goal(&75800, predicate: killed, user: Op0)]
+55:48:act:49: Retrieving goals and plan
+55:48:act:27: Getting best plan
+55:48:act:41: Best plan is [move(w)] bomb(2)
+55:48:act:77: Next action is: move(w) from plan:
+55:48:act:78: 	[move(w)] bomb(2)
+55:48:act:82: Executed and memorized action
+55:48:perceive:91: Started cycle 2
+55:48:perceive:98: Recorded current state
+55:48:perceive:111: Got messages:
+55:48:perceive:122: Remembered messages
+55:48:interpret:464: Gathering new goals
+55:48:interpret:469: Found new goal inputs:
+	['']
+55:48:interpret:473: Operator input is null
+55:48:interpret:578: Retrieved state and goals
+55:48:interpret:585: Retrieved goal graph
+55:48:interpret:589: Beginning completion check
+55:48:interpret:599: Removed complted goal Goal(&75800, predicate: killed, user: Op0)
+55:48:interpret:56: Retrieved existing discrepancies:
+{}
+55:48:interpret:63: checking for discrepancies
+55:48:interpret:68: Retrieved executed actions: [<MIDCA.plans.Action instance at 0x7f18076a8950>]
+55:48:interpret:87: Found 1 discrepancies:
+55:48:interpret:92: (4, 11) : ([&E@(4, 11):D], [&E@(4, 11):L])
+55:48:interpret:96: Remembered discrepancies
+55:48:interpret:127: Retrieved discrepancies
+55:48:interpret:135: Retrieved state
+55:48:interpret:143: Retrieved current goals
+55:48:interpret:145: Checking for discrepancies
+55:48:interpret:152: Found goal discrepancy: Goal(&75800, predicate: killed, user: Op0)=civi-killed
+55:48:interpret:157: Remembered discrepancies
+55:48:interpret:231: Reset explanations
+55:48:interpret:244: Found discrepancies
+55:48:interpret:246: Beginning explanations
+55:48:interpret:249: Explaining discrepancy Goal(&75800, predicate: killed, user: Op0):civi-killed
+55:48:interpret:249: Explaining discrepancy (4, 11):([&E@(4, 11):D], [&E@(4, 11):L])
+55:48:interpret:252: Explanations:
+55:48:interpret:259: 	Goal(&75800, predicate: killed, user: Op0): civi-in-AOE
+55:48:interpret:259: 	(4, 11): agent-move
+55:48:interpret:266: Remembered explanations
+55:49:evaluate:116: Getting explanations to handle
+55:49:evaluate:119: Handling explanation:
+	(Goal(&75800, predicate: killed, user: Op0), 'civi-in-AOE')
+55:49:evaluate:191: 	Generated rebellion:
+	rebellion(goal=Goal(&75800, predicate: killed, user: Op0)
+          reason=civi-in-AOE
+          civilians=[&C@(7, 13):L]
+         )
+55:49:evaluate:119: Handling explanation:
+	((4, 11), 'agent-move')
+55:49:evaluate:210: Done managing goals
+55:49:evaluate:236: Retrieving rebellions
+55:49:evaluate:243: Handling rebellion:
+rebellion(goal=Goal(&75800, predicate: killed, user: Op0)
+          reason=civi-in-AOE
+          civilians=[&C@(7, 13):L]
+         )
+55:49:evaluate:250: 	Removed goal
+55:49:evaluate:257: 	Informed user of Civi NPC @ (7, 13) which is alive
+55:49:evaluate:264: 	Generated alt goals:
+	[Goal(&75800, predicate: killed, user: Op0), 'None']
+55:49:evaluate:331: Sent rebellion info to operator Op0
+55:49:evaluate:285: Generated goal key:
+{0: Goal(&75800, predicate: killed, user: Op0), 1: 'None'}
+55:50:evaluate:298: User response: 1
+55:50:evaluate:269: 	Operator selected choice None
+55:50:evaluate:279: Reset rebellions
+55:50:intend:69: Retrieving valid goals
+55:50:intend:28: Considering potential goals
+55:50:intend:73: Selected and memorized goal []
+55:50:intend:81: No goals selected
+55:51:act:49: Retrieving goals and plan
+55:51:act:27: Getting best plan
+55:51:act:41: Best plan is None
+55:51:act:97: There is no plan, MIDCA will not take an action
+55:51:perceive:91: Started cycle 3
+55:51:perceive:98: Recorded current state
+55:51:perceive:111: Got messages:
+55:51:perceive:119: 	Op0:
+	1
+55:51:perceive:122: Remembered messages
+55:51:interpret:464: Gathering new goals
+55:51:interpret:469: Found new goal inputs:
+	['killed(&81069);Op0']
+55:51:interpret:493: Operator goal input: killed (&81069)
+55:51:interpret:518: Recv'd goal data ['killed', '(&81069)']
+55:51:interpret:506: Added goal Goal(&81069, predicate: killed, user: Op0)
+55:51:interpret:578: Retrieved state and goals
+55:51:interpret:585: Retrieved goal graph
+55:51:interpret:617: No current goals to evaluate for completion
+55:51:interpret:56: Retrieved existing discrepancies:
+{}
+55:51:interpret:63: checking for discrepancies
+55:51:interpret:68: Retrieved executed actions: []
+55:51:interpret:82: No discrepancies found
+55:51:interpret:127: Retrieved discrepancies
+55:51:interpret:135: Retrieved state
+55:51:interpret:143: Retrieved current goals
+55:51:interpret:145: Checking for discrepancies
+55:51:interpret:157: Remembered discrepancies
+55:51:interpret:231: Reset explanations
+55:51:interpret:242: No discrepancies to explain
+55:51:evaluate:106: No explanations to manage, continuing
+55:51:evaluate:236: Retrieving rebellions
+55:51:evaluate:239: No rebellions to handle, continuing
+55:52:intend:69: Retrieving valid goals
+55:52:intend:28: Considering potential goals
+55:52:intend:36: 	Assessing goal Goal(&81069, predicate: killed, user: Op0)
+55:52:intend:46: 	Goal score = 5
+55:52:intend:51: 	Currently, best goal is [Goal(&81069, predicate: killed, user: Op0)]
+55:52:intend:73: Selected and memorized goal [Goal(&81069, predicate: killed, user: Op0)]
+55:52:act:49: Retrieving goals and plan
+55:52:act:27: Getting best plan
+55:52:act:41: Best plan is [move(e)] move(e) move(e) move(e) move(s) move(s) bomb(2)
+55:52:act:77: Next action is: move(e) from plan:
+55:52:act:78: 	[move(e)] move(e) move(e) move(e) move(s) move(s) bomb(2)
+55:52:act:82: Executed and memorized action
+55:52:perceive:91: Started cycle 4
+55:52:perceive:98: Recorded current state
+55:52:perceive:111: Got messages:
+55:52:perceive:122: Remembered messages
+55:53:interpret:464: Gathering new goals
+55:53:interpret:469: Found new goal inputs:
+	['killed(&81069);Op0']
+55:53:interpret:493: Operator goal input: killed (&81069)
+55:53:interpret:518: Recv'd goal data ['killed', '(&81069)']
+55:53:interpret:506: Added goal Goal(&81069, predicate: killed, user: Op0)
+55:53:interpret:578: Retrieved state and goals
+55:53:interpret:585: Retrieved goal graph
+55:53:interpret:589: Beginning completion check
+55:53:interpret:604: Goal Goal(&81069, predicate: killed, user: Op0) not completed yet
+55:53:interpret:56: Retrieved existing discrepancies:
+{}
+55:53:interpret:63: checking for discrepancies
+55:53:interpret:68: Retrieved executed actions: [<MIDCA.plans.Action instance at 0x7f18076080e0>]
+55:53:interpret:82: No discrepancies found
+55:53:interpret:127: Retrieved discrepancies
+55:53:interpret:135: Retrieved state
+55:53:interpret:143: Retrieved current goals
+55:53:interpret:145: Checking for discrepancies
+55:53:interpret:152: Found goal discrepancy: Goal(&81069, predicate: killed, user: Op0)=civi-killed
+55:53:interpret:157: Remembered discrepancies
+55:53:interpret:231: Reset explanations
+55:53:interpret:244: Found discrepancies
+55:53:interpret:246: Beginning explanations
+55:53:interpret:249: Explaining discrepancy Goal(&81069, predicate: killed, user: Op0):civi-killed
+55:53:interpret:252: Explanations:
+55:53:interpret:259: 	Goal(&81069, predicate: killed, user: Op0): civi-in-AOE
+55:53:interpret:266: Remembered explanations
+55:53:evaluate:116: Getting explanations to handle
+55:53:evaluate:119: Handling explanation:
+	(Goal(&81069, predicate: killed, user: Op0), 'civi-in-AOE')
+55:53:evaluate:191: 	Generated rebellion:
+	rebellion(goal=Goal(&81069, predicate: killed, user: Op0)
+          reason=civi-in-AOE
+          civilians=[&C@(7, 13):L]
+         )
+55:53:evaluate:210: Done managing goals
+55:53:evaluate:236: Retrieving rebellions
+55:53:evaluate:243: Handling rebellion:
+rebellion(goal=Goal(&81069, predicate: killed, user: Op0)
+          reason=civi-in-AOE
+          civilians=[&C@(7, 13):L]
+         )
+55:53:evaluate:250: 	Removed goal
+55:53:evaluate:257: 	Informed user of Civi NPC @ (7, 13) which is alive
+55:53:evaluate:264: 	Generated alt goals:
+	[Goal(&81069, predicate: killed, user: Op0), 'None']
+55:53:evaluate:331: Sent rebellion info to operator Op0
+55:53:evaluate:285: Generated goal key:
+{0: Goal(&81069, predicate: killed, user: Op0), 1: 'None'}
+55:54:evaluate:298: User response: 1
+55:54:evaluate:269: 	Operator selected choice None
+55:54:evaluate:279: Reset rebellions
+55:55:intend:69: Retrieving valid goals
+55:55:intend:28: Considering potential goals
+55:55:intend:73: Selected and memorized goal []
+55:55:intend:81: No goals selected
+55:55:act:49: Retrieving goals and plan
+55:55:act:27: Getting best plan
+55:55:act:41: Best plan is None
+55:55:act:97: There is no plan, MIDCA will not take an action
+55:55:perceive:91: Started cycle 5
+55:55:perceive:98: Recorded current state
+55:55:perceive:111: Got messages:
+55:55:perceive:119: 	Op0:
+	1
+55:55:perceive:122: Remembered messages
+55:56:interpret:464: Gathering new goals
+55:56:interpret:469: Found new goal inputs:
+	['']
+55:56:interpret:473: Operator input is null
+55:56:interpret:578: Retrieved state and goals
+55:56:interpret:585: Retrieved goal graph
+55:56:interpret:617: No current goals to evaluate for completion
+55:56:interpret:56: Retrieved existing discrepancies:
+{}
+55:56:interpret:63: checking for discrepancies
+55:56:interpret:68: Retrieved executed actions: []
+55:56:interpret:82: No discrepancies found
+55:56:interpret:127: Retrieved discrepancies
+55:56:interpret:135: Retrieved state
+55:56:interpret:143: Retrieved current goals
+55:56:interpret:145: Checking for discrepancies
+55:56:interpret:157: Remembered discrepancies
+55:56:interpret:231: Reset explanations
+55:56:interpret:242: No discrepancies to explain
+55:56:evaluate:106: No explanations to manage, continuing
+55:56:evaluate:236: Retrieving rebellions
+55:56:evaluate:239: No rebellions to handle, continuing
+55:56:intend:69: Retrieving valid goals
+55:56:intend:28: Considering potential goals
+55:56:intend:73: Selected and memorized goal []
+55:56:intend:81: No goals selected
+55:57:act:49: Retrieving goals and plan
+55:57:act:27: Getting best plan
+55:57:act:41: Best plan is None
+55:57:act:97: There is no plan, MIDCA will not take an action
+55:57:perceive:91: Started cycle 6
+55:57:perceive:98: Recorded current state
+55:57:perceive:111: Got messages:
+55:57:perceive:122: Remembered messages
+55:57:interpret:464: Gathering new goals
+55:57:interpret:469: Found new goal inputs:
+	['killed(&64371);Op0']
+55:57:interpret:493: Operator goal input: killed (&64371)
+55:57:interpret:518: Recv'd goal data ['killed', '(&64371)']
+55:57:interpret:506: Added goal Goal(&64371, predicate: killed, user: Op0)
+55:57:interpret:578: Retrieved state and goals
+55:57:interpret:585: Retrieved goal graph
+55:57:interpret:617: No current goals to evaluate for completion
+55:57:interpret:56: Retrieved existing discrepancies:
+{}
+55:57:interpret:63: checking for discrepancies
+55:57:interpret:68: Retrieved executed actions: []
+55:57:interpret:82: No discrepancies found
+55:57:interpret:127: Retrieved discrepancies
+55:57:interpret:135: Retrieved state
+55:57:interpret:143: Retrieved current goals
+55:57:interpret:145: Checking for discrepancies
+55:57:interpret:157: Remembered discrepancies
+55:57:interpret:231: Reset explanations
+55:57:interpret:242: No discrepancies to explain
+55:58:evaluate:106: No explanations to manage, continuing
+55:58:evaluate:236: Retrieving rebellions
+55:58:evaluate:239: No rebellions to handle, continuing
+55:58:intend:69: Retrieving valid goals
+55:58:intend:28: Considering potential goals
+55:58:intend:36: 	Assessing goal Goal(&64371, predicate: killed, user: Op0)
+55:58:intend:46: 	Goal score = 5
+55:58:intend:51: 	Currently, best goal is [Goal(&64371, predicate: killed, user: Op0)]
+55:58:intend:73: Selected and memorized goal [Goal(&64371, predicate: killed, user: Op0)]
+55:58:act:49: Retrieving goals and plan
+55:58:act:27: Getting best plan
+55:58:act:41: Best plan is [move(e)] move(e) move(e) move(e) move(s) move(s) bomb(2)
+55:58:act:77: Next action is: move(e) from plan:
+55:58:act:78: 	[move(e)] move(e) move(e) move(e) move(s) move(s) bomb(2)
+55:58:act:82: Executed and memorized action
+55:59:perceive:91: Started cycle 7
+55:59:perceive:98: Recorded current state
+55:59:perceive:111: Got messages:
+55:59:perceive:122: Remembered messages
+55:59:interpret:464: Gathering new goals
+55:59:interpret:469: Found new goal inputs:
+	['killed(&-8478);Op0']
+55:59:interpret:493: Operator goal input: killed (&-8478)
+55:59:interpret:518: Recv'd goal data ['killed', '(&-8478)']
+55:59:interpret:506: Added goal Goal(&-8478, predicate: killed, user: Op0)
+55:59:interpret:578: Retrieved state and goals
+55:59:interpret:585: Retrieved goal graph
+55:59:interpret:589: Beginning completion check
+55:59:interpret:599: Removed complted goal Goal(&64371, predicate: killed, user: Op0)
+55:59:interpret:56: Retrieved existing discrepancies:
+{}
+55:59:interpret:63: checking for discrepancies
+55:59:interpret:68: Retrieved executed actions: [<MIDCA.plans.Action instance at 0x7f18076618c0>]
+55:59:interpret:87: Found 1 discrepancies:
+55:59:interpret:92: (11, 8) : ([&E@(11, 8):L], None)
+55:59:interpret:96: Remembered discrepancies
+55:59:interpret:127: Retrieved discrepancies
+55:59:interpret:135: Retrieved state
+55:59:interpret:143: Retrieved current goals
+55:59:interpret:145: Checking for discrepancies
+55:59:interpret:157: Remembered discrepancies
+55:59:interpret:231: Reset explanations
+55:59:interpret:244: Found discrepancies
+55:59:interpret:246: Beginning explanations
+55:59:interpret:249: Explaining discrepancy (11, 8):([&E@(11, 8):L], None)
+55:59:interpret:252: Explanations:
+55:59:interpret:259: 	(11, 8): agent-move
+55:59:interpret:266: Remembered explanations
+55:59:evaluate:116: Getting explanations to handle
+55:59:evaluate:119: Handling explanation:
+	((11, 8), 'agent-move')
+55:59:evaluate:210: Done managing goals
+55:59:evaluate:236: Retrieving rebellions
+55:59:evaluate:239: No rebellions to handle, continuing
+55:59:intend:69: Retrieving valid goals
+55:59:intend:28: Considering potential goals
+55:59:intend:36: 	Assessing goal Goal(&-8478, predicate: killed, user: Op0)
+55:59:intend:46: 	Goal score = 5
+55:59:intend:51: 	Currently, best goal is [Goal(&-8478, predicate: killed, user: Op0)]
+55:59:intend:73: Selected and memorized goal [Goal(&-8478, predicate: killed, user: Op0)]
+56:00:act:49: Retrieving goals and plan
+56:00:act:27: Getting best plan
+56:00:act:41: Best plan is [move(n)] move(n) move(e) move(e) move(e) move(n) bomb(2)
+56:00:act:77: Next action is: move(n) from plan:
+56:00:act:78: 	[move(n)] move(n) move(e) move(e) move(e) move(n) bomb(2)
+56:00:act:82: Executed and memorized action
+56:00:perceive:91: Started cycle 8
+56:00:perceive:98: Recorded current state
+56:00:perceive:111: Got messages:
+56:00:perceive:122: Remembered messages
+56:00:interpret:464: Gathering new goals
+56:00:interpret:469: Found new goal inputs:
+	['']
+56:00:interpret:473: Operator input is null
+56:00:interpret:578: Retrieved state and goals
+56:00:interpret:585: Retrieved goal graph
+56:00:interpret:589: Beginning completion check
+56:00:interpret:604: Goal Goal(&-8478, predicate: killed, user: Op0) not completed yet
+56:00:interpret:56: Retrieved existing discrepancies:
+{}
+56:00:interpret:63: checking for discrepancies
+56:00:interpret:68: Retrieved executed actions: [<MIDCA.plans.Action instance at 0x7f1807667b00>]
+56:00:interpret:87: Found 1 discrepancies:
+56:00:interpret:92: (4, 7) : ([&C@(4, 7):L], None)
+56:00:interpret:96: Remembered discrepancies
+56:00:interpret:127: Retrieved discrepancies
+56:00:interpret:135: Retrieved state
+56:00:interpret:143: Retrieved current goals
+56:00:interpret:145: Checking for discrepancies
+56:00:interpret:152: Found goal discrepancy: Goal(&-8478, predicate: killed, user: Op0)=civi-killed
+56:00:interpret:157: Remembered discrepancies
+56:00:interpret:231: Reset explanations
+56:00:interpret:244: Found discrepancies
+56:00:interpret:246: Beginning explanations
+56:00:interpret:249: Explaining discrepancy Goal(&-8478, predicate: killed, user: Op0):civi-killed
+56:00:interpret:249: Explaining discrepancy (4, 7):([&C@(4, 7):L], None)
+56:00:interpret:252: Explanations:
+56:00:interpret:259: 	Goal(&-8478, predicate: killed, user: Op0): civi-in-AOE
+56:00:interpret:259: 	(4, 7): agent-move
+56:00:interpret:266: Remembered explanations
+56:01:evaluate:116: Getting explanations to handle
+56:01:evaluate:119: Handling explanation:
+	(Goal(&-8478, predicate: killed, user: Op0), 'civi-in-AOE')
+56:01:evaluate:191: 	Generated rebellion:
+	rebellion(goal=Goal(&-8478, predicate: killed, user: Op0)
+          reason=civi-in-AOE
+          civilians=[&C@(9, 8):L]
+         )
+56:01:evaluate:119: Handling explanation:
+	((4, 7), 'agent-move')
+56:01:evaluate:210: Done managing goals
+56:01:evaluate:236: Retrieving rebellions
+56:01:evaluate:243: Handling rebellion:
+rebellion(goal=Goal(&-8478, predicate: killed, user: Op0)
+          reason=civi-in-AOE
+          civilians=[&C@(9, 8):L]
+         )
+56:01:evaluate:250: 	Removed goal
+56:01:evaluate:257: 	Informed user of Civi NPC @ (9, 8) which is alive
+56:01:evaluate:264: 	Generated alt goals:
+	[Goal(&-8478, predicate: killed, user: Op0), 'None']
+56:01:evaluate:331: Sent rebellion info to operator Op0
+56:01:evaluate:285: Generated goal key:
+{0: Goal(&-8478, predicate: killed, user: Op0), 1: 'None'}
+56:02:evaluate:298: User response: 1
+56:02:evaluate:269: 	Operator selected choice None
+56:02:evaluate:279: Reset rebellions
+56:03:intend:69: Retrieving valid goals
+56:03:intend:28: Considering potential goals
+56:03:intend:73: Selected and memorized goal []
+56:03:intend:81: No goals selected
+56:03:act:49: Retrieving goals and plan
+56:03:act:27: Getting best plan
+56:03:act:41: Best plan is None
+56:03:act:97: There is no plan, MIDCA will not take an action
+56:03:perceive:91: Started cycle 9
+56:03:perceive:98: Recorded current state
+56:03:perceive:111: Got messages:
+56:03:perceive:119: 	Op0:
+	1
+56:03:perceive:122: Remembered messages
+56:04:interpret:464: Gathering new goals
+56:04:interpret:469: Found new goal inputs:
+	['killed(&-8478);Op0', 'killed(&57054);Op0']
+56:04:interpret:493: Operator goal input: killed (&-8478)
+56:04:interpret:518: Recv'd goal data ['killed', '(&-8478)']
+56:04:interpret:506: Added goal Goal(&-8478, predicate: killed, user: Op0)
+56:04:interpret:493: Operator goal input: killed (&57054)
+56:04:interpret:518: Recv'd goal data ['killed', '(&57054)']
+56:04:interpret:506: Added goal Goal(&57054, predicate: killed, user: Op0)
+56:04:interpret:578: Retrieved state and goals
+56:04:interpret:585: Retrieved goal graph
+56:04:interpret:617: No current goals to evaluate for completion
+56:04:interpret:56: Retrieved existing discrepancies:
+{}
+56:04:interpret:63: checking for discrepancies
+56:04:interpret:68: Retrieved executed actions: []
+56:04:interpret:82: No discrepancies found
+56:04:interpret:127: Retrieved discrepancies
+56:04:interpret:135: Retrieved state
+56:04:interpret:143: Retrieved current goals
+56:04:interpret:145: Checking for discrepancies
+56:04:interpret:157: Remembered discrepancies
+56:04:interpret:231: Reset explanations
+56:04:interpret:242: No discrepancies to explain
+56:04:evaluate:106: No explanations to manage, continuing
+56:04:evaluate:236: Retrieving rebellions
+56:04:evaluate:239: No rebellions to handle, continuing
+56:04:intend:69: Retrieving valid goals
+56:04:intend:28: Considering potential goals
+56:04:intend:36: 	Assessing goal Goal(&-8478, predicate: killed, user: Op0)
+56:04:intend:46: 	Goal score = 5
+56:04:intend:51: 	Currently, best goal is [Goal(&-8478, predicate: killed, user: Op0)]
+56:04:intend:36: 	Assessing goal Goal(&57054, predicate: killed, user: Op0)
+56:04:intend:46: 	Goal score = 5
+56:04:intend:73: Selected and memorized goal [Goal(&-8478, predicate: killed, user: Op0)]
+56:05:act:49: Retrieving goals and plan
+56:05:act:27: Getting best plan
+56:05:act:41: Best plan is move(n) [move(n)] move(e) move(e) move(e) move(n) bomb(2)
+56:05:act:77: Next action is: move(n) from plan:
+56:05:act:78: 	move(n) [move(n)] move(e) move(e) move(e) move(n) bomb(2)
+56:05:act:82: Executed and memorized action
+56:05:perceive:91: Started cycle 10
+56:05:perceive:98: Recorded current state
+56:05:perceive:111: Got messages:
+56:05:perceive:122: Remembered messages
+56:05:interpret:464: Gathering new goals
+56:05:interpret:469: Found new goal inputs:
+	['killed(&57054);Op0']
+56:05:interpret:493: Operator goal input: killed (&57054)
+56:05:interpret:518: Recv'd goal data ['killed', '(&57054)']
+56:05:interpret:506: Added goal Goal(&57054, predicate: killed, user: Op0)
+56:05:interpret:578: Retrieved state and goals
+56:05:interpret:585: Retrieved goal graph
+56:05:interpret:589: Beginning completion check
+56:05:interpret:604: Goal Goal(&-8478, predicate: killed, user: Op0) not completed yet
+56:05:interpret:56: Retrieved existing discrepancies:
+{}
+56:05:interpret:63: checking for discrepancies
+56:05:interpret:68: Retrieved executed actions: [<MIDCA.plans.Action instance at 0x7f1807667cf8>]
+56:05:interpret:82: No discrepancies found
+56:05:interpret:127: Retrieved discrepancies
+56:05:interpret:135: Retrieved state
+56:05:interpret:143: Retrieved current goals
+56:05:interpret:145: Checking for discrepancies
+56:05:interpret:152: Found goal discrepancy: Goal(&-8478, predicate: killed, user: Op0)=civi-killed
+56:05:interpret:157: Remembered discrepancies
+56:05:interpret:231: Reset explanations
+56:05:interpret:244: Found discrepancies
+56:05:interpret:246: Beginning explanations
+56:05:interpret:249: Explaining discrepancy Goal(&-8478, predicate: killed, user: Op0):civi-killed
+56:05:interpret:252: Explanations:
+56:05:interpret:259: 	Goal(&-8478, predicate: killed, user: Op0): civi-in-AOE
+56:05:interpret:266: Remembered explanations
+56:06:evaluate:116: Getting explanations to handle
+56:06:evaluate:119: Handling explanation:
+	(Goal(&-8478, predicate: killed, user: Op0), 'civi-in-AOE')
+56:06:evaluate:191: 	Generated rebellion:
+	rebellion(goal=Goal(&-8478, predicate: killed, user: Op0)
+          reason=civi-in-AOE
+          civilians=[&C@(9, 8):L]
+         )
+56:06:evaluate:210: Done managing goals
+56:06:evaluate:236: Retrieving rebellions
+56:06:evaluate:243: Handling rebellion:
+rebellion(goal=Goal(&-8478, predicate: killed, user: Op0)
+          reason=civi-in-AOE
+          civilians=[&C@(9, 8):L]
+         )
+56:06:evaluate:250: 	Removed goal
+56:06:evaluate:257: 	Informed user of Civi NPC @ (9, 8) which is alive
+56:06:evaluate:264: 	Generated alt goals:
+	[Goal(&-8478, predicate: killed, user: Op0), 'None']
+56:06:evaluate:331: Sent rebellion info to operator Op0
+56:06:evaluate:285: Generated goal key:
+{0: Goal(&-8478, predicate: killed, user: Op0), 1: 'None'}
+56:07:evaluate:298: User response: 1
+56:07:evaluate:269: 	Operator selected choice None
+56:07:evaluate:279: Reset rebellions
+56:07:intend:69: Retrieving valid goals
+56:07:intend:28: Considering potential goals
+56:07:intend:36: 	Assessing goal Goal(&57054, predicate: killed, user: Op0)
+56:07:intend:46: 	Goal score = 5
+56:07:intend:51: 	Currently, best goal is [Goal(&57054, predicate: killed, user: Op0)]
+56:07:intend:73: Selected and memorized goal [Goal(&57054, predicate: killed, user: Op0)]
+56:08:act:49: Retrieving goals and plan
+56:08:act:27: Getting best plan
+56:08:act:41: Best plan is [move(n)] move(n) move(n) move(e) move(e) bomb(2)
+56:08:act:77: Next action is: move(n) from plan:
+56:08:act:78: 	[move(n)] move(n) move(n) move(e) move(e) bomb(2)
+56:08:act:82: Executed and memorized action
+56:08:perceive:91: Started cycle 11
+56:08:perceive:98: Recorded current state
+56:08:perceive:111: Got messages:
+56:08:perceive:119: 	Op0:
+	1
+56:08:perceive:122: Remembered messages
+56:08:interpret:464: Gathering new goals
+56:08:interpret:469: Found new goal inputs:
+	['']
+56:08:interpret:473: Operator input is null
+56:08:interpret:578: Retrieved state and goals
+56:08:interpret:585: Retrieved goal graph
+56:08:interpret:589: Beginning completion check
+56:08:interpret:604: Goal Goal(&57054, predicate: killed, user: Op0) not completed yet
+56:08:interpret:56: Retrieved existing discrepancies:
+{}
+56:08:interpret:63: checking for discrepancies
+56:08:interpret:68: Retrieved executed actions: [<MIDCA.plans.Action instance at 0x7f1807555170>]
+56:08:interpret:87: Found 1 discrepancies:
+56:08:interpret:92: (11, 8) : ([&E@(11, 8):D], [&E@(11, 8):L])
+56:08:interpret:96: Remembered discrepancies
+56:08:interpret:127: Retrieved discrepancies
+56:08:interpret:135: Retrieved state
+56:08:interpret:143: Retrieved current goals
+56:08:interpret:145: Checking for discrepancies
+56:08:interpret:152: Found goal discrepancy: Goal(&57054, predicate: killed, user: Op0)=civi-killed
+56:08:interpret:157: Remembered discrepancies
+56:08:interpret:231: Reset explanations
+56:08:interpret:244: Found discrepancies
+56:08:interpret:246: Beginning explanations
+56:08:interpret:249: Explaining discrepancy (11, 8):([&E@(11, 8):D], [&E@(11, 8):L])
+56:08:interpret:249: Explaining discrepancy Goal(&57054, predicate: killed, user: Op0):civi-killed
+56:08:interpret:252: Explanations:
+56:08:interpret:259: 	(11, 8): agent-move
+56:08:interpret:259: 	Goal(&57054, predicate: killed, user: Op0): civi-in-AOE
+56:08:interpret:266: Remembered explanations
+56:09:evaluate:116: Getting explanations to handle
+56:09:evaluate:119: Handling explanation:
+	((11, 8), 'agent-move')
+56:09:evaluate:119: Handling explanation:
+	(Goal(&57054, predicate: killed, user: Op0), 'civi-in-AOE')
+56:09:evaluate:191: 	Generated rebellion:
+	rebellion(goal=Goal(&57054, predicate: killed, user: Op0)
+          reason=civi-in-AOE
+          civilians=[&C@(9, 8):L]
+         )
+56:09:evaluate:210: Done managing goals
+56:09:evaluate:236: Retrieving rebellions
+56:09:evaluate:243: Handling rebellion:
+rebellion(goal=Goal(&57054, predicate: killed, user: Op0)
+          reason=civi-in-AOE
+          civilians=[&C@(9, 8):L]
+         )
+56:09:evaluate:250: 	Removed goal
+56:09:evaluate:257: 	Informed user of Civi NPC @ (9, 8) which is alive
+56:09:evaluate:264: 	Generated alt goals:
+	[Goal(&57054, predicate: killed, user: Op0), 'None']
+56:09:evaluate:331: Sent rebellion info to operator Op0
+56:09:evaluate:285: Generated goal key:
+{0: Goal(&57054, predicate: killed, user: Op0), 1: 'None'}
+56:10:evaluate:298: User response: 1
+56:10:evaluate:269: 	Operator selected choice None
+56:10:evaluate:279: Reset rebellions
+56:10:intend:69: Retrieving valid goals
+56:10:intend:28: Considering potential goals
+56:10:intend:73: Selected and memorized goal []
+56:10:intend:81: No goals selected
+56:11:act:49: Retrieving goals and plan
+56:11:act:27: Getting best plan
+56:11:act:41: Best plan is None
+56:11:act:97: There is no plan, MIDCA will not take an action
+56:11:perceive:91: Started cycle 12
+56:11:perceive:98: Recorded current state
+56:11:perceive:111: Got messages:
+56:11:perceive:119: 	Op0:
+	1
+56:11:perceive:122: Remembered messages
+56:11:interpret:464: Gathering new goals
+56:11:interpret:469: Found new goal inputs:
+	['killed(&57054);Op0', 'killed(&-1671);Op0']
+56:11:interpret:493: Operator goal input: killed (&57054)
+56:11:interpret:518: Recv'd goal data ['killed', '(&57054)']
+56:11:interpret:506: Added goal Goal(&57054, predicate: killed, user: Op0)
+56:11:interpret:493: Operator goal input: killed (&-1671)
+56:11:interpret:518: Recv'd goal data ['killed', '(&-1671)']
+56:11:interpret:506: Added goal Goal(&-1671, predicate: killed, user: Op0)
+56:11:interpret:578: Retrieved state and goals
+56:11:interpret:585: Retrieved goal graph
+56:11:interpret:617: No current goals to evaluate for completion
+56:11:interpret:56: Retrieved existing discrepancies:
+{}
+56:11:interpret:63: checking for discrepancies
+56:11:interpret:68: Retrieved executed actions: []
+56:11:interpret:82: No discrepancies found
+56:11:interpret:127: Retrieved discrepancies
+56:11:interpret:135: Retrieved state
+56:11:interpret:143: Retrieved current goals
+56:11:interpret:145: Checking for discrepancies
+56:11:interpret:157: Remembered discrepancies
+56:11:interpret:231: Reset explanations
+56:11:interpret:242: No discrepancies to explain
+56:12:evaluate:106: No explanations to manage, continuing
+56:12:evaluate:236: Retrieving rebellions
+56:12:evaluate:239: No rebellions to handle, continuing
+56:12:intend:69: Retrieving valid goals
+56:12:intend:28: Considering potential goals
+56:12:intend:36: 	Assessing goal Goal(&-1671, predicate: killed, user: Op0)
+56:12:intend:46: 	Goal score = 5
+56:12:intend:51: 	Currently, best goal is [Goal(&-1671, predicate: killed, user: Op0)]
+56:12:intend:36: 	Assessing goal Goal(&57054, predicate: killed, user: Op0)
+56:12:intend:46: 	Goal score = 5
+56:12:intend:73: Selected and memorized goal [Goal(&-1671, predicate: killed, user: Op0)]
+56:12:act:49: Retrieving goals and plan
+56:12:act:27: Getting best plan
+56:13:act:41: Best plan is [move(n)] move(n) move(n) move(n) move(n) move(e) bomb(2)
+56:13:act:77: Next action is: move(n) from plan:
+56:13:act:78: 	[move(n)] move(n) move(n) move(n) move(n) move(e) bomb(2)
+56:13:act:82: Executed and memorized action
+56:13:perceive:91: Started cycle 13
+56:13:perceive:98: Recorded current state
+56:13:perceive:111: Got messages:
+56:13:perceive:122: Remembered messages
+56:13:interpret:464: Gathering new goals
+56:13:interpret:469: Found new goal inputs:
+	['killed(&-1671);Op0']
+56:13:interpret:493: Operator goal input: killed (&-1671)
+56:13:interpret:518: Recv'd goal data ['killed', '(&-1671)']
+56:13:interpret:506: Added goal Goal(&-1671, predicate: killed, user: Op0)
+56:13:interpret:578: Retrieved state and goals
+56:13:interpret:585: Retrieved goal graph
+56:13:interpret:589: Beginning completion check
+56:13:interpret:604: Goal Goal(&-1671, predicate: killed, user: Op0) not completed yet
+56:13:interpret:56: Retrieved existing discrepancies:
+{}
+56:13:interpret:63: checking for discrepancies
+56:13:interpret:68: Retrieved executed actions: [<MIDCA.plans.Action instance at 0x7f18074ea560>]
+56:13:interpret:87: Found 1 discrepancies:
+56:13:interpret:92: (7, 4) : ([&C@(7, 4):L], None)
+56:13:interpret:96: Remembered discrepancies
+56:13:interpret:127: Retrieved discrepancies
+56:13:interpret:135: Retrieved state
+56:13:interpret:143: Retrieved current goals
+56:13:interpret:145: Checking for discrepancies
+56:13:interpret:152: Found goal discrepancy: Goal(&-1671, predicate: killed, user: Op0)=civi-killed
+56:13:interpret:157: Remembered discrepancies
+56:13:interpret:231: Reset explanations
+56:13:interpret:244: Found discrepancies
+56:13:interpret:246: Beginning explanations
+56:13:interpret:249: Explaining discrepancy (7, 4):([&C@(7, 4):L], None)
+56:13:interpret:249: Explaining discrepancy Goal(&-1671, predicate: killed, user: Op0):civi-killed
+56:13:interpret:252: Explanations:
+56:13:interpret:259: 	(7, 4): agent-move
+56:13:interpret:259: 	Goal(&-1671, predicate: killed, user: Op0): civi-in-AOE
+56:13:interpret:266: Remembered explanations
+56:13:evaluate:116: Getting explanations to handle
+56:13:evaluate:119: Handling explanation:
+	((7, 4), 'agent-move')
+56:13:evaluate:119: Handling explanation:
+	(Goal(&-1671, predicate: killed, user: Op0), 'civi-in-AOE')
+56:13:evaluate:191: 	Generated rebellion:
+	rebellion(goal=Goal(&-1671, predicate: killed, user: Op0)
+          reason=civi-in-AOE
+          civilians=[&C@(9, 8):L]
+         )
+56:13:evaluate:210: Done managing goals
+56:13:evaluate:236: Retrieving rebellions
+56:13:evaluate:243: Handling rebellion:
+rebellion(goal=Goal(&-1671, predicate: killed, user: Op0)
+          reason=civi-in-AOE
+          civilians=[&C@(9, 8):L]
+         )
+56:13:evaluate:250: 	Removed goal
+56:13:evaluate:257: 	Informed user of Civi NPC @ (9, 8) which is alive
+56:13:evaluate:264: 	Generated alt goals:
+	[Goal(&-1671, predicate: killed, user: Op0), 'None']
+56:13:evaluate:331: Sent rebellion info to operator Op0
+56:13:evaluate:285: Generated goal key:
+{0: Goal(&-1671, predicate: killed, user: Op0), 1: 'None'}
+56:16:perceive:91: Started cycle 0
+56:16:perceive:98: Recorded current state
+56:16:perceive:111: Got messages:
+56:16:perceive:122: Remembered messages
+56:16:interpret:464: Gathering new goals
+56:16:interpret:469: Found new goal inputs:
+	['']
+56:16:interpret:473: Operator input is null
+56:16:interpret:578: Retrieved state and goals
+56:16:interpret:585: Retrieved goal graph
+56:16:interpret:617: No current goals to evaluate for completion
+56:16:interpret:56: Retrieved existing discrepancies:
+{}
+56:16:interpret:63: checking for discrepancies
+56:16:interpret:127: Retrieved discrepancies
+56:16:interpret:135: Retrieved state
+56:16:interpret:141: Retrieved discrepancies
+56:16:interpret:231: Reset explanations
+56:16:interpret:242: No discrepancies to explain
+56:16:evaluate:106: No explanations to manage, continuing
+56:16:evaluate:236: Retrieving rebellions
+56:16:evaluate:239: No rebellions to handle, continuing

@@ -1,0 +1,950 @@
+50:55:__init__: 
+
+
+50:55:__init__: New world made
+50:55:place_object: Placed object Civi NPC @ (7, 15) which is alive
+50:55:place_object: Placed object Civi NPC @ (22, 13) which is alive
+50:55:place_object: Placed object Civi NPC @ (16, 12) which is alive
+50:55:place_object: Placed object Civi NPC @ (6, 12) which is alive
+50:55:place_object: Placed object Civi NPC @ (14, 11) which is alive
+50:55:place_object: Placed object Civi NPC @ (19, 18) which is alive
+50:55:place_object: Placed object Civi NPC @ (6, 9) which is alive
+50:55:place_object: Placed object Civi NPC @ (22, 7) which is alive
+50:55:place_object: Placed object Civi NPC @ (13, 19) which is alive
+50:55:place_object: Placed object Civi NPC @ (24, 2) which is alive
+50:55:place_object: Placed object Civi NPC @ (18, 6) which is alive
+50:55:place_object: Placed object Civi NPC @ (21, 2) which is alive
+50:55:place_object: Placed object Civi NPC @ (2, 19) which is alive
+50:55:place_object: Placed object Civi NPC @ (3, 11) which is alive
+50:55:place_object: Placed object Civi NPC @ (2, 20) which is alive
+50:55:place_object: Placed object Civi NPC @ (8, 10) which is alive
+50:55:place_object: Placed object Civi NPC @ (21, 10) which is alive
+50:55:place_object: Placed object Civi NPC @ (6, 3) which is alive
+50:55:place_object: Placed object Civi NPC @ (6, 4) which is alive
+50:55:place_object: Placed object Civi NPC @ (1, 5) which is alive
+50:55:place_object: Placed object Civi NPC @ (9, 18) which is alive
+50:55:place_object: Placed object Civi NPC @ (24, 19) which is alive
+50:55:place_object: Placed object Civi NPC @ (2, 22) which is alive
+50:55:place_object: Placed object Civi NPC @ (21, 3) which is alive
+50:55:place_object: Placed object Civi NPC @ (3, 4) which is alive
+50:55:place_object: Placed object Civi NPC @ (11, 10) which is alive
+50:55:place_object: Placed object Civi NPC @ (15, 20) which is alive
+50:55:place_object: Placed object Civi NPC @ (6, 22) which is alive
+50:55:place_object: Placed object Civi NPC @ (4, 4) which is alive
+50:55:place_object: Placed object Civi NPC @ (4, 22) which is alive
+50:55:place_object: Placed object Civi NPC @ (23, 21) which is alive
+50:55:place_object: Placed object Civi NPC @ (7, 23) which is alive
+50:55:place_object: Placed object Civi NPC @ (17, 8) which is alive
+50:55:place_object: Placed object Civi NPC @ (6, 14) which is alive
+50:55:place_object: Placed object Civi NPC @ (22, 24) which is alive
+50:55:place_object: Placed object Civi NPC @ (6, 18) which is alive
+50:55:place_object: Placed object Civi NPC @ (3, 19) which is alive
+50:55:place_object: Placed object Civi NPC @ (18, 23) which is alive
+50:55:place_object: Placed object Civi NPC @ (2, 14) which is alive
+50:55:place_object: Placed object Civi NPC @ (19, 4) which is alive
+50:55:place_object: Placed object Civi NPC @ (12, 16) which is alive
+50:55:place_object: Placed object Civi NPC @ (14, 20) which is alive
+50:55:place_object: Placed object Civi NPC @ (21, 15) which is alive
+50:55:place_object: Placed object Civi NPC @ (9, 12) which is alive
+50:55:place_object: Placed object Civi NPC @ (15, 2) which is alive
+50:55:place_object: Placed object Civi NPC @ (16, 8) which is alive
+50:55:place_object: Placed object Civi NPC @ (16, 23) which is alive
+50:55:place_object: Placed object Civi NPC @ (12, 12) which is alive
+50:55:place_object: Placed object Civi NPC @ (21, 19) which is alive
+50:55:place_object: Placed object Civi NPC @ (10, 23) which is alive
+50:55:place_object: Placed object Civi NPC @ (6, 8) which is alive
+50:55:place_object: Placed object Civi NPC @ (1, 1) which is alive
+50:55:place_object: Placed object Civi NPC @ (8, 13) which is alive
+50:55:place_object: Placed object Civi NPC @ (14, 8) which is alive
+50:55:place_object: Placed object Civi NPC @ (8, 6) which is alive
+50:55:place_object: Placed object Civi NPC @ (1, 21) which is alive
+50:55:place_object: Placed object Civi NPC @ (21, 21) which is alive
+50:55:place_object: Placed object Civi NPC @ (8, 8) which is alive
+50:55:place_object: Placed object Civi NPC @ (18, 24) which is alive
+50:55:place_object: Placed object Civi NPC @ (23, 1) which is alive
+50:55:place_object: Placed object Civi NPC @ (24, 20) which is alive
+50:55:place_object: Placed object Civi NPC @ (17, 16) which is alive
+50:55:place_object: Placed object Civi NPC @ (11, 18) which is alive
+50:55:place_object: Placed object Civi NPC @ (17, 24) which is alive
+50:55:place_object: Placed object Civi NPC @ (1, 12) which is alive
+50:55:place_object: Placed object Civi NPC @ (17, 10) which is alive
+50:55:place_object: Placed object Civi NPC @ (7, 10) which is alive
+50:55:place_object: Placed object Civi NPC @ (0, 13) which is alive
+50:55:place_object: Placed object Civi NPC @ (20, 7) which is alive
+50:55:place_object: Placed object Civi NPC @ (16, 15) which is alive
+50:55:place_object: Placed object Civi NPC @ (3, 2) which is alive
+50:55:place_object: Placed object Civi NPC @ (10, 20) which is alive
+50:55:place_object: Placed object Civi NPC @ (16, 0) which is alive
+50:55:place_object: Placed object Civi NPC @ (11, 7) which is alive
+50:55:place_object: Placed object Civi NPC @ (20, 22) which is alive
+50:55:place_object: Placed object Enemy NPC @ (10, 4) which is alive
+50:55:place_object: Placed object Enemy NPC @ (9, 4) which is alive
+50:55:place_object: Placed object Enemy NPC @ (9, 16) which is alive
+50:55:place_object: Placed object Enemy NPC @ (11, 1) which is alive
+50:55:place_object: Placed object Enemy NPC @ (2, 18) which is alive
+50:55:place_object: Placed object Enemy NPC @ (24, 13) which is alive
+50:55:place_object: Placed object Enemy NPC @ (23, 19) which is alive
+50:55:place_object: Placed object Enemy NPC @ (12, 10) which is alive
+50:55:place_object: Placed object Enemy NPC @ (14, 16) which is alive
+50:55:place_object: Placed object Enemy NPC @ (12, 2) which is alive
+50:55:place_object: Placed object Enemy NPC @ (5, 18) which is alive
+50:55:place_object: Placed object Enemy NPC @ (18, 9) which is alive
+50:55:place_object: Placed object Enemy NPC @ (2, 16) which is alive
+50:55:place_object: Placed object Enemy NPC @ (11, 3) which is alive
+50:55:place_object: Placed object Enemy NPC @ (0, 24) which is alive
+50:55:place_object: Placed object Enemy NPC @ (10, 16) which is alive
+50:55:place_object: Placed object Enemy NPC @ (16, 18) which is alive
+50:55:place_object: Placed object Enemy NPC @ (2, 6) which is alive
+50:55:place_object: Placed object Enemy NPC @ (10, 9) which is alive
+50:55:place_object: Placed object Enemy NPC @ (20, 24) which is alive
+50:55:place_object: Placed object Enemy NPC @ (23, 15) which is alive
+50:55:place_object: Placed object Enemy NPC @ (5, 16) which is alive
+50:55:place_object: Placed object Enemy NPC @ (13, 22) which is alive
+50:55:place_object: Placed object Enemy NPC @ (24, 3) which is alive
+50:55:place_object: Placed object Enemy NPC @ (4, 14) which is alive
+50:55:place_object: Placed object Enemy NPC @ (8, 21) which is alive
+50:55:place_object: Placed object Enemy NPC @ (18, 0) which is alive
+50:55:place_object: Placed object Enemy NPC @ (9, 19) which is alive
+50:55:place_object: Placed object Enemy NPC @ (3, 7) which is alive
+50:55:place_object: Placed object Enemy NPC @ (22, 8) which is alive
+50:55:place_object: Placed object Enemy NPC @ (19, 13) which is alive
+50:55:place_object: Placed object Enemy NPC @ (19, 14) which is alive
+50:55:place_object: Placed object Enemy NPC @ (24, 23) which is alive
+50:55:place_object: Placed object Enemy NPC @ (3, 22) which is alive
+50:55:place_object: Placed object Enemy NPC @ (23, 23) which is alive
+50:55:place_object: Placed object Enemy NPC @ (20, 4) which is alive
+50:55:place_object: Placed object Enemy NPC @ (8, 1) which is alive
+50:55:place_object: Placed object Enemy NPC @ (11, 15) which is alive
+50:55:place_object: Placed object Enemy NPC @ (15, 15) which is alive
+50:55:place_object: Placed object Enemy NPC @ (3, 20) which is alive
+50:55:place_object: Placed object Enemy NPC @ (15, 3) which is alive
+50:55:place_object: Placed object Enemy NPC @ (3, 1) which is alive
+50:55:place_object: Placed object Enemy NPC @ (0, 21) which is alive
+50:55:place_object: Placed object Enemy NPC @ (20, 10) which is alive
+50:55:place_object: Placed object Enemy NPC @ (5, 13) which is alive
+50:55:place_object: Placed object Enemy NPC @ (3, 18) which is alive
+50:55:place_object: Placed object Enemy NPC @ (0, 0) which is alive
+50:55:place_object: Placed object Enemy NPC @ (11, 19) which is alive
+50:55:place_object: Placed object Enemy NPC @ (19, 0) which is alive
+50:55:place_object: Placed object Enemy NPC @ (14, 19) which is alive
+50:55:place_object: Placed object Enemy NPC @ (19, 1) which is alive
+50:55:place_object: Placed object Enemy NPC @ (13, 21) which is alive
+50:55:place_object: Placed object Enemy NPC @ (19, 11) which is alive
+50:55:place_object: Placed object Enemy NPC @ (21, 22) which is alive
+50:55:place_object: Placed object Enemy NPC @ (23, 7) which is alive
+50:55:place_object: Placed object Enemy NPC @ (15, 24) which is alive
+50:55:place_object: Placed object Enemy NPC @ (4, 12) which is alive
+50:55:place_object: Placed object Enemy NPC @ (3, 15) which is alive
+50:55:place_object: Placed object Enemy NPC @ (11, 21) which is alive
+50:55:place_object: Placed object Enemy NPC @ (12, 5) which is alive
+50:55:place_object: Placed object Enemy NPC @ (13, 6) which is alive
+50:55:place_object: Placed object Enemy NPC @ (11, 0) which is alive
+50:55:place_object: Placed object Enemy NPC @ (6, 1) which is alive
+50:55:place_object: Placed object Enemy NPC @ (10, 12) which is alive
+50:55:place_object: Placed object Enemy NPC @ (3, 21) which is alive
+50:55:place_object: Placed object Enemy NPC @ (2, 24) which is alive
+50:55:place_object: Placed object Enemy NPC @ (19, 22) which is alive
+50:55:place_object: Placed object Enemy NPC @ (2, 23) which is alive
+50:55:place_object: Placed object Enemy NPC @ (23, 13) which is alive
+50:55:place_object: Placed object Enemy NPC @ (20, 18) which is alive
+50:55:place_object: Placed object Enemy NPC @ (18, 2) which is alive
+50:55:place_object: Placed object Enemy NPC @ (3, 3) which is alive
+50:55:place_object: Placed object Enemy NPC @ (0, 5) which is alive
+50:55:place_object: Placed object Enemy NPC @ (4, 18) which is alive
+50:55:place_object: Placed object Enemy NPC @ (22, 3) which is alive
+50:55:place_object: Placed object Enemy NPC @ (5, 19) which is alive
+50:55:place_object: Placed object Enemy NPC @ (23, 22) which is alive
+50:55:place_object: Placed object Enemy NPC @ (13, 9) which is alive
+50:55:place_object: Placed object Enemy NPC @ (21, 1) which is alive
+50:55:place_object: Placed object Enemy NPC @ (13, 13) which is alive
+50:55:place_object: Placed object Enemy NPC @ (5, 24) which is alive
+50:55:place_object: Placed object Enemy NPC @ (10, 22) which is alive
+50:55:place_object: Placed object Enemy NPC @ (17, 3) which is alive
+50:55:place_object: Placed object Enemy NPC @ (18, 10) which is alive
+50:55:place_object: Placed object Enemy NPC @ (8, 3) which is alive
+50:55:place_object: Placed object Enemy NPC @ (5, 7) which is alive
+50:55:place_object: Placed object Enemy NPC @ (17, 7) which is alive
+50:55:place_object: Placed object Enemy NPC @ (14, 17) which is alive
+50:55:place_object: Placed object Enemy NPC @ (1, 16) which is alive
+50:55:place_object: Placed object Enemy NPC @ (22, 4) which is alive
+50:55:place_object: Placed object Enemy NPC @ (12, 21) which is alive
+50:55:place_object: Placed object Enemy NPC @ (21, 24) which is alive
+50:55:place_object: Placed object Enemy NPC @ (8, 16) which is alive
+50:55:place_object: Placed object Enemy NPC @ (14, 14) which is alive
+50:55:place_object: Placed object Enemy NPC @ (20, 9) which is alive
+50:55:place_object: Placed object Enemy NPC @ (9, 3) which is alive
+50:55:place_object: Placed object Enemy NPC @ (17, 12) which is alive
+50:55:place_object: Placed object Enemy NPC @ (4, 2) which is alive
+50:55:place_object: Placed object Enemy NPC @ (20, 11) which is alive
+50:55:place_object: Placed object Enemy NPC @ (4, 0) which is alive
+50:59:bombed_at: Bomb at (16, 24) killed Civi NPC @ (18, 23) which is dead
+50:59:bombed_at: Bomb at (16, 24) killed Civi NPC @ (18, 24) which is dead
+50:59:bombed_at: Bomb at (16, 24) killed Civi NPC @ (17, 24) which is dead
+50:59:bombed_at: Bomb at (16, 24) killed Enemy NPC @ (15, 24) which is dead
+50:59:bombed_at: Bomb at (16, 24) killed Civi NPC @ (16, 23) which is dead
+50:59:agent_bomb: Agent A@(16, 24):2:Agt6 bombed (16, 24), killing 5
+50:59:move_agent: Agent A@(18, 22):2:Agt8 moved e to (18, 22)
+50:59:move_agent: Agent A@(21, 4):2:Agt4 moved n to (21, 4)
+50:59:bombed_at: Bomb at (14, 13) killed Civi NPC @ (14, 11) which is dead
+50:59:bombed_at: Bomb at (14, 13) killed Enemy NPC @ (13, 13) which is dead
+50:59:bombed_at: Bomb at (14, 13) killed Civi NPC @ (12, 12) which is dead
+50:59:bombed_at: Bomb at (14, 13) killed Civi NPC @ (16, 15) which is dead
+50:59:bombed_at: Bomb at (14, 13) killed Enemy NPC @ (14, 14) which is dead
+50:59:bombed_at: Bomb at (14, 13) killed Enemy NPC @ (15, 15) which is dead
+50:59:bombed_at: Bomb at (14, 13) killed Civi NPC @ (16, 12) which is dead
+50:59:agent_bomb: Agent A@(14, 13):2:Agt9 bombed (14, 13), killing 7
+51:00:bombed_at: Bomb at (20, 13) killed Civi NPC @ (21, 15) which is dead
+51:00:bombed_at: Bomb at (20, 13) killed Civi NPC @ (22, 13) which is dead
+51:00:bombed_at: Bomb at (20, 13) killed Enemy NPC @ (20, 11) which is dead
+51:00:bombed_at: Bomb at (20, 13) killed Enemy NPC @ (19, 14) which is dead
+51:00:bombed_at: Bomb at (20, 13) killed Enemy NPC @ (19, 13) which is dead
+51:00:bombed_at: Bomb at (20, 13) killed Enemy NPC @ (19, 11) which is dead
+51:00:agent_bomb: Agent A@(20, 13):3:Agt2 bombed (20, 13), killing 6
+51:00:bombed_at: Bomb at (22, 19) killed Enemy NPC @ (23, 19) which is dead
+51:00:bombed_at: Bomb at (22, 19) killed Civi NPC @ (24, 19) which is dead
+51:00:bombed_at: Bomb at (22, 19) killed Civi NPC @ (21, 21) which is dead
+51:00:bombed_at: Bomb at (22, 19) killed Civi NPC @ (23, 21) which is dead
+51:00:bombed_at: Bomb at (22, 19) killed Enemy NPC @ (20, 18) which is dead
+51:00:bombed_at: Bomb at (22, 19) killed Civi NPC @ (24, 20) which is dead
+51:00:bombed_at: Bomb at (22, 19) killed Civi NPC @ (21, 19) which is dead
+51:00:agent_bomb: Agent A@(22, 19):3:Agt3 bombed (22, 19), killing 7
+51:00:move_agent: Agent A@(24, 6):2:Agt5 moved e to (24, 6)
+51:01:move_agent: Agent A@(22, 22):3:Agt1 moved s to (22, 22)
+51:01:move_agent: Agent A@(9, 1):2:Agt7 moved s to (9, 1)
+51:01:bombed_at: Bomb at (5, 0) killed Enemy NPC @ (4, 2) which is dead
+51:01:bombed_at: Bomb at (5, 0) killed Civi NPC @ (3, 2) which is dead
+51:01:bombed_at: Bomb at (5, 0) killed Enemy NPC @ (3, 1) which is dead
+51:01:bombed_at: Bomb at (5, 0) killed Enemy NPC @ (6, 1) which is dead
+51:01:bombed_at: Bomb at (5, 0) killed Enemy NPC @ (4, 0) which is dead
+51:01:agent_bomb: Agent A@(5, 0):3:Agt0 bombed (5, 0), killing 5
+51:02:bombed_at: Bomb at (9, 1) killed Enemy NPC @ (8, 3) which is dead
+51:02:bombed_at: Bomb at (9, 1) killed Enemy NPC @ (8, 1) which is dead
+51:02:bombed_at: Bomb at (9, 1) killed Enemy NPC @ (9, 3) which is dead
+51:02:bombed_at: Bomb at (9, 1) killed Enemy NPC @ (11, 3) which is dead
+51:02:bombed_at: Bomb at (9, 1) killed Enemy NPC @ (11, 0) which is dead
+51:02:bombed_at: Bomb at (9, 1) killed Enemy NPC @ (11, 1) which is dead
+51:02:agent_bomb: Agent A@(9, 1):2:Agt7 bombed (9, 1), killing 6
+51:04:move_agent: Agent A@(15, 13):2:Agt9 moved e to (15, 13)
+51:04:move_agent: Agent A@(24, 5):2:Agt5 moved n to (24, 5)
+51:04:move_agent: Agent A@(16, 23):2:Agt6 moved n to (16, 23)
+51:06:bombed_at: Bomb at (21, 4) killed Enemy NPC @ (22, 3) which is dead
+51:06:bombed_at: Bomb at (21, 4) killed Civi NPC @ (19, 4) which is dead
+51:06:bombed_at: Bomb at (21, 4) killed Civi NPC @ (21, 2) which is dead
+51:06:bombed_at: Bomb at (21, 4) killed Civi NPC @ (21, 3) which is dead
+51:06:bombed_at: Bomb at (21, 4) killed Enemy NPC @ (22, 4) which is dead
+51:06:bombed_at: Bomb at (21, 4) killed Enemy NPC @ (20, 4) which is dead
+51:06:agent_bomb: Agent A@(21, 4):2:Agt4 bombed (21, 4), killing 6
+51:06:move_agent: Agent A@(24, 4):2:Agt5 moved n to (24, 4)
+51:07:move_agent: Agent A@(18, 23):2:Agt8 moved s to (18, 23)
+51:07:bombed_at: Bomb at (22, 22) killed Civi NPC @ (20, 22) which is dead
+51:07:bombed_at: Bomb at (22, 22) killed Enemy NPC @ (20, 24) which is dead
+51:07:bombed_at: Bomb at (22, 22) killed Enemy NPC @ (21, 22) which is dead
+51:07:bombed_at: Bomb at (22, 22) killed Enemy NPC @ (23, 22) which is dead
+51:07:bombed_at: Bomb at (22, 22) killed Enemy NPC @ (23, 23) which is dead
+51:07:bombed_at: Bomb at (22, 22) killed Enemy NPC @ (24, 23) which is dead
+51:07:bombed_at: Bomb at (22, 22) killed Enemy NPC @ (21, 24) which is dead
+51:07:bombed_at: Bomb at (22, 22) killed Civi NPC @ (22, 24) which is dead
+51:07:agent_bomb: Agent A@(22, 22):3:Agt1 bombed (22, 22), killing 8
+51:07:move_agent: Agent A@(20, 12):3:Agt2 moved n to (20, 12)
+51:07:move_agent: Agent A@(4, 0):3:Agt0 moved w to (4, 0)
+51:09:move_agent: Agent A@(22, 20):3:Agt3 moved s to (22, 20)
+51:10:move_agent: Agent A@(10, 1):2:Agt7 moved e to (10, 1)
+51:11:bombed_at: Bomb at (24, 4) killed Enemy NPC @ (24, 3) which is dead
+51:11:bombed_at: Bomb at (24, 4) killed Civi NPC @ (24, 2) which is dead
+51:11:agent_bomb: Agent A@(24, 4):2:Agt5 bombed (24, 4), killing 2
+51:12:move_agent: Agent A@(10, 2):2:Agt7 moved s to (10, 2)
+51:14:move_agent: Agent A@(9, 2):2:Agt7 moved w to (9, 2)
+51:14:move_agent: Agent A@(15, 12):2:Agt9 moved n to (15, 12)
+51:14:move_agent: Agent A@(21, 22):3:Agt1 moved w to (21, 22)
+51:14:move_agent: Agent A@(22, 19):3:Agt3 moved n to (22, 19)
+51:14:__init__: 
+
+
+51:14:__init__: New world made
+51:14:place_object: Placed object Civi NPC @ (13, 16) which is alive
+51:14:place_object: Placed object Civi NPC @ (6, 18) which is alive
+51:14:place_object: Placed object Civi NPC @ (24, 7) which is alive
+51:14:place_object: Placed object Civi NPC @ (4, 14) which is alive
+51:14:place_object: Placed object Civi NPC @ (3, 8) which is alive
+51:14:place_object: Placed object Civi NPC @ (12, 20) which is alive
+51:14:place_object: Placed object Civi NPC @ (8, 24) which is alive
+51:14:place_object: Placed object Civi NPC @ (17, 16) which is alive
+51:14:place_object: Placed object Civi NPC @ (15, 12) which is alive
+51:14:place_object: Placed object Civi NPC @ (18, 21) which is alive
+51:14:place_object: Placed object Civi NPC @ (0, 16) which is alive
+51:14:place_object: Placed object Civi NPC @ (14, 14) which is alive
+51:14:place_object: Placed object Civi NPC @ (20, 2) which is alive
+51:14:place_object: Placed object Civi NPC @ (19, 16) which is alive
+51:14:place_object: Placed object Civi NPC @ (19, 11) which is alive
+51:14:place_object: Placed object Civi NPC @ (21, 23) which is alive
+51:14:place_object: Placed object Civi NPC @ (12, 21) which is alive
+51:14:place_object: Placed object Civi NPC @ (6, 0) which is alive
+51:14:place_object: Placed object Civi NPC @ (11, 0) which is alive
+51:14:place_object: Placed object Civi NPC @ (21, 22) which is alive
+51:14:place_object: Placed object Civi NPC @ (4, 10) which is alive
+51:14:place_object: Placed object Civi NPC @ (3, 23) which is alive
+51:14:place_object: Placed object Civi NPC @ (23, 2) which is alive
+51:14:place_object: Placed object Civi NPC @ (1, 0) which is alive
+51:14:place_object: Placed object Civi NPC @ (8, 7) which is alive
+51:14:place_object: Placed object Civi NPC @ (12, 3) which is alive
+51:14:place_object: Placed object Civi NPC @ (9, 3) which is alive
+51:14:place_object: Placed object Civi NPC @ (12, 0) which is alive
+51:14:place_object: Placed object Civi NPC @ (5, 10) which is alive
+51:14:place_object: Placed object Civi NPC @ (15, 20) which is alive
+51:14:place_object: Placed object Civi NPC @ (14, 19) which is alive
+51:14:place_object: Placed object Civi NPC @ (16, 15) which is alive
+51:14:place_object: Placed object Civi NPC @ (22, 0) which is alive
+51:14:place_object: Placed object Civi NPC @ (18, 3) which is alive
+51:14:place_object: Placed object Civi NPC @ (0, 6) which is alive
+51:14:place_object: Placed object Civi NPC @ (12, 24) which is alive
+51:14:place_object: Placed object Civi NPC @ (4, 16) which is alive
+51:14:place_object: Placed object Civi NPC @ (23, 18) which is alive
+51:14:place_object: Placed object Civi NPC @ (24, 9) which is alive
+51:14:place_object: Placed object Civi NPC @ (13, 11) which is alive
+51:14:place_object: Placed object Civi NPC @ (8, 21) which is alive
+51:14:place_object: Placed object Civi NPC @ (9, 23) which is alive
+51:14:place_object: Placed object Civi NPC @ (23, 20) which is alive
+51:14:place_object: Placed object Civi NPC @ (5, 15) which is alive
+51:14:place_object: Placed object Civi NPC @ (12, 22) which is alive
+51:14:place_object: Placed object Civi NPC @ (10, 5) which is alive
+51:14:place_object: Placed object Civi NPC @ (11, 18) which is alive
+51:14:place_object: Placed object Civi NPC @ (4, 15) which is alive
+51:14:place_object: Placed object Civi NPC @ (21, 2) which is alive
+51:14:place_object: Placed object Civi NPC @ (16, 2) which is alive
+51:14:place_object: Placed object Civi NPC @ (22, 14) which is alive
+51:14:place_object: Placed object Civi NPC @ (6, 5) which is alive
+51:14:place_object: Placed object Civi NPC @ (5, 13) which is alive
+51:14:place_object: Placed object Civi NPC @ (11, 12) which is alive
+51:14:place_object: Placed object Civi NPC @ (21, 6) which is alive
+51:14:place_object: Placed object Civi NPC @ (0, 18) which is alive
+51:14:place_object: Placed object Civi NPC @ (5, 7) which is alive
+51:14:place_object: Placed object Civi NPC @ (0, 24) which is alive
+51:14:place_object: Placed object Civi NPC @ (1, 6) which is alive
+51:14:place_object: Placed object Civi NPC @ (19, 19) which is alive
+51:14:place_object: Placed object Civi NPC @ (16, 13) which is alive
+51:14:place_object: Placed object Civi NPC @ (6, 8) which is alive
+51:14:place_object: Placed object Civi NPC @ (18, 23) which is alive
+51:14:place_object: Placed object Civi NPC @ (17, 13) which is alive
+51:14:place_object: Placed object Civi NPC @ (24, 14) which is alive
+51:14:place_object: Placed object Civi NPC @ (7, 5) which is alive
+51:14:place_object: Placed object Civi NPC @ (4, 5) which is alive
+51:14:place_object: Placed object Civi NPC @ (23, 4) which is alive
+51:14:place_object: Placed object Civi NPC @ (15, 7) which is alive
+51:14:place_object: Placed object Civi NPC @ (22, 2) which is alive
+51:14:place_object: Placed object Civi NPC @ (24, 21) which is alive
+51:14:place_object: Placed object Civi NPC @ (22, 23) which is alive
+51:14:place_object: Placed object Civi NPC @ (2, 18) which is alive
+51:14:place_object: Placed object Civi NPC @ (22, 17) which is alive
+51:14:place_object: Placed object Civi NPC @ (12, 9) which is alive
+51:14:place_object: Placed object Enemy NPC @ (10, 8) which is alive
+51:14:place_object: Placed object Enemy NPC @ (22, 7) which is alive
+51:14:place_object: Placed object Enemy NPC @ (18, 16) which is alive
+51:14:place_object: Placed object Enemy NPC @ (4, 18) which is alive
+51:14:place_object: Placed object Enemy NPC @ (11, 11) which is alive
+51:14:place_object: Placed object Enemy NPC @ (15, 15) which is alive
+51:14:place_object: Placed object Enemy NPC @ (18, 4) which is alive
+51:14:place_object: Placed object Enemy NPC @ (20, 9) which is alive
+51:14:place_object: Placed object Enemy NPC @ (18, 2) which is alive
+51:14:place_object: Placed object Enemy NPC @ (7, 22) which is alive
+51:14:place_object: Placed object Enemy NPC @ (6, 11) which is alive
+51:14:place_object: Placed object Enemy NPC @ (18, 9) which is alive
+51:14:place_object: Placed object Enemy NPC @ (6, 14) which is alive
+51:14:place_object: Placed object Enemy NPC @ (14, 9) which is alive
+51:14:place_object: Placed object Enemy NPC @ (6, 20) which is alive
+51:14:place_object: Placed object Enemy NPC @ (20, 11) which is alive
+51:14:place_object: Placed object Enemy NPC @ (9, 21) which is alive
+51:14:place_object: Placed object Enemy NPC @ (14, 16) which is alive
+51:14:place_object: Placed object Enemy NPC @ (3, 0) which is alive
+51:14:place_object: Placed object Enemy NPC @ (19, 1) which is alive
+51:14:place_object: Placed object Enemy NPC @ (23, 10) which is alive
+51:14:place_object: Placed object Enemy NPC @ (16, 11) which is alive
+51:14:place_object: Placed object Enemy NPC @ (6, 23) which is alive
+51:14:place_object: Placed object Enemy NPC @ (21, 12) which is alive
+51:14:place_object: Placed object Enemy NPC @ (4, 24) which is alive
+51:14:place_object: Placed object Enemy NPC @ (19, 0) which is alive
+51:14:place_object: Placed object Enemy NPC @ (14, 13) which is alive
+51:14:place_object: Placed object Enemy NPC @ (16, 16) which is alive
+51:14:place_object: Placed object Enemy NPC @ (3, 14) which is alive
+51:14:place_object: Placed object Enemy NPC @ (11, 23) which is alive
+51:14:place_object: Placed object Enemy NPC @ (7, 9) which is alive
+51:14:place_object: Placed object Enemy NPC @ (14, 4) which is alive
+51:14:place_object: Placed object Enemy NPC @ (17, 18) which is alive
+51:14:place_object: Placed object Enemy NPC @ (14, 6) which is alive
+51:14:place_object: Placed object Enemy NPC @ (6, 10) which is alive
+51:14:place_object: Placed object Enemy NPC @ (5, 5) which is alive
+51:14:place_object: Placed object Enemy NPC @ (17, 17) which is alive
+51:14:place_object: Placed object Enemy NPC @ (0, 17) which is alive
+51:14:place_object: Placed object Enemy NPC @ (6, 17) which is alive
+51:14:place_object: Placed object Enemy NPC @ (24, 1) which is alive
+51:14:place_object: Placed object Enemy NPC @ (23, 5) which is alive
+51:14:place_object: Placed object Enemy NPC @ (8, 12) which is alive
+51:14:place_object: Placed object Enemy NPC @ (10, 22) which is alive
+51:14:place_object: Placed object Enemy NPC @ (23, 3) which is alive
+51:14:place_object: Placed object Enemy NPC @ (8, 2) which is alive
+51:14:place_object: Placed object Enemy NPC @ (3, 20) which is alive
+51:14:place_object: Placed object Enemy NPC @ (10, 3) which is alive
+51:14:place_object: Placed object Enemy NPC @ (8, 10) which is alive
+51:14:place_object: Placed object Enemy NPC @ (7, 0) which is alive
+51:14:place_object: Placed object Enemy NPC @ (22, 6) which is alive
+51:14:place_object: Placed object Enemy NPC @ (8, 15) which is alive
+51:14:place_object: Placed object Enemy NPC @ (22, 3) which is alive
+51:14:place_object: Placed object Enemy NPC @ (20, 18) which is alive
+51:14:place_object: Placed object Enemy NPC @ (19, 22) which is alive
+51:14:place_object: Placed object Enemy NPC @ (10, 20) which is alive
+51:14:place_object: Placed object Enemy NPC @ (22, 16) which is alive
+51:14:place_object: Placed object Enemy NPC @ (24, 20) which is alive
+51:14:place_object: Placed object Enemy NPC @ (4, 2) which is alive
+51:14:place_object: Placed object Enemy NPC @ (23, 8) which is alive
+51:14:place_object: Placed object Enemy NPC @ (11, 4) which is alive
+51:14:place_object: Placed object Enemy NPC @ (15, 2) which is alive
+51:14:place_object: Placed object Enemy NPC @ (3, 10) which is alive
+51:14:place_object: Placed object Enemy NPC @ (10, 24) which is alive
+51:14:place_object: Placed object Enemy NPC @ (9, 5) which is alive
+51:14:place_object: Placed object Enemy NPC @ (7, 21) which is alive
+51:14:place_object: Placed object Enemy NPC @ (23, 17) which is alive
+51:14:place_object: Placed object Enemy NPC @ (3, 24) which is alive
+51:14:place_object: Placed object Enemy NPC @ (15, 0) which is alive
+51:14:place_object: Placed object Enemy NPC @ (21, 18) which is alive
+51:14:place_object: Placed object Enemy NPC @ (14, 22) which is alive
+51:14:place_object: Placed object Enemy NPC @ (8, 18) which is alive
+51:14:place_object: Placed object Enemy NPC @ (13, 17) which is alive
+51:14:place_object: Placed object Enemy NPC @ (19, 13) which is alive
+51:14:place_object: Placed object Enemy NPC @ (7, 17) which is alive
+51:14:place_object: Placed object Enemy NPC @ (17, 11) which is alive
+51:14:place_object: Placed object Enemy NPC @ (16, 23) which is alive
+51:14:place_object: Placed object Enemy NPC @ (2, 4) which is alive
+51:14:place_object: Placed object Enemy NPC @ (22, 21) which is alive
+51:14:place_object: Placed object Enemy NPC @ (7, 13) which is alive
+51:14:place_object: Placed object Enemy NPC @ (11, 3) which is alive
+51:14:place_object: Placed object Enemy NPC @ (24, 3) which is alive
+51:14:place_object: Placed object Enemy NPC @ (21, 16) which is alive
+51:14:place_object: Placed object Enemy NPC @ (19, 2) which is alive
+51:14:place_object: Placed object Enemy NPC @ (18, 24) which is alive
+51:14:place_object: Placed object Enemy NPC @ (14, 18) which is alive
+51:14:place_object: Placed object Enemy NPC @ (23, 13) which is alive
+51:14:place_object: Placed object Enemy NPC @ (11, 16) which is alive
+51:14:place_object: Placed object Enemy NPC @ (21, 1) which is alive
+51:14:place_object: Placed object Enemy NPC @ (16, 21) which is alive
+51:14:place_object: Placed object Enemy NPC @ (3, 16) which is alive
+51:14:place_object: Placed object Enemy NPC @ (20, 15) which is alive
+51:14:place_object: Placed object Enemy NPC @ (7, 23) which is alive
+51:14:place_object: Placed object Enemy NPC @ (13, 4) which is alive
+51:14:place_object: Placed object Enemy NPC @ (6, 16) which is alive
+51:14:place_object: Placed object Enemy NPC @ (16, 19) which is alive
+51:14:place_object: Placed object Enemy NPC @ (23, 6) which is alive
+51:14:place_object: Placed object Enemy NPC @ (1, 1) which is alive
+51:14:place_object: Placed object Enemy NPC @ (20, 0) which is alive
+51:14:place_object: Placed object Enemy NPC @ (23, 22) which is alive
+51:14:place_object: Placed object Enemy NPC @ (12, 8) which is alive
+51:20:bombed_at: Bomb at (14, 15) killed Enemy NPC @ (16, 16) which is dead
+51:20:bombed_at: Bomb at (14, 15) killed Enemy NPC @ (14, 16) which is dead
+51:20:bombed_at: Bomb at (14, 15) killed Enemy NPC @ (14, 13) which is dead
+51:20:bombed_at: Bomb at (14, 15) killed Enemy NPC @ (13, 17) which is dead
+51:20:bombed_at: Bomb at (14, 15) killed Civi NPC @ (13, 16) which is dead
+51:20:bombed_at: Bomb at (14, 15) killed Civi NPC @ (16, 15) which is dead
+51:20:bombed_at: Bomb at (14, 15) killed Civi NPC @ (14, 14) which is dead
+51:20:bombed_at: Bomb at (14, 15) killed Civi NPC @ (16, 13) which is dead
+51:20:bombed_at: Bomb at (14, 15) killed Enemy NPC @ (15, 15) which is dead
+51:20:agent_bomb: Agent A@(14, 15):3:Agt4 bombed (14, 15), killing 9
+51:20:move_agent: Agent A@(5, 23):2:Agt9 moved s to (5, 23)
+51:21:bombed_at: Bomb at (7, 18) killed Civi NPC @ (6, 18) which is dead
+51:21:bombed_at: Bomb at (7, 18) killed Enemy NPC @ (6, 20) which is dead
+51:21:bombed_at: Bomb at (7, 18) killed Enemy NPC @ (8, 18) which is dead
+51:21:bombed_at: Bomb at (7, 18) killed Enemy NPC @ (7, 17) which is dead
+51:21:bombed_at: Bomb at (7, 18) killed Enemy NPC @ (6, 17) which is dead
+51:21:bombed_at: Bomb at (7, 18) killed Enemy NPC @ (6, 16) which is dead
+51:21:agent_bomb: Agent A@(7, 18):3:Agt5 bombed (7, 18), killing 6
+51:21:move_agent: Agent A@(3, 11):2:Agt7 moved w to (3, 11)
+51:21:bombed_at: Bomb at (17, 24) killed Civi NPC @ (18, 23) which is dead
+51:21:bombed_at: Bomb at (17, 24) killed Enemy NPC @ (18, 24) which is dead
+51:21:bombed_at: Bomb at (17, 24) killed Enemy NPC @ (19, 22) which is dead
+51:21:bombed_at: Bomb at (17, 24) killed Enemy NPC @ (16, 23) which is dead
+51:21:agent_bomb: Agent A@(17, 24):3:Agt6 bombed (17, 24), killing 4
+51:21:move_agent: Agent A@(4, 1):3:Agt1 moved e to (4, 1)
+51:21:bombed_at: Bomb at (24, 4) killed Enemy NPC @ (22, 3) which is dead
+51:21:bombed_at: Bomb at (24, 4) killed Civi NPC @ (23, 4) which is dead
+51:21:bombed_at: Bomb at (24, 4) killed Civi NPC @ (22, 2) which is dead
+51:21:bombed_at: Bomb at (24, 4) killed Civi NPC @ (23, 2) which is dead
+51:21:bombed_at: Bomb at (24, 4) killed Enemy NPC @ (23, 3) which is dead
+51:21:bombed_at: Bomb at (24, 4) killed Enemy NPC @ (24, 3) which is dead
+51:21:bombed_at: Bomb at (24, 4) killed Enemy NPC @ (23, 5) which is dead
+51:21:bombed_at: Bomb at (24, 4) killed Enemy NPC @ (22, 6) which is dead
+51:21:bombed_at: Bomb at (24, 4) killed Enemy NPC @ (23, 6) which is dead
+51:21:agent_bomb: Agent A@(24, 4):3:Agt2 bombed (24, 4), killing 9
+51:21:move_agent: Agent A@(18, 13):3:Agt8 moved n to (18, 13)
+51:21:bombed_at: Bomb at (17, 2) killed Civi NPC @ (18, 3) which is dead
+51:21:bombed_at: Bomb at (17, 2) killed Enemy NPC @ (15, 2) which is dead
+51:21:bombed_at: Bomb at (17, 2) killed Enemy NPC @ (18, 2) which is dead
+51:21:bombed_at: Bomb at (17, 2) killed Enemy NPC @ (15, 0) which is dead
+51:21:bombed_at: Bomb at (17, 2) killed Enemy NPC @ (18, 4) which is dead
+51:21:bombed_at: Bomb at (17, 2) killed Civi NPC @ (16, 2) which is dead
+51:21:bombed_at: Bomb at (17, 2) killed Enemy NPC @ (19, 2) which is dead
+51:21:bombed_at: Bomb at (17, 2) killed Enemy NPC @ (19, 0) which is dead
+51:21:bombed_at: Bomb at (17, 2) killed Enemy NPC @ (19, 1) which is dead
+51:21:agent_bomb: Agent A@(17, 2):3:Agt0 bombed (17, 2), killing 9
+51:23:move_agent: Agent A@(9, 12):2:Agt3 moved n to (9, 12)
+51:24:move_agent: Agent A@(17, 23):3:Agt6 moved n to (17, 23)
+51:24:move_agent: Agent A@(3, 1):3:Agt1 moved w to (3, 1)
+51:26:move_agent: Agent A@(7, 19):3:Agt5 moved s to (7, 19)
+51:26:move_agent: Agent A@(24, 3):3:Agt2 moved n to (24, 3)
+51:26:move_agent: Agent A@(9, 13):2:Agt3 moved s to (9, 13)
+51:27:move_agent: Agent A@(15, 15):3:Agt4 moved e to (15, 15)
+51:27:move_agent: Agent A@(3, 2):3:Agt1 moved s to (3, 2)
+51:27:move_agent: Agent A@(5, 22):2:Agt9 moved n to (5, 22)
+51:42:__init__: 
+
+
+51:42:__init__: New world made
+51:42:place_object: Placed object Civi NPC @ (12, 15) which is alive
+51:42:place_object: Placed object Civi NPC @ (18, 5) which is alive
+51:42:place_object: Placed object Civi NPC @ (7, 9) which is alive
+51:42:place_object: Placed object Civi NPC @ (12, 23) which is alive
+51:42:place_object: Placed object Civi NPC @ (24, 8) which is alive
+51:42:place_object: Placed object Civi NPC @ (12, 6) which is alive
+51:42:place_object: Placed object Civi NPC @ (12, 17) which is alive
+51:42:place_object: Placed object Civi NPC @ (8, 20) which is alive
+51:42:place_object: Placed object Civi NPC @ (6, 11) which is alive
+51:42:place_object: Placed object Civi NPC @ (22, 23) which is alive
+51:42:place_object: Placed object Civi NPC @ (14, 17) which is alive
+51:42:place_object: Placed object Civi NPC @ (1, 20) which is alive
+51:42:place_object: Placed object Civi NPC @ (4, 9) which is alive
+51:42:place_object: Placed object Civi NPC @ (24, 17) which is alive
+51:42:place_object: Placed object Civi NPC @ (19, 0) which is alive
+51:42:place_object: Placed object Civi NPC @ (12, 13) which is alive
+51:42:place_object: Placed object Civi NPC @ (0, 24) which is alive
+51:42:place_object: Placed object Civi NPC @ (23, 21) which is alive
+51:42:place_object: Placed object Civi NPC @ (1, 11) which is alive
+51:42:place_object: Placed object Civi NPC @ (20, 20) which is alive
+51:42:place_object: Placed object Civi NPC @ (3, 4) which is alive
+51:42:place_object: Placed object Civi NPC @ (22, 15) which is alive
+51:42:place_object: Placed object Civi NPC @ (4, 3) which is alive
+51:42:place_object: Placed object Civi NPC @ (1, 16) which is alive
+51:42:place_object: Placed object Civi NPC @ (7, 2) which is alive
+51:42:place_object: Placed object Civi NPC @ (11, 2) which is alive
+51:42:place_object: Placed object Civi NPC @ (19, 2) which is alive
+51:42:place_object: Placed object Civi NPC @ (15, 14) which is alive
+51:42:place_object: Placed object Civi NPC @ (3, 20) which is alive
+51:42:place_object: Placed object Civi NPC @ (19, 16) which is alive
+51:42:place_object: Placed object Civi NPC @ (19, 23) which is alive
+51:42:place_object: Placed object Civi NPC @ (2, 8) which is alive
+51:42:place_object: Placed object Civi NPC @ (6, 21) which is alive
+51:42:place_object: Placed object Civi NPC @ (22, 22) which is alive
+51:42:place_object: Placed object Civi NPC @ (17, 10) which is alive
+51:42:place_object: Placed object Civi NPC @ (6, 10) which is alive
+51:42:place_object: Placed object Civi NPC @ (20, 21) which is alive
+51:42:place_object: Placed object Civi NPC @ (21, 8) which is alive
+51:42:place_object: Placed object Civi NPC @ (13, 20) which is alive
+51:42:place_object: Placed object Civi NPC @ (4, 24) which is alive
+51:42:place_object: Placed object Civi NPC @ (17, 11) which is alive
+51:42:place_object: Placed object Civi NPC @ (14, 21) which is alive
+51:42:place_object: Placed object Civi NPC @ (21, 3) which is alive
+51:42:place_object: Placed object Civi NPC @ (21, 9) which is alive
+51:42:place_object: Placed object Civi NPC @ (24, 1) which is alive
+51:42:place_object: Placed object Civi NPC @ (19, 24) which is alive
+51:42:place_object: Placed object Civi NPC @ (5, 21) which is alive
+51:42:place_object: Placed object Civi NPC @ (8, 6) which is alive
+51:42:place_object: Placed object Civi NPC @ (15, 19) which is alive
+51:42:place_object: Placed object Civi NPC @ (14, 14) which is alive
+51:42:place_object: Placed object Enemy NPC @ (18, 18) which is alive
+51:42:place_object: Placed object Enemy NPC @ (10, 10) which is alive
+51:42:place_object: Placed object Enemy NPC @ (2, 20) which is alive
+51:42:place_object: Placed object Enemy NPC @ (6, 18) which is alive
+51:42:place_object: Placed object Enemy NPC @ (8, 1) which is alive
+51:42:place_object: Placed object Enemy NPC @ (9, 13) which is alive
+51:42:place_object: Placed object Enemy NPC @ (14, 23) which is alive
+51:42:place_object: Placed object Enemy NPC @ (17, 22) which is alive
+51:42:place_object: Placed object Enemy NPC @ (9, 10) which is alive
+51:42:place_object: Placed object Enemy NPC @ (20, 5) which is alive
+51:42:place_object: Placed object Enemy NPC @ (3, 1) which is alive
+51:42:place_object: Placed object Enemy NPC @ (6, 7) which is alive
+51:42:place_object: Placed object Enemy NPC @ (2, 11) which is alive
+51:42:place_object: Placed object Enemy NPC @ (24, 21) which is alive
+51:42:place_object: Placed object Enemy NPC @ (22, 4) which is alive
+51:42:place_object: Placed object Enemy NPC @ (22, 19) which is alive
+51:42:place_object: Placed object Enemy NPC @ (5, 17) which is alive
+51:42:place_object: Placed object Enemy NPC @ (24, 18) which is alive
+51:42:place_object: Placed object Enemy NPC @ (13, 22) which is alive
+51:42:place_object: Placed object Enemy NPC @ (22, 16) which is alive
+51:42:place_object: Placed object Enemy NPC @ (5, 23) which is alive
+51:42:place_object: Placed object Enemy NPC @ (18, 0) which is alive
+51:42:place_object: Placed object Enemy NPC @ (11, 10) which is alive
+51:42:place_object: Placed object Enemy NPC @ (0, 12) which is alive
+51:42:place_object: Placed object Enemy NPC @ (24, 10) which is alive
+51:42:place_object: Placed object Enemy NPC @ (14, 11) which is alive
+51:42:place_object: Placed object Enemy NPC @ (13, 11) which is alive
+51:42:place_object: Placed object Enemy NPC @ (0, 14) which is alive
+51:42:place_object: Placed object Enemy NPC @ (6, 1) which is alive
+51:42:place_object: Placed object Enemy NPC @ (18, 2) which is alive
+51:42:place_object: Placed object Enemy NPC @ (24, 7) which is alive
+51:42:place_object: Placed object Enemy NPC @ (10, 22) which is alive
+51:42:place_object: Placed object Enemy NPC @ (13, 16) which is alive
+51:42:place_object: Placed object Enemy NPC @ (13, 21) which is alive
+51:42:place_object: Placed object Enemy NPC @ (0, 0) which is alive
+51:42:place_object: Placed object Enemy NPC @ (10, 14) which is alive
+51:42:place_object: Placed object Enemy NPC @ (16, 18) which is alive
+51:42:place_object: Placed object Enemy NPC @ (8, 4) which is alive
+51:42:place_object: Placed object Enemy NPC @ (10, 7) which is alive
+51:42:place_object: Placed object Enemy NPC @ (2, 1) which is alive
+51:42:place_object: Placed object Enemy NPC @ (4, 4) which is alive
+51:42:place_object: Placed object Enemy NPC @ (7, 0) which is alive
+51:42:place_object: Placed object Enemy NPC @ (21, 14) which is alive
+51:42:place_object: Placed object Enemy NPC @ (14, 24) which is alive
+51:42:place_object: Placed object Enemy NPC @ (5, 20) which is alive
+51:42:place_object: Placed object Enemy NPC @ (8, 2) which is alive
+51:42:place_object: Placed object Enemy NPC @ (18, 13) which is alive
+51:42:place_object: Placed object Enemy NPC @ (14, 22) which is alive
+51:42:place_object: Placed object Enemy NPC @ (18, 21) which is alive
+51:42:place_object: Placed object Enemy NPC @ (0, 17) which is alive
+51:46:bombed_at: Bomb at (9, 11) killed Enemy NPC @ (9, 10) which is dead
+51:46:bombed_at: Bomb at (9, 11) killed Enemy NPC @ (9, 13) which is dead
+51:46:bombed_at: Bomb at (9, 11) killed Enemy NPC @ (11, 10) which is dead
+51:46:bombed_at: Bomb at (9, 11) killed Enemy NPC @ (10, 10) which is dead
+51:46:bombed_at: Bomb at (9, 11) killed Civi NPC @ (7, 9) which is dead
+51:46:agent_bomb: Agent A@(9, 11):2:Agt8 bombed (9, 11), killing 5
+51:46:move_agent: Agent A@(8, 13):2:Agt6 moved s to (8, 13)
+51:46:move_agent: Agent A@(24, 11):3:Agt4 moved n to (24, 11)
+51:46:move_agent: Agent A@(6, 24):3:Agt5 moved e to (6, 24)
+51:46:move_agent: Agent A@(6, 23):3:Agt9 moved w to (6, 23)
+51:47:move_agent: Agent A@(19, 13):2:Agt1 moved n to (19, 13)
+51:47:move_agent: Agent A@(23, 11):3:Agt0 moved n to (23, 11)
+51:48:bombed_at: Bomb at (21, 4) killed Enemy NPC @ (20, 5) which is dead
+51:48:bombed_at: Bomb at (21, 4) killed Enemy NPC @ (22, 4) which is dead
+51:48:bombed_at: Bomb at (21, 4) killed Civi NPC @ (19, 2) which is dead
+51:48:bombed_at: Bomb at (21, 4) killed Civi NPC @ (21, 3) which is dead
+51:48:agent_bomb: Agent A@(21, 4):3:Agt2 bombed (21, 4), killing 4
+51:48:move_agent: Agent A@(5, 12):3:Agt3 moved n to (5, 12)
+51:48:bombed_at: Bomb at (24, 11) killed Enemy NPC @ (24, 10) which is dead
+51:48:agent_bomb: Agent A@(24, 11):3:Agt4 bombed (24, 11), killing 1
+51:48:move_agent: Agent A@(8, 7):3:Agt7 moved n to (8, 7)
+51:49:move_agent: Agent A@(8, 12):2:Agt6 moved n to (8, 12)
+51:51:move_agent: Agent A@(22, 4):3:Agt2 moved e to (22, 4)
+51:51:move_agent: Agent A@(9, 12):2:Agt8 moved s to (9, 12)
+51:51:move_agent: Agent A@(9, 12):2:Agt6 moved e to (9, 12)
+51:52:move_agent: Agent A@(6, 22):3:Agt9 moved n to (6, 22)
+51:52:move_agent: Agent A@(23, 4):3:Agt2 moved e to (23, 4)
+51:52:move_agent: Agent A@(9, 13):2:Agt8 moved s to (9, 13)
+51:52:move_agent: Agent A@(6, 23):3:Agt5 moved n to (6, 23)
+51:52:move_agent: Agent A@(9, 13):2:Agt6 moved s to (9, 13)
+51:54:move_agent: Agent A@(23, 5):3:Agt2 moved s to (23, 5)
+51:54:move_agent: Agent A@(9, 14):2:Agt8 moved s to (9, 14)
+51:54:move_agent: Agent A@(9, 14):2:Agt6 moved s to (9, 14)
+51:55:move_agent: Agent A@(6, 12):3:Agt3 moved e to (6, 12)
+51:56:bombed_at: Bomb at (9, 14) killed Enemy NPC @ (10, 14) which is dead
+51:56:agent_bomb: Agent A@(9, 14):2:Agt8 bombed (9, 14), killing 1
+51:56:move_agent: Agent A@(9, 7):3:Agt7 moved e to (9, 7)
+51:56:agent_bomb: Agent A@(9, 14):2:Agt6 bombed (9, 14), killing 0
+51:56:move_agent: Agent A@(22, 11):3:Agt0 moved w to (22, 11)
+51:56:move_agent: Agent A@(20, 13):2:Agt1 moved e to (20, 13)
+51:57:move_agent: Agent A@(6, 22):3:Agt5 moved n to (6, 22)
+51:57:move_agent: Agent A@(6, 13):3:Agt3 moved s to (6, 13)
+51:59:move_agent: Agent A@(7, 22):3:Agt9 moved e to (7, 22)
+51:59:move_agent: Agent A@(6, 14):3:Agt3 moved s to (6, 14)
+51:59:__init__: 
+
+
+51:59:__init__: New world made
+51:59:place_object: Placed object Civi NPC @ (15, 18) which is alive
+51:59:place_object: Placed object Civi NPC @ (19, 14) which is alive
+51:59:place_object: Placed object Civi NPC @ (17, 5) which is alive
+51:59:place_object: Placed object Civi NPC @ (17, 24) which is alive
+51:59:place_object: Placed object Civi NPC @ (9, 18) which is alive
+51:59:place_object: Placed object Civi NPC @ (6, 10) which is alive
+51:59:place_object: Placed object Civi NPC @ (22, 11) which is alive
+51:59:place_object: Placed object Civi NPC @ (19, 8) which is alive
+51:59:place_object: Placed object Civi NPC @ (15, 9) which is alive
+51:59:place_object: Placed object Civi NPC @ (3, 19) which is alive
+51:59:place_object: Placed object Civi NPC @ (20, 0) which is alive
+51:59:place_object: Placed object Civi NPC @ (1, 15) which is alive
+51:59:place_object: Placed object Civi NPC @ (24, 8) which is alive
+51:59:place_object: Placed object Civi NPC @ (20, 3) which is alive
+51:59:place_object: Placed object Civi NPC @ (15, 12) which is alive
+51:59:place_object: Placed object Civi NPC @ (22, 18) which is alive
+51:59:place_object: Placed object Civi NPC @ (14, 0) which is alive
+51:59:place_object: Placed object Civi NPC @ (8, 5) which is alive
+51:59:place_object: Placed object Civi NPC @ (21, 17) which is alive
+51:59:place_object: Placed object Civi NPC @ (22, 16) which is alive
+51:59:place_object: Placed object Civi NPC @ (15, 11) which is alive
+51:59:place_object: Placed object Civi NPC @ (21, 1) which is alive
+51:59:place_object: Placed object Civi NPC @ (14, 19) which is alive
+51:59:place_object: Placed object Civi NPC @ (4, 18) which is alive
+51:59:place_object: Placed object Civi NPC @ (19, 6) which is alive
+51:59:place_object: Placed object Civi NPC @ (8, 9) which is alive
+51:59:place_object: Placed object Civi NPC @ (5, 17) which is alive
+51:59:place_object: Placed object Civi NPC @ (18, 20) which is alive
+51:59:place_object: Placed object Civi NPC @ (3, 7) which is alive
+51:59:place_object: Placed object Civi NPC @ (0, 0) which is alive
+51:59:place_object: Placed object Civi NPC @ (9, 4) which is alive
+51:59:place_object: Placed object Civi NPC @ (15, 24) which is alive
+51:59:place_object: Placed object Civi NPC @ (23, 15) which is alive
+51:59:place_object: Placed object Civi NPC @ (23, 20) which is alive
+51:59:place_object: Placed object Civi NPC @ (21, 22) which is alive
+51:59:place_object: Placed object Civi NPC @ (20, 16) which is alive
+51:59:place_object: Placed object Civi NPC @ (24, 22) which is alive
+51:59:place_object: Placed object Civi NPC @ (0, 3) which is alive
+51:59:place_object: Placed object Civi NPC @ (1, 10) which is alive
+51:59:place_object: Placed object Civi NPC @ (6, 1) which is alive
+51:59:place_object: Placed object Civi NPC @ (2, 2) which is alive
+51:59:place_object: Placed object Civi NPC @ (17, 14) which is alive
+51:59:place_object: Placed object Civi NPC @ (20, 11) which is alive
+51:59:place_object: Placed object Civi NPC @ (16, 15) which is alive
+51:59:place_object: Placed object Civi NPC @ (12, 9) which is alive
+51:59:place_object: Placed object Civi NPC @ (8, 3) which is alive
+51:59:place_object: Placed object Civi NPC @ (22, 2) which is alive
+51:59:place_object: Placed object Civi NPC @ (2, 7) which is alive
+51:59:place_object: Placed object Civi NPC @ (7, 11) which is alive
+51:59:place_object: Placed object Civi NPC @ (23, 1) which is alive
+51:59:place_object: Placed object Enemy NPC @ (1, 7) which is alive
+51:59:place_object: Placed object Enemy NPC @ (22, 24) which is alive
+51:59:place_object: Placed object Enemy NPC @ (11, 12) which is alive
+51:59:place_object: Placed object Enemy NPC @ (20, 18) which is alive
+51:59:place_object: Placed object Enemy NPC @ (1, 17) which is alive
+51:59:place_object: Placed object Enemy NPC @ (24, 5) which is alive
+51:59:place_object: Placed object Enemy NPC @ (5, 20) which is alive
+51:59:place_object: Placed object Enemy NPC @ (23, 3) which is alive
+51:59:place_object: Placed object Enemy NPC @ (6, 3) which is alive
+51:59:place_object: Placed object Enemy NPC @ (17, 10) which is alive
+51:59:place_object: Placed object Enemy NPC @ (23, 5) which is alive
+51:59:place_object: Placed object Enemy NPC @ (18, 1) which is alive
+51:59:place_object: Placed object Enemy NPC @ (16, 18) which is alive
+51:59:place_object: Placed object Enemy NPC @ (22, 1) which is alive
+51:59:place_object: Placed object Enemy NPC @ (22, 12) which is alive
+51:59:place_object: Placed object Enemy NPC @ (5, 7) which is alive
+51:59:place_object: Placed object Enemy NPC @ (16, 24) which is alive
+51:59:place_object: Placed object Enemy NPC @ (0, 6) which is alive
+51:59:place_object: Placed object Enemy NPC @ (19, 23) which is alive
+51:59:place_object: Placed object Enemy NPC @ (4, 0) which is alive
+51:59:place_object: Placed object Enemy NPC @ (5, 21) which is alive
+51:59:place_object: Placed object Enemy NPC @ (17, 0) which is alive
+51:59:place_object: Placed object Enemy NPC @ (9, 13) which is alive
+51:59:place_object: Placed object Enemy NPC @ (15, 7) which is alive
+51:59:place_object: Placed object Enemy NPC @ (15, 15) which is alive
+51:59:place_object: Placed object Enemy NPC @ (13, 1) which is alive
+51:59:place_object: Placed object Enemy NPC @ (16, 8) which is alive
+51:59:place_object: Placed object Enemy NPC @ (8, 11) which is alive
+51:59:place_object: Placed object Enemy NPC @ (24, 24) which is alive
+51:59:place_object: Placed object Enemy NPC @ (10, 1) which is alive
+51:59:place_object: Placed object Enemy NPC @ (12, 13) which is alive
+51:59:place_object: Placed object Enemy NPC @ (12, 1) which is alive
+51:59:place_object: Placed object Enemy NPC @ (6, 11) which is alive
+51:59:place_object: Placed object Enemy NPC @ (16, 9) which is alive
+51:59:place_object: Placed object Enemy NPC @ (7, 13) which is alive
+51:59:place_object: Placed object Enemy NPC @ (4, 8) which is alive
+51:59:place_object: Placed object Enemy NPC @ (12, 0) which is alive
+51:59:place_object: Placed object Enemy NPC @ (13, 22) which is alive
+51:59:place_object: Placed object Enemy NPC @ (3, 17) which is alive
+51:59:place_object: Placed object Enemy NPC @ (16, 21) which is alive
+51:59:place_object: Placed object Enemy NPC @ (14, 1) which is alive
+51:59:place_object: Placed object Enemy NPC @ (11, 9) which is alive
+51:59:place_object: Placed object Enemy NPC @ (13, 24) which is alive
+51:59:place_object: Placed object Enemy NPC @ (14, 20) which is alive
+51:59:place_object: Placed object Enemy NPC @ (19, 17) which is alive
+51:59:place_object: Placed object Enemy NPC @ (16, 22) which is alive
+51:59:place_object: Placed object Enemy NPC @ (19, 10) which is alive
+51:59:place_object: Placed object Enemy NPC @ (22, 3) which is alive
+51:59:place_object: Placed object Enemy NPC @ (9, 10) which is alive
+51:59:place_object: Placed object Enemy NPC @ (23, 18) which is alive
+52:03:move_agent: Agent A@(1, 6):3:Agt9 moved s to (1, 6)
+52:03:move_agent: Agent A@(7, 21):2:Agt5 moved w to (7, 21)
+52:03:move_agent: Agent A@(0, 14):2:Agt4 moved s to (0, 14)
+52:03:move_agent: Agent A@(13, 17):2:Agt6 moved e to (13, 17)
+52:04:bombed_at: Bomb at (13, 0) killed Enemy NPC @ (13, 1) which is dead
+52:04:bombed_at: Bomb at (13, 0) killed Enemy NPC @ (14, 1) which is dead
+52:04:bombed_at: Bomb at (13, 0) killed Enemy NPC @ (12, 1) which is dead
+52:04:bombed_at: Bomb at (13, 0) killed Civi NPC @ (14, 0) which is dead
+52:04:bombed_at: Bomb at (13, 0) killed Enemy NPC @ (12, 0) which is dead
+52:04:agent_bomb: Agent A@(13, 0):2:Agt3 bombed (13, 0), killing 5
+52:04:move_agent: Agent A@(4, 21):3:Agt0 moved e to (4, 21)
+52:04:move_agent: Agent A@(6, 19):2:Agt8 moved e to (6, 19)
+52:05:bombed_at: Bomb at (14, 24) killed Enemy NPC @ (13, 22) which is dead
+52:05:bombed_at: Bomb at (14, 24) killed Enemy NPC @ (16, 22) which is dead
+52:05:bombed_at: Bomb at (14, 24) killed Enemy NPC @ (16, 24) which is dead
+52:05:bombed_at: Bomb at (14, 24) killed Civi NPC @ (15, 24) which is dead
+52:05:bombed_at: Bomb at (14, 24) killed Enemy NPC @ (13, 24) which is dead
+52:05:agent_bomb: Agent A@(14, 24):2:Agt7 bombed (14, 24), killing 5
+52:05:move_agent: Agent A@(6, 21):2:Agt5 moved w to (6, 21)
+52:05:move_agent: Agent A@(16, 10):3:Agt2 moved n to (16, 10)
+52:05:move_agent: Agent A@(5, 3):3:Agt1 moved s to (5, 3)
+52:07:bombed_at: Bomb at (6, 21) killed Enemy NPC @ (5, 20) which is dead
+52:07:bombed_at: Bomb at (6, 21) killed Enemy NPC @ (5, 21) which is dead
+52:07:agent_bomb: Agent A@(6, 21):2:Agt5 bombed (6, 21), killing 2
+52:07:move_agent: Agent A@(6, 20):2:Agt8 moved s to (6, 20)
+52:08:move_agent: Agent A@(13, 16):2:Agt6 moved n to (13, 16)
+52:09:move_agent: Agent A@(14, 0):2:Agt3 moved e to (14, 0)
+52:09:move_agent: Agent A@(13, 15):2:Agt6 moved n to (13, 15)
+52:11:move_agent: Agent A@(14, 15):2:Agt6 moved e to (14, 15)
+52:11:move_agent: Agent A@(4, 20):3:Agt0 moved n to (4, 20)
+52:11:move_agent: Agent A@(1, 14):2:Agt4 moved e to (1, 14)
+52:11:move_agent: Agent A@(14, 23):2:Agt7 moved n to (14, 23)
+52:11:move_agent: Agent A@(2, 6):3:Agt9 moved e to (2, 6)
+55:14:__init__: 
+
+
+55:14:__init__: New world made
+55:14:place_object: Placed object Civi NPC @ (4, 3) which is alive
+55:14:place_object: Placed object Civi NPC @ (6, 4) which is alive
+55:14:place_object: Placed object Civi NPC @ (0, 9) which is alive
+55:14:place_object: Placed object Civi NPC @ (14, 2) which is alive
+55:14:place_object: Placed object Civi NPC @ (0, 13) which is alive
+55:14:place_object: Placed object Civi NPC @ (2, 10) which is alive
+55:14:place_object: Placed object Civi NPC @ (3, 3) which is alive
+55:14:place_object: Placed object Civi NPC @ (10, 5) which is alive
+55:14:place_object: Placed object Civi NPC @ (7, 9) which is alive
+55:14:place_object: Placed object Civi NPC @ (2, 14) which is alive
+55:14:place_object: Placed object Civi NPC @ (1, 2) which is alive
+55:14:place_object: Placed object Civi NPC @ (9, 7) which is alive
+55:14:place_object: Placed object Enemy NPC @ (9, 12) which is alive
+55:14:place_object: Placed object Enemy NPC @ (8, 8) which is alive
+55:14:place_object: Placed object Enemy NPC @ (9, 3) which is alive
+55:14:place_object: Placed object Enemy NPC @ (1, 1) which is alive
+55:14:place_object: Placed object Enemy NPC @ (10, 7) which is alive
+55:14:place_object: Placed object Enemy NPC @ (4, 7) which is alive
+55:14:place_object: Placed object Enemy NPC @ (1, 6) which is alive
+55:14:place_object: Placed object Enemy NPC @ (4, 8) which is alive
+55:14:place_object: Placed object Enemy NPC @ (8, 2) which is alive
+55:14:place_object: Placed object Enemy NPC @ (2, 3) which is alive
+55:19:move_agent: Agent A@(11, 7):3:Agt0 moved n to (11, 7)
+55:19:move_agent: Agent A@(8, 13):3:Agt1 moved n to (8, 13)
+55:19:move_agent: Agent A@(1, 10):3:Agt4 moved n to (1, 10)
+55:20:move_agent: Agent A@(9, 1):3:Agt3 moved e to (9, 1)
+55:20:move_agent: Agent A@(3, 6):3:Agt2 moved s to (3, 6)
+55:20:move_agent: Agent A@(8, 12):3:Agt1 moved n to (8, 12)
+55:21:move_agent: Agent A@(3, 7):3:Agt2 moved s to (3, 7)
+55:21:move_agent: Agent A@(9, 2):3:Agt3 moved s to (9, 2)
+55:21:move_agent: Agent A@(1, 9):3:Agt4 moved n to (1, 9)
+55:22:bombed_at: Bomb at (8, 12) killed Enemy NPC @ (9, 12) which is dead
+55:22:agent_bomb: Agent A@(8, 12):3:Agt1 bombed (8, 12), killing 1
+55:23:bombed_at: Bomb at (3, 7) killed Enemy NPC @ (4, 7) which is dead
+55:23:bombed_at: Bomb at (3, 7) killed Enemy NPC @ (1, 6) which is dead
+55:23:bombed_at: Bomb at (3, 7) killed Enemy NPC @ (4, 8) which is dead
+55:23:agent_bomb: Agent A@(3, 7):3:Agt2 bombed (3, 7), killing 3
+55:23:bombed_at: Bomb at (9, 2) killed Enemy NPC @ (9, 3) which is dead
+55:23:bombed_at: Bomb at (9, 2) killed Enemy NPC @ (8, 2) which is dead
+55:23:agent_bomb: Agent A@(9, 2):3:Agt3 bombed (9, 2), killing 2
+55:23:move_agent: Agent A@(1, 8):3:Agt4 moved n to (1, 8)
+55:25:move_agent: Agent A@(11, 8):3:Agt0 moved s to (11, 8)
+55:27:move_agent: Agent A@(3, 6):3:Agt2 moved n to (3, 6)
+55:27:move_agent: Agent A@(9, 3):3:Agt3 moved s to (9, 3)
+55:28:move_agent: Agent A@(1, 7):3:Agt4 moved n to (1, 7)
+55:29:move_agent: Agent A@(1, 6):3:Agt4 moved n to (1, 6)
+55:31:move_agent: Agent A@(10, 8):3:Agt0 moved w to (10, 8)
+55:33:move_agent: Agent A@(9, 8):3:Agt0 moved w to (9, 8)
+55:34:move_agent: Agent A@(4, 6):3:Agt2 moved e to (4, 6)
+55:34:move_agent: Agent A@(9, 4):3:Agt3 moved s to (9, 4)
+55:34:move_agent: Agent A@(9, 9):3:Agt0 moved s to (9, 9)
+55:35:move_agent: Agent A@(1, 5):3:Agt4 moved n to (1, 5)
+55:36:move_agent: Agent A@(8, 9):3:Agt0 moved w to (8, 9)
+55:37:move_agent: Agent A@(8, 10):3:Agt0 moved s to (8, 10)
+55:39:move_agent: Agent A@(7, 10):3:Agt0 moved w to (7, 10)
+55:40:move_agent: Agent A@(9, 3):3:Agt3 moved n to (9, 3)
+55:40:move_agent: Agent A@(3, 6):3:Agt2 moved w to (3, 6)
+55:40:move_agent: Agent A@(6, 10):3:Agt0 moved w to (6, 10)
+55:42:move_agent: Agent A@(2, 5):3:Agt4 moved e to (2, 5)
+55:42:move_agent: Agent A@(8, 3):3:Agt3 moved w to (8, 3)
+55:42:move_agent: Agent A@(6, 9):3:Agt0 moved n to (6, 9)
+55:43:move_agent: Agent A@(3, 5):3:Agt4 moved e to (3, 5)
+55:43:move_agent: Agent A@(7, 3):3:Agt3 moved w to (7, 3)
+55:43:move_agent: Agent A@(6, 8):3:Agt0 moved n to (6, 8)
+55:44:__init__: 
+
+
+55:44:__init__: New world made
+55:44:place_object: Placed object Civi NPC @ (7, 13) which is alive
+55:44:place_object: Placed object Civi NPC @ (4, 7) which is alive
+55:44:place_object: Placed object Civi NPC @ (14, 13) which is alive
+55:44:place_object: Placed object Civi NPC @ (12, 3) which is alive
+55:44:place_object: Placed object Civi NPC @ (3, 0) which is alive
+55:44:place_object: Placed object Civi NPC @ (8, 0) which is alive
+55:44:place_object: Placed object Civi NPC @ (7, 4) which is alive
+55:44:place_object: Placed object Civi NPC @ (9, 8) which is alive
+55:44:place_object: Placed object Civi NPC @ (13, 0) which is alive
+55:44:place_object: Placed object Civi NPC @ (7, 14) which is alive
+55:44:place_object: Placed object Civi NPC @ (6, 14) which is alive
+55:44:place_object: Placed object Civi NPC @ (1, 10) which is alive
+55:44:place_object: Placed object Enemy NPC @ (11, 13) which is alive
+55:44:place_object: Placed object Enemy NPC @ (12, 6) which is alive
+55:44:place_object: Placed object Enemy NPC @ (11, 8) which is alive
+55:44:place_object: Placed object Enemy NPC @ (13, 9) which is alive
+55:44:place_object: Placed object Enemy NPC @ (10, 13) which is alive
+55:44:place_object: Placed object Enemy NPC @ (9, 3) which is alive
+55:44:place_object: Placed object Enemy NPC @ (1, 6) which is alive
+55:44:place_object: Placed object Enemy NPC @ (10, 6) which is alive
+55:44:place_object: Placed object Enemy NPC @ (4, 11) which is alive
+55:44:place_object: Placed object Enemy NPC @ (12, 0) which is alive
+55:48:move_agent: Agent A@(5, 11):3:Agt1 moved w to (5, 11)
+55:48:bombed_at: Bomb at (3, 11) killed Civi NPC @ (1, 10) which is dead
+55:48:bombed_at: Bomb at (3, 11) killed Enemy NPC @ (4, 11) which is dead
+55:48:agent_bomb: Agent A@(3, 11):3:Agt4 bombed (3, 11), killing 2
+55:48:move_agent: Agent A@(1, 11):3:Agt0 moved e to (1, 11)
+55:48:move_agent: Agent A@(2, 1):3:Agt2 moved s to (2, 1)
+55:49:move_agent: Agent A@(9, 11):2:Agt3 moved e to (9, 11)
+55:49:move_agent: Agent A@(2, 2):3:Agt2 moved s to (2, 2)
+55:51:move_agent: Agent A@(2, 3):3:Agt2 moved s to (2, 3)
+55:52:move_agent: Agent A@(3, 10):3:Agt4 moved n to (3, 10)
+55:52:move_agent: Agent A@(6, 11):3:Agt1 moved e to (6, 11)
+55:52:move_agent: Agent A@(1, 10):3:Agt0 moved n to (1, 10)
+55:52:move_agent: Agent A@(10, 11):2:Agt3 moved e to (10, 11)
+55:52:move_agent: Agent A@(2, 4):3:Agt2 moved s to (2, 4)
+55:54:move_agent: Agent A@(11, 11):2:Agt3 moved e to (11, 11)
+55:55:move_agent: Agent A@(11, 12):2:Agt3 moved s to (11, 12)
+55:57:bombed_at: Bomb at (11, 12) killed Enemy NPC @ (10, 13) which is dead
+55:57:bombed_at: Bomb at (11, 12) killed Enemy NPC @ (11, 13) which is dead
+55:57:agent_bomb: Agent A@(11, 12):2:Agt3 bombed (11, 12), killing 2
+55:58:move_agent: Agent A@(7, 11):3:Agt1 moved e to (7, 11)
+55:58:move_agent: Agent A@(2, 10):3:Agt0 moved e to (2, 10)
+55:59:move_agent: Agent A@(2, 3):3:Agt2 moved n to (2, 3)
+55:59:move_agent: Agent A@(4, 10):3:Agt4 moved e to (4, 10)
+56:00:move_agent: Agent A@(7, 10):3:Agt1 moved n to (7, 10)
+56:00:move_agent: Agent A@(2, 9):3:Agt0 moved n to (2, 9)
+56:00:move_agent: Agent A@(3, 3):3:Agt2 moved e to (3, 3)
+56:01:move_agent: Agent A@(2, 8):3:Agt0 moved n to (2, 8)
+56:02:move_agent: Agent A@(11, 11):2:Agt3 moved n to (11, 11)
+56:02:move_agent: Agent A@(4, 3):3:Agt2 moved e to (4, 3)
+56:02:move_agent: Agent A@(4, 9):3:Agt4 moved n to (4, 9)
+56:03:move_agent: Agent A@(3, 8):3:Agt0 moved e to (3, 8)
+56:03:move_agent: Agent A@(11, 10):2:Agt3 moved n to (11, 10)
+56:03:move_agent: Agent A@(4, 8):3:Agt4 moved n to (4, 8)
+56:05:move_agent: Agent A@(4, 8):3:Agt0 moved e to (4, 8)
+56:05:move_agent: Agent A@(11, 9):2:Agt3 moved n to (11, 9)
+56:05:move_agent: Agent A@(7, 9):3:Agt1 moved n to (7, 9)
+56:05:move_agent: Agent A@(5, 8):3:Agt4 moved e to (5, 8)
+56:06:move_agent: Agent A@(5, 8):3:Agt0 moved e to (5, 8)
+56:06:move_agent: Agent A@(12, 9):2:Agt3 moved e to (12, 9)
+56:06:move_agent: Agent A@(5, 7):3:Agt4 moved n to (5, 7)
+56:08:move_agent: Agent A@(5, 7):3:Agt0 moved n to (5, 7)
+56:08:move_agent: Agent A@(5, 3):3:Agt2 moved e to (5, 3)
+56:08:bombed_at: Bomb at (12, 9) killed Enemy NPC @ (11, 8) which is dead
+56:08:bombed_at: Bomb at (12, 9) killed Enemy NPC @ (13, 9) which is dead
+56:08:agent_bomb: Agent A@(12, 9):2:Agt3 bombed (12, 9), killing 2
+56:08:move_agent: Agent A@(7, 8):3:Agt1 moved n to (7, 8)
+56:13:move_agent: Agent A@(12, 8):2:Agt3 moved n to (12, 8)
+56:13:move_agent: Agent A@(7, 7):3:Agt1 moved n to (7, 7)
+56:13:move_agent: Agent A@(5, 6):3:Agt4 moved n to (5, 6)
+56:14:move_agent: Agent A@(5, 2):3:Agt2 moved n to (5, 2)
+56:14:move_agent: Agent A@(12, 7):2:Agt3 moved n to (12, 7)
+56:14:move_agent: Agent A@(5, 6):3:Agt0 moved n to (5, 6)
+56:14:__init__: 
+
+
+56:14:__init__: New world made
+56:14:place_object: Placed object Civi NPC @ (3, 6) which is alive
+56:14:place_object: Placed object Civi NPC @ (6, 0) which is alive
+56:14:place_object: Placed object Civi NPC @ (3, 9) which is alive
+56:14:place_object: Placed object Civi NPC @ (8, 11) which is alive
+56:14:place_object: Placed object Civi NPC @ (4, 3) which is alive
+56:14:place_object: Placed object Civi NPC @ (11, 1) which is alive
+56:14:place_object: Placed object Civi NPC @ (12, 5) which is alive
+56:14:place_object: Placed object Civi NPC @ (13, 9) which is alive
+56:14:place_object: Placed object Civi NPC @ (3, 11) which is alive
+56:14:place_object: Placed object Civi NPC @ (3, 5) which is alive
+56:14:place_object: Placed object Civi NPC @ (1, 8) which is alive
+56:14:place_object: Placed object Civi NPC @ (1, 3) which is alive
+56:14:place_object: Placed object Enemy NPC @ (6, 4) which is alive
+56:14:place_object: Placed object Enemy NPC @ (6, 5) which is alive
+56:14:place_object: Placed object Enemy NPC @ (4, 2) which is alive
+56:14:place_object: Placed object Enemy NPC @ (5, 7) which is alive
+56:14:place_object: Placed object Enemy NPC @ (14, 9) which is alive
+56:14:place_object: Placed object Enemy NPC @ (0, 5) which is alive
+56:14:place_object: Placed object Enemy NPC @ (2, 4) which is alive
+56:14:place_object: Placed object Enemy NPC @ (14, 13) which is alive
+56:14:place_object: Placed object Enemy NPC @ (11, 11) which is alive
+56:14:place_object: Placed object Enemy NPC @ (8, 7) which is alive
