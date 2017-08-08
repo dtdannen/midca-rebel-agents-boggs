@@ -3,6 +3,7 @@ import os
 import logging
 
 from MIDCA import base
+import world_utils as wu
 
 
 class Observer(base.BaseModule):

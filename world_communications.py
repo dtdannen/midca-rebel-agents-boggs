@@ -149,6 +149,7 @@ class WorldServer(SS.TCPServer):
                 user.view(dng)
                 pickledMap = dumps(user.map)
                 self.send_data(pickledMap)
+                self.display()
 
                 log.info("\tSent world state to {}".format(user))
 
@@ -166,7 +167,6 @@ class WorldServer(SS.TCPServer):
                     else:
                         log.info("\Failed to applied action")
                         msgs[userID] = [("Action success", userID)]
-                self.display()
                 if self.server.scoreObj[0] == 1.0:
                     log.info("Shutting down server, all enemies dead")
                     self.server.server_close()

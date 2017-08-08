@@ -40,9 +40,25 @@ def unlock(state, target):
 
 
 def bomb(state, range):
+    """
+    Have Agent detonate its bomb at its location.
+
+    Arguments:
+        ``state``, *Agent*:
+            The current state for PyHop's planning, which will be an ``Agent``.
+
+        ``range``, *int*:
+            The range of the bomb. DUmmy variable for now.
+    """
     state.bomb()
     return state
 
 
+def arm(state, turns):
+    """Arm agent so that it may detonate bomb next action."""
+    state.arm()
+    return state
+
+
 def declare_operators():
-    pyhop.declare_operators(move, takekey, unlock, bomb)
+    pyhop.declare_operators(move, takekey, unlock, bomb, arm)

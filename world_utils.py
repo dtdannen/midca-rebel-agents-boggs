@@ -31,6 +31,14 @@ NPC = 'NPC'  #: Easily check if a WorldObject object is a NPC
 
 BOMB_RANGE = 2  #: Radius of a bomb's blast
 MAX_VISION_RANGE = 3  #: Maximum vision range of Agent objects generated randomly
+UNARMED = 0  #: Easily check if an agent is unarmed
+ARMING = 1  #: Easily check if an agent is arming
+ARMED = 2  #: Easily check if an agent is armed
+
+ENEMY_RED = '\033[31m'
+CIVI_GREEN = '\033[32m'
+AGENT_BLUE = '\033[34m'
+END_COLOR = '\033[0m'
 
 #: List of all objects which could be in the World
 OBJECT_LIST = [CHEST, DOOR, WALL, KEY, COIN, FIRE, TRAP, NPC, AGENT, OPERATOR]
@@ -550,7 +558,10 @@ class Npc(WorldObject):
     def ascii_rep(self):
         if not self.alive:
             return ""
-        return "&C" if self.civi else "&E"
+        if self.civi:
+            return CIVI_GREEN + "&C" + END_COLOR
+        else:
+            return ENEMY_RED + "&E" + END_COLOR
 
     @property
     def predicates(self):
@@ -930,6 +941,8 @@ class World(object):
     def agent_bomb(self, userID):
         """Have the agent detonate a bomb at its location."""
         user = self.users[userID]
+        if not user.armed == ARMED:
+            return 0
         target = user.at
         killed = self.bombed_at(target)
         user.bomb()
@@ -1111,6 +1124,13 @@ class World(object):
 
         elif actType == 'bomb':
             succeeded = self.agent_bomb(userID)
+
+        elif actType == 'arm':
+            agent = self.get_user(userID)
+            self.log.info("Agent {} arming from {}".format(userID, agent.armed))
+            agent.arm()
+            self.log.info("Agent {} armed to {}".format(userID, agent.armed))
+            return True
 
         else:
             raise NotImplementedError("Action type {} is not implemented".format(actType))
@@ -1480,9 +1500,9 @@ class World(object):
         """
         filename = "./dng_files/" + filename + ".dng"
         with open(filename, 'w') as saveFile:
-            saveFile.write(repr(dng))
+            saveFile.write(repr(self))
         with open(filename+".state", 'w') as saveFile:
-            saveFile.write(dng.MIDCA_state_str())
+            saveFile.write(self.MIDCA_state_str())
         return True
 
     def __str__(self):
@@ -1674,6 +1694,7 @@ class Agent(object):
         self.coins = 0
         self.health = 4
         self.userType = userType
+        self.armed = UNARMED
         if userType == AGENT:
             self.number = Agent.agentCount
             Agent.agentCount += 1
@@ -1698,7 +1719,7 @@ class Agent(object):
     @property
     def agents(self):
         """Return a list of all agents known to this agent."""
-        return self.map.agents
+        return [a for a in self.map.agents if a != self]
 
     @property
     def enemies(self):
@@ -1957,13 +1978,27 @@ class Agent(object):
         self.health -= damage
 
     def bomb(self):
-        """Detonate a bomb under the agent which kills enemies in a 2-block radius."""
+        """
+        Detonate a bomb under the agent which kills enemies in a 2-block radius.
+
+        An agent is *required* to be armed prior to detonating their bomb.
+
+        Arguments:
+            ``return``, *int*:
+                The number of NPCs (civilians and enemies) killed in the blast.
+        """
+        if not self.armed == ARMED:
+            return 0
+        self.armed = UNARMED
         return self.map.bombed_at(self.at)
 
-    def get_civs_in_blast(self):
+    def get_civs_in_blast(self, loc=None):
         """Return a list of civilians in the potential bomb blast."""
         civs = []
-        objs = self.map.get_objects_around(self.at, BOMB_RANGE)
+        if loc:
+            objs = self.map.get_objects_around(loc, BOMB_RANGE)
+        else:
+            objs = self.map.get_objects_around(self.at, BOMB_RANGE)
         print(objs)
         for objLoc in objs:
             objList = objs[objLoc]
@@ -1973,10 +2008,20 @@ class Agent(object):
 
         return civs
 
+    def arm(self):
+        """Arm the agent's bomb to be detonated."""
+        if self.armed == UNARMED:
+            self.armed = ARMING
+        elif self.armed == ARMING:
+            self.armed = ARMED
+        return True
+
     @property
     def ascii_rep(self):
-        char = "A" if self.userType == AGENT else "O"
-        return char + str(self.number)
+        if self.userType == AGENT:
+            return AGENT_BLUE + "A" + str(self.number) + END_COLOR
+        else:
+            return "O" + str(self.number)
 
     def __repr__(self):
         char = "A" if self.userType == AGENT else "O"
@@ -2332,7 +2377,7 @@ def interactive_World_maker():
                 if not miscData:
                     civi = False
                 else:
-                    civi = True if miscData.lower() == 'civilian' else False
+                    civi = True if miscData.lower() in ['c', 'civi', 'civilian'] else False
                 newObj = dng.place_object(NPC, objLoc, civi=civi)
                 objsMade[repr(newObj)] = newObj
                 return True
@@ -2467,12 +2512,13 @@ class DummyLog(object):
     def info(self, val):
         pass
 
+
 if __name__ == '__main__':
-    # dng = interactive_World_maker()
+    dng = interactive_World_maker()
     # dng = build_World_from_file()
-    dng = generate_random_drone_demo(dim=25, civilians=15, enemies=30,
-                                     operators=1, agents=5)
-    print(dng.status_display())
-    filename = raw_input("Save this as: ")
-    if filename != "":
-        dng.save(filename)
+    # dng = generate_random_drone_demo(dim=25, civilians=15, enemies=30,
+    #                                  operators=1, agents=5)
+    # print(dng.status_display())
+    # filename = raw_input("Save this as: ")
+    # if filename != "":
+    #     dng.save(filename)

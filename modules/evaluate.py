@@ -184,7 +184,7 @@ class GoalManager(base.BaseModule):
                         self.mem.trace.add_data("REMOVED GOAL", goal)
                     self.logger.info("\tRemoved invalid goal")
 
-                # NOTE: This is where the rebellion happens!!
+                # NOTE: This is where the rebellion gets noticed!!
                 elif reason == 'civi-in-AOE':
                     civilians = self.agent.get_civs_in_blast()
                     rebellion = Rebellion(goal, reason=reason, civilians=civilians)
@@ -367,6 +367,50 @@ class HandleRebellion(base.BaseModule):
     def add_goal(self, goal):
         goalGraph = self.mem.get(self.mem.GOAL_GRAPH)
         goalGraph.add(goal)
+
+
+class ProactiveRebellion(base.BaseModule):
+    """If other agents have goals which seem incorrect, ask them to rebel."""
+
+    def __init__(self, logger=logging.getLogger("dummy")):
+        """Instantiate a ``ProactiveRebellion`` module; with a logger if desired."""
+        super(ProactiveRebellion, self).__init__()
+        self.logger = logger
+
+    def init(self, world, mem):
+        """Give module access to critical MIDCA information."""
+        self.mem = mem
+        self.world = world
+
+    def run(self, cycle, verbose=2):
+        """
+        Make sure all allied agent goals are valid, report if not.
+
+        This module looks through all of the agent-goal pairs in memory and
+        ensures each goal is valid. If it isn't, the module informs the other
+        agent as to why and asks it to rebel.
+        """
+        state = self.mem.get(self.mem.STATE)
+
+        agentGoalDict = self.mem.get("AGENT_GOALS")
+        self.logger.info("Retrieved agent-goal dict")
+        self.logger.debug(agentGoalDict)
+        for agent in agentGoalDict:
+            goal = agentGoalDict[agent]
+            self.logger.info("Agent-goal pair: {}: {}".format(agent, goal))
+
+            goalValid = state.valid_goal(goal)
+            if goalValid[1] == "civi-killed":
+                self.logger.info("Beginning proactive rebellion")
+                self.proactive_rebel(agent, state, goal, verbose)
+                self.logger.info("End proactive rebelling")
+
+    def proactive_rebel(self, agent, state, goal, verbose):
+        """Inform the other agent that the goal is dangerous and should be rejected."""
+        civisInAOE = state.get_civs_in_blast(agent.at)
+        self.logger.info("Civilians at risk: {}".format(civisInAOE))
+        for civi in civisInAOE:
+            self.world.inform(agent.id, civi.id)
 
 
 class OperatorHandleRebelsStochastic(base.BaseModule):

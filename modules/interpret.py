@@ -620,6 +620,69 @@ class CompletionEvaluator(base.BaseModule):
             trace.add_data("GOALS", goals)
 
 
+class GoalRecognition(base.BaseModule):
+    """Recgonizes and stores the goals of other agents, for proactive rebellion."""
+
+    def __init__(self, logger=logging.getLogger("dummy")):
+        """Instantiate a ``GoalRecognition`` module; with a logger if desired."""
+        super(GoalRecognition, self).__init__()
+        self.logger = logger
+
+    def init(self, world, mem):
+        """Give the module access to critical MIDCA information."""
+        self.mem = mem
+        self.world = world
+
+    def run(self, cycle, verbose):
+        """
+        Look through the other agents and try to determine their goals.
+
+        Currently, this just looks at other agents and uses hard-coded knowledge
+        to determine their goal. Oncce a goal is determined, the agent in question
+        and its goal are stored in a dict in memory.
+        """
+        state = self.mem.get(self.mem.STATE)
+        otherAgents = state.agents
+        self.logger.info("Retrieved other agents and state")
+        agentGoals = {}
+        for agent in otherAgents:
+            self.logger.info("Examining agent {}".format(agent))
+            if agent.armed != wu.UNARMED:
+                self.logger.info("Agent {} is arming or armed".format(agent))
+                agentGoal = self.handle_armed_agent(agent, state, verbose)
+                if agentGoal is None:
+                    continue
+
+                agentGoals[agent] = agentGoal
+
+        self.mem.set("AGENT_GOALS", agentGoals)
+
+    def handle_armed_agent(self, agent, state, verbose):
+        """Determine the goal of an armed agent by looking at the enemies around it."""
+        agentLoc = agent.at
+        worldMap = state.map
+        enemies = worldMap.filter_objects(civi=False)
+        self.logger.info("Determining agent {}'s goal".format(agent))
+
+        target = None
+        for enemy in enemies:
+            self.logger.info("Checking enemy {}".format(enemy))
+            if state.map.adjacent(enemy.location, agentLoc):
+                target = enemy
+                self.logger.info("Found potential target {}".format(target))
+                break
+
+        if target is None:
+            if verbose >= 1:
+                print("Allied agent {} is arming but no target is visible".format(agent))
+            self.logger.info("Saw agent {} arming, but didn't see target".format(agent))
+            return
+
+        agentGoal = goals.Goal(target.id, predicate='killed', user=None)
+        self.logger.info("Identified goal {} for {}".format(agentGoal, agent))
+        return agentGoal
+
+
 class OperatorInterpret(base.BaseModule):
     """
     A module which allows an automatic operator to interpret world state.

@@ -11,12 +11,6 @@ import logging
 import world_utils
 import testing
 
-WORLD_FILE = './dng_files/largeMultiAgent.dng'
-world = world_utils.build_World_from_file(WORLD_FILE)
-
-TEST_NUM = 10
-REJECTION_PROB_STEP = 0.25
-
 WORLD_LOGGER = logging.getLogger("WorldEvents")
 handler = logging.FileHandler("logs/world_events.log")
 formatter = logging.Formatter(fmt="%(asctime)s:%(funcName)s: %(message)s",
@@ -26,6 +20,15 @@ handler.setLevel(logging.INFO)
 handler.setFormatter(formatter)
 WORLD_LOGGER.addHandler(handler)
 
+WORLD_FILE = './dng_files/proactiveTest.dng'
+world = world_utils.build_World_from_file(WORLD_FILE)
+world.log = WORLD_LOGGER
+
+TEST_NUM = 10
+REJECTION_PROB_STEP = 0.2
+
+
+# testing.run_test(world)
 
 rejectionProb = 0.0
 scores = {}

@@ -35,9 +35,12 @@ AGENT_MODULES = {"Perceive":  [perceive.RemoteObserver],
                                interpret.CompletionEvaluator,
                                interpret.StateDiscrepancyDetector,
                                interpret.GoalValidityChecker,
-                               interpret.DiscrepancyExplainer],
+                               interpret.DiscrepancyExplainer,
+                               interpret.GoalRecognition],
                  "Eval":      [evaluate.GoalManager,
-                               evaluate.HandleRebellion],
+                               evaluate.HandleRebellion,
+                               evaluate.ProactiveRebellion
+                               ],
                  "Intend":    [intend.QuickIntend],
                  "Plan":      [plan.GenericPyhopPlanner],
                  "Act":       [act.SimpleAct]
@@ -164,7 +167,7 @@ def run_visible_test(world, limit=500):
     return score
 
 
-def run_test(world, limit=500, rebel=True, rejectionProb=0.0):
+def run_test(world, limit=60, rebel=True, rejectionProb=0.0):
     """
     Run a test using the given world, agent, and operator, then record the results.
     """

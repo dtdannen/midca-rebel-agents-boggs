@@ -73,6 +73,8 @@ def achieve_goals(state, goals):
             targetID = goal.args[0]
             targetLoc = state.map.get_object(targetID).location
             tasks.append(('move-adjacent', targetLoc))
+            tasks.append(('arm', 0))
+            tasks.append(('arm', 0))
             tasks.append(('bomb', 2))
 
         else:
