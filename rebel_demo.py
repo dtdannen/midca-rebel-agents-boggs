@@ -24,27 +24,37 @@ WORLD_FILE = './dng_files/proactiveTest.dng'
 world = world_utils.build_World_from_file(WORLD_FILE)
 world.log = WORLD_LOGGER
 
-TEST_NUM = 10
-REJECTION_PROB_STEP = 0.2
+TEST_NUM = 3
+REJECTION_PROB_STEP = 1.0
+COMPLIANCE_STEP = -0.2
+
 
 
 # testing.run_test(world)
 
-rejectionProb = 0.0
+
+compliance = 1.0
 scores = {}
-while rejectionProb <= 1.0:
-    scores[rejectionProb] = []
-    for test in range(TEST_NUM):
-        world = world_utils.generate_random_drone_demo(dim=15,
-                                                       civilians=12,
-                                                       enemies=10,
-                                                       operators=1,
-                                                       agents=5,
-                                                       log=WORLD_LOGGER)
-        score = testing.run_test(world, limit=60, rebel=True, rejectionProb=rejectionProb)
-        scores[rejectionProb].append(score)
-        print(score, test, rejectionProb)
-    rejectionProb += REJECTION_PROB_STEP
+while 0 <= compliance <= 1.0:
+    rejectionProb = 0.0
+    while rejectionProb <= 1.0:
+        key = str((rejectionProb, compliance))
+        scores[key] = []
+        for test in range(TEST_NUM):
+            world = world_utils.generate_random_drone_demo(dim=15,
+                                                           civilians=12,
+                                                           enemies=10,
+                                                           operators=1,
+                                                           agents=5,
+                                                           log=WORLD_LOGGER)
+            score = testing.run_test(world, limit=60, rebel=True,
+                                     rejectionProb=rejectionProb,
+                                     compliance=compliance)
+            scores[key].append(score)
+            print(score, test, key)
+        rejectionProb += REJECTION_PROB_STEP
+    compliance += COMPLIANCE_STEP
+
 
 print(scores)
 with open('results.txt', 'w') as resFile:

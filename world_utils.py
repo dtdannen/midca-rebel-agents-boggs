@@ -604,6 +604,8 @@ class World(object):
         self.log = log
         self.log.info("\n\n")
         self.log.info("New world made")
+        Agent.agentCount = 0
+        Agent.operatorCount = 0
 
     @property
     def all_users(self):
@@ -2052,7 +2054,7 @@ def generate_random_drone_demo(dim, civilians, enemies, operators, agents, log=l
 
     for agnNum in range(agents):
         agnName = "Agt" + str(agnNum)
-        vision = randint(BOMB_RANGE, MAX_VISION_RANGE)
+        vision = randint(1, MAX_VISION_RANGE)
         while not dng.add_user(agnName, dng.random_loc(), vision, AGENT):
             pass
 

@@ -54,7 +54,7 @@ AUTO_OP_MODULES = {"Perceive": [perceive.OperatorObserver],
                    }
 
 
-def generate_agent_modules(agtID, rebel=True):
+def generate_agent_modules(agtID, rebel=True, compliance=1.0):
     """Create a dictionary of MIDCA module objects to use for an agent."""
     modules = dict([(p, []) for p in PHASES])
 
@@ -72,8 +72,11 @@ def generate_agent_modules(agtID, rebel=True):
 
     for phase in PHASES:
         for modInit in AGENT_MODULES[phase]:
-            if modInit == evaluate.HandleRebellion and not rebel:
-                # Don't add the handle rebellion module if we don't want rebelling
+            if modInit == evaluate.HandleRebellion:
+                if not rebel:
+                    # Don't add the handle rebellion module if we don't want rebelling
+                    continue
+                modules[phase].append(modInit(logger=logger, compliance=compliance))
                 continue
 
             if modInit == plan.GenericPyhopPlanner:
@@ -167,7 +170,7 @@ def run_visible_test(world, limit=500):
     return score
 
 
-def run_test(world, limit=60, rebel=True, rejectionProb=0.0):
+def run_test(world, limit=60, rebel=True, rejectionProb=0.0, compliance=1.0):
     """
     Run a test using the given world, agent, and operator, then record the results.
     """
@@ -198,7 +201,7 @@ def run_test(world, limit=60, rebel=True, rejectionProb=0.0):
 
     agtThreads = []
     for agt in agents:
-        agentModules = generate_agent_modules(agt.id, rebel)
+        agentModules = generate_agent_modules(agt.id, rebel, compliance)
         newAgt = wc.RemoteAgent(SERVER_ADDR, port, agt.id, agentModules)
         agtThread = Process(target=newAgt.run)
         agtThreads.append(agtThread)

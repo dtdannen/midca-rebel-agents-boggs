@@ -213,12 +213,47 @@ class GoalManager(base.BaseModule):
 
 
 class HandleRebellion(base.BaseModule):
-    """Allow MIDCA to rebel against goals it deems unworthy."""
+    """
+    Allow MIDCA to rebel against goals it deems unworthy.
 
-    def __init__(self, logger=logging.getLogger("dummy")):
+    This module examines each rebellion created in the :py:class:``GoalManager``
+    module and then either follows through by rebelling against the operator or
+    ignoring the rebellion. An agent will only ignore a rebellion if it has
+    attempted to rebel against the goal before and the operator rejected the
+    rebellion.
+
+    The module first gets all of the goals which have been rebeled against but
+    subsequently enforced by the operator, then it recalls of the rebellions
+    which it created in the previous module (:py:class:``GoalManager``). For each
+    rebellion it recalls, it first checks to see if it's a mandatory goal (i.e.
+    an operator has previously rejected an attempted rebellion against the goal).
+    If it's not, then it figures out important information from the rebellion
+    such as the goal and the reason for rebelling, and notifies the user that
+    the agent is rebelling, along with why. It also generates possible alternative
+    goals for itself, and then asks the operator to select one. These goals include
+    targeting any other valid enemies the agent knows, rejecting the rebellion
+    and enforcing the previous goal, or selecting no new goal at all. If the
+    operator does choose to reject the rebellion, how the agent handles that
+    depends on its compliance. The more compliant it is, the more likely it is
+    to accept the rejection and carryout the goal.
+
+    Arguments:
+        ``logger=logging.getLogger("dummy")``, *logging.Logger*:
+            The ``Logger`` object which the module will use to log its actions.
+            It defaults to a dummy logger which does nothing.
+
+        ``compliance=1.0``, *float*:
+            The probability that the agent will accept the rejection of its
+            rebellion and finish its goal. If it does comply, it will add the
+            goal to the mandatory goals list. If not, it will rebel again if it
+            still has the goal.
+    """
+
+    def __init__(self, logger=logging.getLogger("dummy"), compliance=1.0):
         """Instantiate a ``HandleRebellion`` module; with a logger if desired."""
         super(HandleRebellion, self).__init__()
         self.logger = logger
+        self.compliance = compliance
 
     def init(self, world, mem):
         self.mem = mem
@@ -233,6 +268,12 @@ class HandleRebellion(base.BaseModule):
         if self.mem.trace:
             self.mem.trace.add_module(cycle, self.__class__.__name__)
 
+        mandatoryGoals = self.mem.get("MANDATORY_GOALS")
+        if mandatoryGoals is None:
+            mandatoryGoals = []
+
+        self.logger.info("Got mandatory goals: {}".format(mandatoryGoals))
+
         self.logger.info("Retrieving rebellions")
         rebellions = self.mem.get("REBELLION")
         if not rebellions:
@@ -243,6 +284,10 @@ class HandleRebellion(base.BaseModule):
             self.logger.info("Handling rebellion:\n{}".format(rebellion))
 
             goal = rebellion.goal
+            if goal in mandatoryGoals:
+                self.logger.info("Goal is mandatory, skipping")
+                continue
+
             reason = rebellion['reason']
             if verbose >= 1:
                 print("Rebelling because {}".format(reason))
@@ -271,6 +316,10 @@ class HandleRebellion(base.BaseModule):
             if selectedGoal is not "None":
                 self.add_goal(selectedGoal)
                 self.logger.info("\tAdded selected goal")
+
+            if selectedGoal == goal and random() < self.compliance:
+                self.logger.info("Operator rejected rebellion")
+                self.mem.add("MANDATORY_GOALS", selectedGoal)
 
             if self.mem.trace:
                 self.mem.trace.add_data("USER CHOICE", selectedGoal)
