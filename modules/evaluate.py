@@ -449,7 +449,7 @@ class ProactiveRebellion(base.BaseModule):
             self.logger.info("Agent-goal pair: {}: {}".format(agent, goal))
 
             goalValid = state.valid_goal(goal)
-            if goalValid[1] == "civi-killed":
+            if not goalValid[0] and goalValid[1] == "civi-killed":
                 self.logger.info("Beginning proactive rebellion")
                 self.proactive_rebel(agent, state, goal, verbose)
                 self.logger.info("End proactive rebelling")

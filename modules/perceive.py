@@ -1,9 +1,18 @@
+"""
+Contains modules used during the perceive phase of the MIDCA cycle.
+
+The perceive phase is the first phase executed in a MIDCA cycle. It enables the
+agent to take in an updated view of the world for its future deliberations. Thus,
+its role is fairly limited, being used only to gather the latest raw data from
+the world. Within this module are the perceive modules for both agent and
+operator MIDCA cycles.
+"""
+
 import copy
 import os
 import logging
 
 from MIDCA import base
-import world_utils as wu
 
 
 class Observer(base.BaseModule):
@@ -14,6 +23,7 @@ class Observer(base.BaseModule):
     """
 
     def init(self, world, mem):
+        """Give module access to critical MIDCA information."""
         self.mem = mem
         self.world = world
 

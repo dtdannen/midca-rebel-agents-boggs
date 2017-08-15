@@ -3,17 +3,15 @@ Contains the ``World`` class and related classes and functions.
 
 This is the module responsible for anything to do with representing or simulating
 a ``World`` and the ``Agents`` and ``Operators`` within it. This module features
-three main classes: ``World``, ``WorldObject``, and ``Agent``, and a bunch of subclasses.
-Additionally, there are several helper functions which interact with or create ``World``s
-in some way.
+three main classes: ``World``, ``WorldObject``, and ``Agent``, as well as
+``WorldObject`` subclasses such as ``Npc``. There are also a handful of useful
+functions, such as functions which can create worlds or perform helpful conversions.
 """
 
 from copy import deepcopy
 from random import randint
-from pickle import dumps, loads
 import logging
 import os
-import sys
 import traceback
 from MIDCA import plans, goals
 
@@ -29,8 +27,6 @@ FIRE = 'FIRE'  #: Easily check if a WorldObject object is a fire
 TRAP = 'TRAP'  #: Easily check if a WorldObject object is a trap
 NPC = 'NPC'  #: Easily check if a WorldObject object is a NPC
 
-BOMB_RANGE = 2  #: Radius of a bomb's blast
-MAX_VISION_RANGE = 3  #: Maximum vision range of Agent objects generated randomly
 UNARMED = 0  #: Easily check if an agent is unarmed
 ARMING = 1  #: Easily check if an agent is arming
 ARMED = 2  #: Easily check if an agent is armed
@@ -378,10 +374,8 @@ class Door(WorldObject):
     Represents a door in the world, which can be unlocked and opened.
 
     If a door is locked, it is not passable. Once the door is unlocked, it becomes
-    passable.
-
-    A door is by default instantiated as locked, by it can be instantiated as unlocked
-    as well.
+    passable. A door is by default instantiated as locked, by it can be
+    instantiated as unlocked as well.
 
     Instantiation::
 
@@ -591,7 +585,7 @@ class World(object):
     accessing data from the world.
     """
 
-    def __init__(self, dim, log=logging.getLogger("dummy")):
+    def __init__(self, dim, bombRange=2, log=logging.getLogger("dummy")):
         """
         Initialize a blank world of size `dim`x`dim`.
         """
@@ -599,6 +593,7 @@ class World(object):
 
         # Generate self variables
         self.dim = self.hgt = self.wdt = dim
+        self.bombRange = bombRange
         self.floor = {}
         self.users = {}
         self.log = log
@@ -690,7 +685,7 @@ class World(object):
         if name in self.users:
             print("User named {} already exists".format(name))
             return False
-        newUser = Agent(name, location, self.dim, vision, userType)
+        newUser = Agent(name, location, self.dim, vision, userType, self.bombRange)
         self.users[name] = newUser
         return newUser
 
@@ -954,7 +949,7 @@ class World(object):
     def bombed_at(self, target):
         """Detonate a bomb at the target location."""
         killed = 0
-        surroundingObjs = self.get_objects_around(target, BOMB_RANGE, makeCopy=False)
+        surroundingObjs = self.get_objects_around(target, self.bombRange, makeCopy=False)
         for loc in surroundingObjs:
             for obj in surroundingObjs[loc]:
                 if obj.objType == NPC and obj.alive:
@@ -1548,11 +1543,12 @@ class WorldMap(World):
     the Agent knows. It also doesn't have its own Agent to prevent recursion.
     """
 
-    def __init__(self, dim, agent):
+    def __init__(self, dim, bombRange, agent):
         assert type(dim) is int, "dim must be an int"
 
         # Generate self variables
         self.dim = self.hgt = self.wdt = dim
+        self.bombRange = bombRange
         self.floor = {}
         self.users = {agent.id: agent}
         self.agent = agent
@@ -1667,7 +1663,7 @@ class WorldMap(World):
             bombLoc = self.get_closest_adjacent(target.location, self.agent.at)
             if bombLoc is None:
                 return (False, 'no-access')
-            objsAroundTarget = self.get_objects_around(bombLoc, BOMB_RANGE)
+            objsAroundTarget = self.get_objects_around(bombLoc, self.bombRange)
             for loc in objsAroundTarget:
                 for obj in objsAroundTarget[loc]:
                     if obj.objType == NPC and obj.civi:
@@ -1686,17 +1682,19 @@ class Agent(object):
     agentCount = 0
     operatorCount = 0
 
-    def __init__(self, name, location, worldDim, vision=-1, userType=AGENT):
+    def __init__(self, name, location, worldDim, vision=-1, userType=AGENT,
+                 bombRange=2):
         self.__name__ = name
         self.id = name
         self.at = location
         self.vision = vision
-        self.map = WorldMap(worldDim, self)
+        self.map = WorldMap(worldDim, bombRange, self)
         self.keys = []
         self.coins = 0
         self.health = 4
         self.userType = userType
         self.armed = UNARMED
+        self.bombRange = bombRange
         if userType == AGENT:
             self.number = Agent.agentCount
             Agent.agentCount += 1
@@ -1998,9 +1996,9 @@ class Agent(object):
         """Return a list of civilians in the potential bomb blast."""
         civs = []
         if loc:
-            objs = self.map.get_objects_around(loc, BOMB_RANGE)
+            objs = self.map.get_objects_around(loc, self.bombRange)
         else:
-            objs = self.map.get_objects_around(self.at, BOMB_RANGE)
+            objs = self.map.get_objects_around(self.at, self.bombRange)
         print(objs)
         for objLoc in objs:
             objList = objs[objLoc]
@@ -2030,14 +2028,68 @@ class Agent(object):
         return "{}@{}:{}:{}".format(char, self.at, self.vision, self.__name__)
 
 
-def draw_World(dng):
-    """Print the World board."""
+def draw_World(world):
+    """
+    Print the world.
+
+    This function is used as the display function for MIDCA. Since the string
+    of a ``World`` is a map of it, all that is required for displaying a World
+    is to print the string.
+
+    Arguments:
+        ``world``, *World*:
+            The ``World`` object to be displayed.
+
+        ``return``, *None*
+    """
     print(str(dng))
 
 
-def generate_random_drone_demo(dim, civilians, enemies, operators, agents, log=logging.getLogger("dummy")):
-    """Create a blank World and populate it with appropriate NPCs and users."""
-    dng = World(dim, log)
+def generate_random_drone_demo(dim, civilians, enemies, operators, agents,
+                               visionRange, bombRange, log=logging.getLogger("dummy")):
+    """
+    Create a blank ``World`` and populate it with appropriate NPCs and actors.
+
+    This function randomly generates a ``World`` with the given number of NPCs
+    and actors. The world can be used for testing with the drone strike demos,
+    and the worlds created can use logging if a ``Logger`` is passed in.
+
+    The function first creates a world of size ``dim`` with the given ``Logger``,
+    then randomly places civilians, enemies, operators, and agents. Agents and
+    operators are randomly assigned a vision range between 1 and ``MAX_VISION_RANGE``.
+
+    Arguments:
+        ``dim``, *int*:
+            The size of the world.
+
+        ``civilians``, *int*:
+            The number of civilian NPCs to place randomly in the world.
+
+        ``enemies``, *int*:
+            The number of enemies to place randomly in the world.
+
+        ``operators``, *int*:
+            The number of operators to place randomly in the world.
+
+        ``agents``, *int*:
+            The number of agents to place randomly in the world.
+
+        ``visionRange``, *tuple*:
+            A pair of ints, such that the first element indicates the smallest
+            possible vision of an agent and the second indicates the largest.
+
+        ``bombRange``, *int*:
+            The size of the bomb blast.
+
+        ``log``, *Logger*:
+            The ``Logger`` object from Python's built-in ``logging`` library which
+            the generated world will use to log events.
+
+        ``return``, *World*:
+            A randomly generated world with the appropriate number of NPCs and
+            actors.
+    """
+    dng = World(dim, bombRange, log)
     for _ in range(civilians):
         while not dng.place_object(NPC, dng.random_loc(), civi=True):
             pass
@@ -2048,22 +2100,37 @@ def generate_random_drone_demo(dim, civilians, enemies, operators, agents, log=l
 
     for opNum in range(operators):
         uName = "Op" + str(opNum)
-        vision = randint(1, MAX_VISION_RANGE)
+        vision = randint(*visionRange)
         while not dng.add_user(uName, dng.random_loc(), vision, OPERATOR):
             pass
 
     for agnNum in range(agents):
         agnName = "Agt" + str(agnNum)
-        vision = randint(1, MAX_VISION_RANGE)
+        vision = randint(*visionRange)
         while not dng.add_user(agnName, dng.random_loc(), vision, AGENT):
             pass
 
     return dng
 
 
-def build_World_from_str(dngStr):
-    """Take in a string and create a new World from it."""
-    lines = dngStr.split('\n')
+def build_World_from_str(worldStr):
+    """
+    Take in a string and create a new ``World`` from it.
+
+    The string should be the output of the built-in ``repr`` function on a
+    ``World`` object, and is interpreted by looking at each line and recreating
+    the object whose representation is on the line.
+
+    Arguments:
+        ``worldStr``, *str*:
+            The output of calling ``repr`` on a ``World`` object which should be
+            recreated.
+
+        ``return``, *World*:
+            A ``World`` object such that calling ``repr`` on it would return a
+            string equivalent to ``worldStr``.
+    """
+    lines = worldStr.split('\n')
     dim = int(lines[0][4:])
     dng = World(dim=dim)
     lines = lines[1:]
@@ -2145,7 +2212,21 @@ def build_World_from_file(filename, MIDCA=False):
     """
     Take in a text file and create a new World from it.
 
-    Passes the text of the file into build_World_from_str.
+    Passes the text of the file into build_World_from_str. The file should use
+    our own representation of a ``World`` (generated by calling ``repr``), not
+    a MIDCA state, unless specified.
+
+    Arguments:
+        ``filename``, *str*:
+            The name of the file which contains the world's string.
+
+        ``MIDCA``, *bool*:
+            Indicates whether the input file contains a MIDCA state representation.
+            Currently, loading a MIDCA state does not fully work, so this should
+            always be ``False``.
+
+        ``return``, *World*:
+            The ``World`` object whose representation is stored in the file.
     """
     with open(filename, 'r') as dngFile:
         dngStr = dngFile.read()
@@ -2164,53 +2245,52 @@ def interactive_World_maker():
     the new world, the user must utilize the `save` command.
 
     Commands:
+        ``set``:
+            The ``set`` command allows the user to set object and actor attributes,
+            and the general format looks like::
 
-    ``set``:
-        The ``set`` command allows the user to set object and actor attributes,
-        and the general format looks like::
+                set objID attrib newValue
 
-            set objID attrib newValue
+            ``objID``:
+                A valid ID code foran already-existing object or actor.
 
-        ``objID``:
-            A valid ID code foran already-existing object or actor.
+            ``attrib``:
+                A valid attribute for the type of object or actor to which the ``objID``
+                refers. Although this is somewhat sketchy, a valid attribute is anything
+                in ``dir(targetObject)``.
 
-        ``attrib``:
-            A valid attribute for the type of object or actor to which the ``objID``
-            refers. Although this is somewhat sketchy, a valid attribute is anything
-            in ``dir(targetObject)``.
+            ``newValue``:
+                The new value of the attribute, in a format which can be cast to the
+                proper type for the attribute. If the attribute is a ``bool``, 'None',
+                'f', 'F', 'false', 'False', and '0' all get cast to False.
 
-        ``newValue``:
-            The new value of the attribute, in a format which can be cast to the
-            proper type for the attribute. If the attribute is a ``bool``, 'None',
-            'f', 'F', 'false', 'False', and '0' all get cast to False.
+        ``add``:
+            The ``add`` command allows the user to add a new object or actor in the
+            world. The general format looks like::
 
-    ``add``:
-        The ``add`` command allows the user to add a new object or actor in the
-        world. The general format looks like::
+                add objType, location, miscData
 
-            add objType, location, miscData
+            ``objType``:
+                The object type string which corresponds to the desired object. The
+                string for an object type is given by the object's eponymous constant.
 
-        ``objType``:
-            The object type string which corresponds to the desired object. The
-            string for an object type is given by the object's eponymous constant.
+            ``location``:
+                The location to add the new object at, given as ``'(x, y)'`` such that
+                the string can be converted to a point by :py:func:``~modules.world_utils.get_point_from_str``.
 
-        ``location``:
-            The location to add the new object at, given as ``'(x, y)'`` such that
-            the string can be converted to a point by :py:func:``~modules.world_utils.get_point_from_str``.
+            ``miscData``:
+                Any extra data needed to create the object. This is object-type specific.
 
-        ``miscData``:
-            Any extra data needed to create the object. This is object-type specific.
+        ``rem``:
+            The ``rem`` command removes a specified object from the board completely.
+            Note that this is irreversible. The general format looks like::
 
-    ``rem``:
-        The ``rem`` command removes a specified object from the board completely.
-        Note that this is irreversible. The general format looks like::
+                rem objID
 
-            rem objID
+            ``objID``:
+                A valid ID for the existing object which is to be removed.
 
-        ``objID``:
-            A valid ID for the existing object which is to be removed.
-
-    ``save``:
+        ``save``:
         The ``save`` command saves the current world to a file specified by the
         user in two different formats: a format unique to this domain, and a less
         powerful but more generalizable MIDCA state. The files will be saved in
@@ -2221,6 +2301,10 @@ def interactive_World_maker():
         ``filename``:
             The name of the file which the world should be saved to, **without**
             a file type extension at the end.
+
+    Arguments:
+        ``return``, *bool*:
+            Indicates whether the world creation was successful or not.
     """
     def set_obj_attrib(target, attrib, val, objsMade):
         """Set the target attribute of the object to the given value, if possible."""

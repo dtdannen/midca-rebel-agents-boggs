@@ -5,6 +5,24 @@ Progress Report
 Milestones
 ==========
 
+August 9
+--------
+
+We have added a basic form of proactive rebellion to the agents, such that if an
+agent sees that another agent is preparing to execute a goal which should not be
+executed, it will inform the agent and hopefully cause the other agent to rebel.
+Right now, the knowledge of what should cause an agent to encourage another agent
+to rebel is hard-coded in, such that all agents look for other agents which are
+either arming or armed, and then try and determine their goal. If the ascertained
+goal of the other agent is one which the original agent finds unacceptable, it
+will identify which civilians will be caught in the blast and then informs the
+other agent about the presence of those civilians.
+
+We have also added compliance to the agents, which dictates how they react to an
+operator rejecting their rebellions. The more compliant an agent is, the more it
+is willing to accept the rejection of a rebellion and to carry out the goal.
+
+
 August 4
 --------
 
@@ -85,33 +103,34 @@ they are run:
 
 #. Perceive phase
 
-   -  :py:class:`~modules.perceive.RemoteObserver` module
-   -  :py:class:`~modules.perceive.ShowMap` module
+    -  :py:class:`~modules.perceive.RemoteObserver` module
 
 #. Interpret phase
 
-   -  :py:class:`~modules.interpret.CompletionEvaluator` module
-   -  :py:class:`~modules.interpret.StateDiscrepancyDetector` module
-   -  :py:class:`~modules.interpret.GoalValidityChecker` module
-   -  :py:class:`~modules.interpret.DiscrepancyExplainer` module
-   -  :py:class:`~modules.interpret.RemoteUserGoalInput` module
+    -  :py:class:`~modules.interpret.RemoteUserGoalInput` module
+    -  :py:class:`~modules.interpret.CompletionEvaluator` module
+    -  :py:class:`~modules.interpret.StateDiscrepancyDetector` module
+    -  :py:class:`~modules.interpret.GoalValidityChecker` module
+    -  :py:class:`~modules.interpret.DiscrepancyExplainer` module
+    -  :py:class:`~modules.interpret.GoalRecognition` module
 
 #. Eval phase
 
-   -  :py:class:`~modules.evaluate.GoalManager` module
-   -  :py:class:`~modules.evaluate.HandleRebellion` module
+    -  :py:class:`~modules.evaluate.GoalManager` module
+    -  :py:class:`~modules.evaluate.HandleRebellion` module
+    -  :py:class:`~modules.evaluate.ProactiveRebellion` module
 
 #. Intend phase
 
-   -  :py:class:`~modules.intend.QuickIntend` module
+    -  :py:class:`~modules.intend.QuickIntend` module
 
 #. Plan phase
 
-   -  :py:class:`~modules.plan.GenericPyhopPlanner` module
+    -  :py:class:`~modules.plan.GenericPyhopPlanner` module
 
 #. Act phase
 
-   -  :py:class:`~modules.act.SimpleAct` module
+    -  :py:class:`~modules.act.SimpleAct` module
 
 Operator MIDCA cycle
 --------------------
@@ -176,26 +195,55 @@ order they are run:
 
 #. Perceive phase
 
-   -  :py:class:`~modules.perceive.OperatorObserver` module
+    -  :py:class:`~modules.perceive.OperatorObserver` module
 
 #. Interpret phase
 
-   -  :py:class:`~modules.interpret.OperatorInterpret` module
+    -  :py:class:`~modules.interpret.OperatorInterpret` module
 
 #. Eval phase
 
-   -  :py:class:`~modules.evaluate.OperatorHandleRebelsStochastic` module
+    -  :py:class:`~modules.evaluate.OperatorHandleRebelsStochastic` module
 
 #. Plan phase
 
-   -  :py:class:`~modules.plan.OperatorPlanGoals` module
+    -  :py:class:`~modules.plan.OperatorPlanGoals` module
 
 #. Act phase
 
-   -  :py:class:`~modules.act.OperatorGiveGoals` module
+    -  :py:class:`~modules.act.OperatorGiveGoals` module
 
 Changes to Previous Version
 ===========================
+
+August 9
+--------
+
+Proactive rebellion
+~~~~~~~~~~~~~~~~~~~
+
+The new code which enables proactive rebellion resides in two new MIDCA modules
+for the agent: :py:class:`~modules.interpret.GoalRecognition` and
+:py:class:`~modules.evaluate.ProactiveRebellion`. The former examines all other
+agents in the world and determines the goal of each of them. It then stores each
+agent and its corresponding goal in MIDCA's memory. The latter looks through all
+stored goal-agent pairs and checks whether each goal is valid, according to its
+knowledge of the world. If the goal is not valid, it informs the agent in question
+about why it would not be valid. This, in turn, may cause the agent whose goal
+was found to be invalid to rebel.
+
+Agent Compliance
+~~~~~~~~~~~~~~~~
+
+The code which allows us to adjust the compliance level of an agent has been added
+to the :py:class:`~modules.evaluate.HandleRebellion` module. The level of compliance
+of an agent corresponds to the probability that, once the agent has rebelled
+against a goal and the operator has responding by rejecting the goal, the agent
+will accept that rejection and carry out the goal. The compliance of the agent
+should be given to it at instantiation of the `HandleRebellion` module as a real
+value between 0 and 1. If the agent does comply with an operator's rejection of
+a rebellion, it will remember the goal in question as mandatory and will rebel
+against it again. Otherwise, the agent will continue to rebel.
 
 August 4
 --------
@@ -206,14 +254,13 @@ Easy Testing
 We have added testing code which allows us to run multiple tests in one
 go and collect the results. The testing functions are in ``testing.py``,
 and are called from the demo code. There are two primary functions for
-this: ``run_visible_test`` and ``run_test``. ``run_visible_test`` is
-somewhat deprecated, but still kept around because, as the name
-suggests, it allows us to run tests where each agent is opened in a
-different (and thus easily visible) terminal. The ``run_test`` function
-runs each agent in an invisible ``Process`` using python's
-``multiprocessing`` library.The function takes as input a world to run
-the test on, a time limit for running the test (in seconds), a ``bool``
-which determines whether agents should rebel or not, and a ``float``
+this: ``~testing.run_visible_test`` and ``~testing.run_test``. ``run_visible_test``
+is somewhat deprecated, but still kept around because, as the name suggests, it
+allows us to run tests where each agent is opened in a different (and thus easily
+visible) terminal. The ``run_test`` function runs each agent in an invisible
+``Process`` using python's ``multiprocessing`` library.The function takes as
+input a world to run the test on, a time limit for running the test (in seconds),
+a ``bool`` which determines whether agents should rebel or not, and a ``float``
 between 0.0 and 1.0 which determines the probability that an operator
 rejects a rebellion. The function returns the final score of the world
 as given by ``world.score``.
@@ -583,19 +630,13 @@ Practical
 To do
 ~~~~~
 
--  Ensure agent-agent communication works well.
--  Change the way agents and operators log their actions and
-   observations.
--  In the near future, a more generic ``demo.py`` file is needed which
-   can run an arbitrary number of agents and operators, and can be given
-   a dungeon file as a command line argument.
--  Better user error handling for operator commands. Currently any
-   non-erroring but still unexpected result is silent. For example, an
-   incorrectly typed actor name is never caught.
 
 Completed
 ~~~~~~~~~
 
+-  Ensure agent-agent communication works well.
+-  Change the way agents and operators log their actions and
+   observations.
 -  A better operator interface would be very useful for testing in the
    future.
 -  We should list agent names somewhere in the operator terminals so the
@@ -608,4 +649,4 @@ Completed
 
 .. [1] It is possible to have run multiple MIDCA cycles on several threads within the demo script, but output would have been garbled.
 
-.. [2] This is not exactly ideal, and we may want to replace it with proper logging sometime. See :ref:`futwork`.
+.. [2] This has been fixed, and logging is now done through python's built-in `logging` library. (8/9/17)

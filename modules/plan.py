@@ -91,7 +91,7 @@ class OperatorPlanGoals(base.BaseModule):
             valid = True
         else:
             for goalPair in invalidGoals:
-                self.logger.info("Comparing invalid goal {} to Agent {} and enemy {}".format(goalPair, agt.id, enemy.id))
+                # self.logger.debug("Comparing invalid goal {} to Agent {} and enemy {}".format(goalPair, agt.id, enemy.id))
                 if goalPair[0] == agt.id and goalPair[1][0] == enemy.id:
                     valid = False
 

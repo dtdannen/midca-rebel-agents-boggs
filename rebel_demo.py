@@ -24,10 +24,9 @@ WORLD_FILE = './dng_files/proactiveTest.dng'
 world = world_utils.build_World_from_file(WORLD_FILE)
 world.log = WORLD_LOGGER
 
-TEST_NUM = 3
+TEST_NUM = 7
 REJECTION_PROB_STEP = 1.0
-COMPLIANCE_STEP = -0.2
-
+COMPLIANCE_STEP = -0.5
 
 
 # testing.run_test(world)
@@ -41,9 +40,9 @@ while 0 <= compliance <= 1.0:
         key = str((rejectionProb, compliance))
         scores[key] = []
         for test in range(TEST_NUM):
-            world = world_utils.generate_random_drone_demo(dim=15,
-                                                           civilians=12,
-                                                           enemies=10,
+            world = world_utils.generate_random_drone_demo(dim=20,
+                                                           civilians=25,
+                                                           enemies=30,
                                                            operators=1,
                                                            agents=5,
                                                            log=WORLD_LOGGER)
