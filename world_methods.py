@@ -7,58 +7,64 @@ knowledge.
 """
 from MIDCA.modules._plan import pyhop
 
-
 def move_to(state, dest):
     """Move the agent to the target destination."""
+    assert dest is not None, 'Why is dest none in Move_to func'
     if type(dest) is list:
         dest = dest[0]
-
     path = state.navigate_to(dest)
     if path is None:
         return []
-    return [('move', step) for step in path[1:]]
+    else:
+        return [ ('move', step) for step in path[1:] ]
 
 
 def open_lock(state, dest):
     """Open a locked object at the destination."""
-    # First, find the locked object itself
     lockedObj = None
     objsOnDest = state.get_objects_at(dest)
     for obj in objsOnDest:
         if obj.locked:
             lockedObj = obj
-    if not lockedObj:
-        # There's no plan if there's no object to unlock
-        return []
 
-    # See if we have the key or if we can find it
-    key = None
-    for k in state.keys:
-        # Do we own the key?
-        if k.unlocks == lockedObj:
-            key = k
-            return [('move-adjacent', dest), ('unlock', dest)]
-    if not key:
-        # If not, can we find it?
-        for obj in state.known_objects:
-            if obj.objType == "KEY" and obj.unlocks == lockedObj:
-                key = obj
-                return [('fetch-key', key), ('move-adjacent', dest), ('unlock', dest)]
-    if not key:
-        # If we can't find a key we can't unlock the door
+    if not lockedObj:
         return []
+    else:
+        key = None
+        for k in state.keys:
+            if k.unlocks == lockedObj:
+                key = k
+                return [
+                 (
+                  'move-adjacent', dest), ('unlock', dest)]
+
+        if not key:
+            for obj in state.known_objects:
+                if obj.objType == 'KEY' and obj.unlocks == lockedObj:
+                    key = obj
+                    return [
+                     (
+                      'fetch-key', key), ('move-adjacent', dest), ('unlock', dest)]
+
+        if not key:
+            return []
+        return
 
 
 def fetch_key(state, key):
     """Retrieve the given key."""
     keyLoc = key.location
-    return [('move-to', keyLoc), ('takekey', keyLoc)]
+    return [
+     (
+      'move-to', keyLoc), ('takekey', keyLoc)]
 
 
 def move_adjacent(state, dest):
     """Move the agent to an available adjacent tile to the dest."""
     adjTile = state.map.get_closest_adjacent(dest, state.at)
-    return [('move-to', adjTile)]
+    return [
+     (
+      'move-to', adjTile)]
 
 
 def achieve_goals(state, goals):
@@ -68,7 +74,6 @@ def achieve_goals(state, goals):
         if goal.kwargs['predicate'] == 'agent-at':
             action = 'move-to'
             tasks.append((action, goal.args[0]))
-
         elif goal.kwargs['predicate'] == 'killed':
             targetID = goal.args[0]
             targetLoc = state.map.get_object(targetID).location
@@ -76,10 +81,10 @@ def achieve_goals(state, goals):
             tasks.append(('arm', 0))
             tasks.append(('arm', 0))
             tasks.append(('bomb', 2))
-
         else:
             action = goal.kwargs['predicate']
             tasks.append((action, goal.args[0]))
+
     return tasks
 
 

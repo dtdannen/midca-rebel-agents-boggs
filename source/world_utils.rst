@@ -25,8 +25,6 @@ Constants
 .. autodata:: world_utils.FIRE
 .. autodata:: world_utils.TRAP
 .. autodata:: world_utils.NPC
-.. autodata:: world_utils.BOMB_RANGE
-.. autodata:: world_utils.MAX_VISION_RANGE
 .. autodata:: world_utils.OBJECT_ID_CODES
 .. autodata:: world_utils.OBJECT_CODE_IDS
 .. autodata:: world_utils.DIRECTON_EXPANSIONS
@@ -48,3 +46,5 @@ Miscellaneous Functions
 .. autofunction:: world_utils.get_point_from_str
 
 .. autofunction:: world_utils.goal_from_str
+
+.. autofunction:: world_utils.goals_equal

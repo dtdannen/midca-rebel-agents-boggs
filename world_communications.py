@@ -6,24 +6,19 @@ concurrently, we use socket communications and run each agent and operator, as
 well as the world simulation, in a separate process. The classes in this module
 facilitate that.
 """
-
 from cPickle import dumps, loads
 import SocketServer as SS
 import socket
 import os
-from time import sleep, time
+from time import sleep, time, strftime
 import sys
 import logging
-
 from MIDCA import base
 from MIDCA.modules import planning
-
 import world_utils
 import world_operators as d_ops
 import world_methods as d_mthds
 from modules import perceive, interpret, evaluate, intend, act, plan
-
-
 WORLD_STATE_REQ = 1
 ACTION_SEND = 2
 UPDATE_SEND = 3
@@ -32,47 +27,50 @@ GOAL_REQ = 5
 AGENT_REQ = 6
 DIALOG_SEND = 7
 DIALOG_REQ = 8
-
-
 DECLARE_METHODS_FUNC = d_mthds.declare_methods
 DECLARE_OPERATORS_FUNC = d_ops.declare_operators
 PLAN_VALIDATOR = plan.worldPlanValidator
 DISPLAY_FUNC = world_utils.draw_World
 VERBOSITY = 0
-PHASES = ["Perceive", "Interpret", "Eval", "Intend", "Plan", "Act"]
-AGENT_MODULES = {"Perceive":  [perceive.RemoteObserver(),
-                               perceive.ShowMap()],
-                 "Interpret": [interpret.CompletionEvaluator(),
-                               interpret.StateDiscrepancyDetector(),
-                               interpret.GoalValidityChecker(),
-                               interpret.DiscrepancyExplainer(),
-                               interpret.RemoteUserGoalInput()],
-                 "Eval":      [evaluate.GoalManager(),
-                               evaluate.HandleRebellion()],
-                 "Intend":    [intend.QuickIntend()],
-                 "Plan":      [planning.GenericPyhopPlanner(DECLARE_METHODS_FUNC,
-                                                            DECLARE_OPERATORS_FUNC,
-                                                            PLAN_VALIDATOR,
-                                                            verbose=VERBOSITY)],
-                 "Act":       [act.SimpleAct()]
-                 }
-AUTO_OP_MODULES = {"Perceive": [perceive.OperatorObserver()],
-                   "Interpret": [interpret.OperatorInterpret()],
-                   "Eval": [evaluate.OperatorHandleRebelsStochastic()],
-                   "Intend": [],
-                   "Plan": [plan.OperatorPlanGoals()],
-                   "Act": [act.OperatorGiveGoals()]
-                   }
-
+PHASES = ['Perceive', 'Interpret', 'Eval', 'Intend', 'Plan', 'Act']
+AGENT_MODULES = {'Perceive': [perceive.RemoteObserver(),
+              perceive.ShowMap()],
+   'Interpret': [
+               interpret.CompletionEvaluator(),
+               interpret.StateDiscrepancyDetector(),
+               interpret.GoalValidityChecker(),
+               interpret.DiscrepancyExplainer(),
+               interpret.RemoteUserGoalInput()],
+   'Eval': [
+          evaluate.GoalManager(),
+          evaluate.HandleRebellion()],
+   'Intend': [
+            intend.QuickIntend()],
+   'Plan': [
+          planning.GenericPyhopPlanner(DECLARE_METHODS_FUNC, DECLARE_OPERATORS_FUNC, PLAN_VALIDATOR, verbose=VERBOSITY)],
+   'Act': [
+         act.SimpleAct()]
+   }
+AUTO_OP_MODULES = {'Perceive': [perceive.OperatorObserver()],'Interpret': [
+               interpret.OperatorInterpret()],
+   'Eval': [
+          evaluate.OperatorHandleRebelsStochastic()],
+   'Intend': [],'Plan': [
+          plan.OperatorPlanGoals()],
+   'Act': [
+         act.OperatorGiveGoals()]
+   }
 
 def msgSetup(func):
     """Open a connection before the func and close it after."""
+
     def fullMsgFunc(self, *args, **kwargs):
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.socket.connect(self.conAddr)
         result = func(self, *args, **kwargs)
         self.socket.close()
         return result
+
     return fullMsgFunc
 
 
@@ -95,29 +93,26 @@ class WorldServer(SS.TCPServer):
         def display(self):
             os.system('clear')
             worldState = self.server.world.status_display()
-            print(worldState)
+            print worldState
             score = self.server.world.score
-            print("Enemies: {} | Civis: {}".format(score[0], score[1]))
-            self.server.log.info("Enemies: {} | Civis: {}".format(score[0], score[1]))
-            self.server.scoreObj[0] = score[0]
-            self.server.scoreObj[1] = score[1]
+            print 'Enemies: {} | Civis: {}'.format(score[0], score[1])
+            self.server.log.info('Enemies: {} | Civis: {}'.format(score[0], score[1]))
 
         def read_data(self):
-            """Read incoming data until we see \254."""
-            data = ""
+            """Read incoming data until we see \xac."""
+            data = ''
             newChar = self.rfile.read(1)
-            while newChar != '\254':
+            while newChar != '\xac':
                 data += newChar
                 newChar = self.rfile.read(1)
-                # print(data)
-                # time.sleep(0.5)
+
             return data
 
         def send_data(self, data):
-            """Write data to the file-like connection, terminating with \254."""
+            """Write data to the file-like connection, terminating with \xac."""
             if type(data) is not str:
                 data = str(data)
-            self.wfile.write(data + "\254")
+            self.wfile.write(data + '\xac')
 
         def handle(self):
             """
@@ -133,143 +128,121 @@ class WorldServer(SS.TCPServer):
             qGoals = self.server.queuedGoals
             msgs = self.server.messages
             log = self.server.log
-
             self.data = self.read_data()
-
             log.info("Data recv'd: {}".format(self.data))
-
             self.data = self.data.split(':')
             msgType = int(self.data[0])
             userID = self.data[1]
             msgData = self.data[2:] if len(self.data) >= 3 else None
-
             if msgType == WORLD_STATE_REQ:
-                # Request format: WORLD_STATE_REQ:USERID
                 user = dng.get_user(userID)
                 user.view(dng)
                 pickledMap = dumps(user.map)
                 self.send_data(pickledMap)
                 self.display()
-
-                log.info("\tSent world state to {}".format(user))
-
+                log.info('\tSent world state to {}'.format(user))
                 if self.server.timeLeft <= 0:
-                    log.info("Shutting down server, time out")
+                    log.info('Shutting down server, time out')
+                    self.server.record_results()
                     self.server.server_close()
-
             elif msgType == ACTION_SEND:
-                # Request format: ACTION_SEND:USERID:ACTIONSTR
                 success = dng.apply_action_str(msgData[0], userID)
                 if success:
                     if userID in msgs:
-                        log.info("\tSuccessfully applied action")
-                        msgs[userID].append(("Action success", userID))
+                        log.info('\tSuccessfully applied action')
+                        msgs[userID].append(('Action success', userID))
                     else:
-                        log.info("\Failed to applied action")
-                        msgs[userID] = [("Action success", userID)]
-                if self.server.scoreObj[0] == 1.0:
-                    log.info("Shutting down server, all enemies dead")
+                        log.info('\\Failed to applied action')
+                        msgs[userID] = [('Action success', userID)]
+                if self.server.score[0] == 1.0:
+                    log.info('Shutting down server, all enemies dead')
+                    self.server.record_results()
                     self.server.server_close()
-
             elif msgType == UPDATE_SEND:
-                # Request format: UPDATE_SEND:USERID:COMMAND
-                # Commands:
-                #   "list"
-                #   "send":RECIPIENTID:OBJID
                 cmd = msgData[0]
-
-                if cmd == "list":
+                if cmd == 'list':
                     objs = dng.users[userID].known_objects
-                    listStr = ""
+                    listStr = ''
                     for obj in objs:
-                        listStr += "{} = {}\n".format(repr(obj), obj.id)
-                    self.send_data(listStr)
-                    log.info("\tSent list of objects to {}".format(userID))
+                        listStr += '{} = {}\n'.format(repr(obj), obj.id)
 
-                elif cmd == "send":
+                    self.send_data(listStr)
+                    log.info('\tSent list of objects to {}'.format(userID))
+                elif cmd == 'send':
                     recipientID = msgData[1]
                     recipient = dng.get_user(recipientID)
-                    objID = ":".join(msgData[2:])
+                    objID = ':'.join(msgData[2:])
                     obj = dng.get_object(objID)
                     if obj is None:
                         if userID in msgs:
-                            msgs[userID].append("Updating error: {} not found".format(objID))
-                            log.warn("\tObject {} not found for inform command".format(objID))
+                            msgs[userID].append('Updating error: {} not found'.format(objID))
+                            log.warn('\tObject {} not found for inform command'.format(objID))
                         else:
-                            msgs[userID] = ["Updating error: {} not found".format(objID)]
-                            log.warn("\tObject {} not found for inform command".format(objID))
+                            msgs[userID] = [
+                             'Updating error: {} not found'.format(objID)]
+                            log.warn('\tObject {} not found for inform command'.format(objID))
                     recipient.update_knowledge(obj)
-                    log.info("\t{} informed {} of {}".format(userID, recipientID, obj))
-
+                    log.info('\t{} informed {} of {}'.format(userID, recipientID, obj))
                 else:
-                    raise NotImplementedError("UPDATE_SEND prefix {}".format(cmd))
-
+                    raise NotImplementedError('UPDATE_SEND prefix {}'.format(cmd))
             elif msgType == GOAL_SEND:
-                # Request format: GOAL_SEND:USERID:RECIPIENTID:GOALSTR
                 recipientID = msgData[0]
-                if recipientID not in [a.id for a in dng.agents]:
+                if recipientID not in [ a.id for a in dng.agents ]:
                     if userID in msgs:
-                        msgs[userID].append("Sending error: {} not found".format(recipientID))
-                        log.warn("\tRecipient {} not found to give goal".format(recipientID))
+                        msgs[userID].append('Sending error: {} not found'.format(recipientID))
+                        log.warn('\tRecipient {} not found to give goal'.format(recipientID))
                     else:
-                        msgs[userID] = ["Sending error: {} not found".format(recipientID)]
-                        log.warn("\tRecipient {} not found to give goal".format(recipientID))
+                        msgs[userID] = [
+                         'Sending error: {} not found'.format(recipientID)]
+                        log.warn('\tRecipient {} not found to give goal'.format(recipientID))
                     return
-                goalStr = "{};{}".format(msgData[1], userID)
+                goalStr = '{};{}'.format(msgData[1], userID)
                 if recipientID in qGoals:
                     qGoals[recipientID].append(goalStr)
                 else:
-                    qGoals[recipientID] = [goalStr]
-                log.info("\t{} gave {} the goal {}".format(userID, recipientID, goalStr))
-
+                    qGoals[recipientID] = [
+                     goalStr]
+                log.info('\t{} gave {} the goal {}'.format(userID, recipientID, goalStr))
             elif msgType == GOAL_REQ:
-                # Request format: GOAL_REQ:USERID
                 if userID not in qGoals:
-                    self.send_data("")
+                    self.send_data('')
                     return
                 goalStrs = qGoals[userID]
-                msgStr = ":".join(goalStrs)
+                msgStr = ':'.join(goalStrs)
                 self.send_data(msgStr)
                 del qGoals[userID]
-                log.info("\t{} received goal {}".format(userID, goalStrs))
-
+                log.info('\t{} received goal {}'.format(userID, goalStrs))
             elif msgType == AGENT_REQ:
-                # Request format: AGENT_REQ:USERID
                 agent = dng.get_user(userID)
                 pickledAgent = dumps(agent)
                 self.send_data(pickledAgent)
-
             elif msgType == DIALOG_SEND:
                 recipientID = msgData[0]
-                message = ":".join(msgData[1:])
+                message = ':'.join(msgData[1:])
                 if recipientID in msgs:
                     msgs[recipientID].append((message, userID))
                 else:
-                    msgs[recipientID] = [(message, userID)]
-                log.info("\t{} sent message {} to {}".format(userID, message, recipientID))
-
+                    msgs[recipientID] = [
+                     (
+                      message, userID)]
+                log.info('\t{} sent message {} to {}'.format(userID, message, recipientID))
             elif msgType == DIALOG_REQ:
-                # Request format: GOAL_REQ:USERID[:SENDERID]
                 if userID not in msgs:
-                    self.send_data("")
+                    self.send_data('')
                     return
                 userMsgs = msgs[userID]
-
-                if msgData[0] != "":
-                    userMsgs = [msg[0] for msg in userMsgs if msg[1] == msgData[0]]
+                if msgData[0] != '':
+                    userMsgs = [ msg[0] for msg in userMsgs if msg[1] == msgData[0] ]
                 else:
                     del msgs[userID]
-
                 pickledDialogs = dumps(userMsgs)
                 self.send_data(pickledDialogs)
-                log.info("\t{} got messages {}".format(userID, userMsgs))
-
+                log.info('\t{} got messages {}'.format(userID, userMsgs))
             else:
-                raise NotImplementedError("Message type {}".format(msgType))
-
+                raise NotImplementedError('Message type {}'.format(msgType))
             return
 
-    def __init__(self, server_address, world, scoreObj, limit=None, logFile='logs/worldServer.log'):
+    def __init__(self, server_address, world, resultsObj, limit=None, logFile='logs/worldServer.log'):
         """Create server class."""
         SS.TCPServer.__init__(self, server_address, WorldServer.HandlerClass, bind_and_activate=True)
         self.world = world
@@ -278,40 +251,49 @@ class WorldServer(SS.TCPServer):
         self.timeLimit = limit
         self.startTime = time()
         self.endTime = self.startTime + self.timeLimit
-        self.scoreObj = scoreObj
-
-        # Logging stuff
-        self.log = logging.getLogger("world_sim")
+        self.resultsObj = resultsObj
+        self.resultsObj['initWorld'] = repr(world)
+        self.resultsObj['startTime'] = strftime('%a-%d-%m-%H:%M:%S')
+        self.log = logging.getLogger('world_sim')
         self.log.setLevel(logging.INFO)
         handler = logging.FileHandler(logFile, mode='w')
         handler.setLevel(logging.INFO)
-        formatter = logging.Formatter(fmt="%(asctime)s: %(message)s",
-                                      datefmt="%H:%M:%S")
+        formatter = logging.Formatter(fmt='%(asctime)s: %(message)s', datefmt='%H:%M:%S')
         handler.setFormatter(formatter)
         self.log.addHandler(handler)
+
+    @property
+    def score(self):
+        return self.world.score
 
     @property
     def timeLeft(self):
         """Indicate how much time is left for the world simulation to run."""
         return self.endTime - time()
 
+    def record_results(self):
+        """Record the result information of the run in the results dict."""
+        self.resultsObj['score'] = self.score
+        self.resultsObj['eventLog'] = self.world.eventLog
+        print self.world.eventLog
+
 
 class Client(object):
     """Superclass for world clients."""
 
     def __init__(self, serverAddr, serverPort, userID):
-        self.conAddr = (serverAddr, serverPort)
+        self.conAddr = (
+         serverAddr, serverPort)
         self.userID = userID
         self.lastData = ''
 
-    def send(self, msgType, data=""):
+    def send(self, msgType, data=''):
         """Send given data as a message of the given type."""
-        # print("sending {}:{}:{}\254".format(str(msgType), self.userID, data))
-        self.socket.sendall("{}:{}:{}\254".format(str(msgType), self.userID, data))
+        self.socket.sendall('{}:{}:{}\xac'.format(str(msgType), self.userID, data))
 
     def recv(self):
         """
-        Read incoming data until we see \254.
+        Read incoming data until we see \xac.
 
         Because some of the incoming messages will be rather large, it's terribly
         inefficient to read data in the way the world server does. Instead, we read
@@ -331,25 +313,25 @@ class Client(object):
             Returns an entire message sent to the socket, **without** the terminal
             character.
         """
-        data = ""
+        data = ''
         newChunk = self.socket.recv(2048)
-        while '\254' not in newChunk:
-            # build message until term char is found
+        while '\xac' not in newChunk:
             self.lastData += newChunk
             newChunk = self.socket.recv(2048)
-        msgEnd, nextMsgStart = newChunk.split('\254')
+
+        msgEnd, nextMsgStart = newChunk.split('\xac')
         data = self.lastData + msgEnd
         self.lastData = nextMsgStart
         return data
 
     @msgSetup
     def inform(self, recipientID, objID):
-        self.send(UPDATE_SEND, "send:{}:{}".format(recipientID, objID))
+        self.send(UPDATE_SEND, 'send:{}:{}'.format(recipientID, objID))
 
     @msgSetup
     def dialog(self, recipientID, message):
         """Allow a user to send a plain text message to another user."""
-        msgData = "{}:{}".format(recipientID, message)
+        msgData = '{}:{}'.format(recipientID, message)
         self.send(DIALOG_SEND, msgData)
 
     @msgSetup
@@ -357,18 +339,19 @@ class Client(object):
         """Allow the user to act in the world."""
         self.send(ACTION_SEND, actionStr)
 
-    def wait_for_dialogs(self, senderID=""):
+    def wait_for_dialogs(self, senderID=''):
         dialogs = self.get_dialogs(senderID)
         while dialogs is None:
             dialogs = self.get_dialogs(senderID)
             sleep(0.25)
+
         return dialogs
 
     @msgSetup
-    def get_dialogs(self, senderID=""):
+    def get_dialogs(self, senderID=''):
         self.send(DIALOG_REQ, senderID)
         pickledDialogs = self.recv()
-        if pickledDialogs == "":
+        if pickledDialogs == '':
             return
         dialogs = loads(pickledDialogs)
         if dialogs == []:
@@ -396,6 +379,7 @@ class OperatorClient(Client):
         The ID of the operator which will be controlled by this object.
 
     """
+
     def __init__(self, addr, port, userID):
         super(OperatorClient, self).__init__(addr, port, userID)
 
@@ -407,14 +391,15 @@ class OperatorClient(Client):
         of the operator, the operator's dungeon map, and lists known objects.
         """
         os.system('clear')
-        print("Operator {}".format(self.userID))
-        print(self.map)
-        print("Messages:")
+        print 'Operator {}'.format(self.userID)
+        print self.map
+        print 'Messages:'
         for msg in self.msgs:
-            print("{}:\n\t{}".format(msg[1], msg[0]))
-        print("Known Objects")
+            print '{}:\n\t{}'.format(msg[1], msg[0])
+
+        print 'Known Objects'
         for obj in self.map.objects:
-            print("{} = {}".format(obj, obj.id))
+            print '{} = {}'.format(obj, obj.id)
 
     @msgSetup
     def observe(self, display=False):
@@ -431,8 +416,9 @@ class OperatorClient(Client):
         try:
             optr = loads(pickledOp)
         except EOFError as e:
-            print(pickledOp)
-            print(e)
+            print pickledOp
+            print e
+
         return optr
 
     def parse_command(self, cmd):
@@ -446,19 +432,15 @@ class OperatorClient(Client):
             direct recipientID predicate(args)
             say recipientID message
         """
-        cmdData = cmd.split(" ")
-
-        if cmdData[0] == "action":
+        cmdData = cmd.split(' ')
+        if cmdData[0] == 'action':
             self.send_action(cmdData[1])
-
-        if cmdData[0] == "inform":
+        if cmdData[0] == 'inform':
             self.inform(cmdData[1], cmdData[2])
-
-        if cmdData[0] == "direct":
+        if cmdData[0] == 'direct':
             self.direct(*cmdData[1:])
-
-        if cmdData[0] == "say":
-            self.dialog(cmdData[1], " ".join(cmdData[2:]))
+        if cmdData[0] == 'say':
+            self.dialog(cmdData[1], ' '.join(cmdData[2:]))
 
     @msgSetup
     def direct(self, recipientID, goalStr):
@@ -473,7 +455,7 @@ class OperatorClient(Client):
         ``goalStr``, *str*:
             A properly formatted goal string.
         """
-        self.send(GOAL_SEND, "{}:{}".format(recipientID, goalStr))
+        self.send(GOAL_SEND, '{}:{}'.format(recipientID, goalStr))
 
 
 class MIDCAClient(Client):
@@ -487,8 +469,9 @@ class MIDCAClient(Client):
         try:
             agent = loads(pickledAgent)
         except EOFError as e:
-            print(pickledAgent)
-            print(e)
+            print pickledAgent
+            print e
+
         return agent
 
     @msgSetup
@@ -498,14 +481,14 @@ class MIDCAClient(Client):
         pickledWorld = self.recv()
         self.map = loads(pickledWorld)
         if display:
-            print(self.map)
+            print self.map
 
     @msgSetup
     def get_new_goals(self):
         """Retrieve any new goals the server has waiting for the agent."""
         self.send(GOAL_REQ)
         msgStr = self.recv()
-        goalStrs = msgStr.split(":")
+        goalStrs = msgStr.split(':')
         return goalStrs
 
 
@@ -543,21 +526,17 @@ class RemoteAgent(object):
 
     def __init__(self, addr, port, userID, modules=AGENT_MODULES):
         """Instantiate ``RemoteAgent`` object by creating appropriate MIDCA cycle."""
-        self.conAddr = (addr, int(port))
+        self.conAddr = (
+         addr, int(port))
         self.userID = userID
         self.client = MIDCAClient(addr, int(port), userID)
-
-        self.MIDCACycle = base.PhaseManager(self.client,
-                                            display=DISPLAY_FUNC,
-                                            verbose=VERBOSITY)
-
+        self.MIDCACycle = base.PhaseManager(self.client, display=DISPLAY_FUNC, verbose=VERBOSITY)
         for phase in PHASES:
             self.MIDCACycle.append_phase(phase)
             for module in modules[phase]:
                 self.MIDCACycle.append_module(phase, module)
 
         self.MIDCACycle.set_display_function(DISPLAY_FUNC)
-
         self.MIDCACycle.storeHistory = False
         self.MIDCACycle.mem.logEachAccess = False
 
@@ -608,21 +587,17 @@ class AutoOperator(object):
 
     def __init__(self, addr, port, userID, modules=AUTO_OP_MODULES):
         """Instantiate ``AutoOperator`` object by creating appropriate MIDCA cycle."""
-        self.conAddr = (addr, int(port))
+        self.conAddr = (
+         addr, int(port))
         self.userID = userID
         self.client = OperatorClient(addr, int(port), userID)
-
-        self.MIDCACycle = base.PhaseManager(self.client,
-                                            display=lambda x: str(x),
-                                            verbose=VERBOSITY)
-
+        self.MIDCACycle = base.PhaseManager(self.client, display=lambda x: str(x), verbose=VERBOSITY)
         for phase in PHASES:
             self.MIDCACycle.append_phase(phase)
             for module in modules[phase]:
                 self.MIDCACycle.append_module(phase, module)
 
         self.MIDCACycle.set_display_function(lambda x: str(x))
-
         self.MIDCACycle.storeHistory = False
         self.MIDCACycle.mem.logEachAccess = False
 
@@ -640,8 +615,7 @@ class AutoOperator(object):
 if __name__ == '__main__':
     serveType = sys.argv[1]
     port = int(sys.argv[2])
-
-    if serveType == "sim":
+    if serveType == 'sim':
         worldFile = sys.argv[3]
         addr = ('localhost', port)
         dng = world_utils.build_World_from_file(worldFile)
@@ -651,12 +625,11 @@ if __name__ == '__main__':
         finally:
             testServer.shutdown()
 
-    elif serveType == "operator":
+    elif serveType == 'operator':
         userID = sys.argv[3]
         opClient = AutoOperator('localhost', port, userID)
         opClient.run()
-
-    elif serveType == "agent":
+    elif serveType == 'agent':
         userID = sys.argv[3]
         agtClient = RemoteAgent('localhost', port, userID)
         agtClient.run()

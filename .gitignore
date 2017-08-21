@@ -8,3 +8,6 @@ Pics/*
 Demos/*
 archive/*
 *.log
+logs/*
+*.csv
+*.txt

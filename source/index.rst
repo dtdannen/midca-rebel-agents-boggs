@@ -15,6 +15,7 @@ Welcome to Rebel Agents's documentation!
    world_server
    pyhop
    modules
+   testing
 
 
 Indices and tables

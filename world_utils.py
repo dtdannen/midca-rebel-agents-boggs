@@ -13,6 +13,7 @@ from random import randint
 import logging
 import os
 import traceback
+import StringIO
 from MIDCA import plans, goals
 
 AGENT = "AGENT"  #: Easily check if an Agent object is an agent
@@ -586,9 +587,7 @@ class World(object):
     """
 
     def __init__(self, dim, bombRange=2, log=logging.getLogger("dummy")):
-        """
-        Initialize a blank world of size `dim`x`dim`.
-        """
+        """Initialize a blank world of size `dim`x`dim`."""
         assert type(dim) is int, "dim must be an int"
 
         # Generate self variables
@@ -597,6 +596,7 @@ class World(object):
         self.floor = {}
         self.users = {}
         self.log = log
+        self.eventLog = ""
         self.log.info("\n\n")
         self.log.info("New world made")
         Agent.agentCount = 0
@@ -604,10 +604,12 @@ class World(object):
 
     @property
     def all_users(self):
+        """Return a list of all users (agents and operators)."""
         return self.users.values()
 
     @property
     def agents(self):
+        """Return a list of all of the agents in the ``World``."""
         agents = []
         for userID in self.users:
             if self.users[userID].userType == AGENT:
@@ -616,6 +618,7 @@ class World(object):
 
     @property
     def operators(self):
+        """Return a list of all of the operators in the ``World``."""
         operators = []
         for userID in self.users:
             if self.users[userID].userType == OPERATOR:
@@ -634,7 +637,7 @@ class World(object):
 
     @property
     def objects(self):
-        """Return a list of all world objects."""
+        """Return a list of all objects in the ``World``."""
         objects = []
         for loc in self.floor:
             objects += self.floor[loc]
@@ -642,16 +645,27 @@ class World(object):
 
     @property
     def enemies(self):
+        """Return a list of all of the ``Npc`` objects marked as enemies."""
         return self.filter_objects(objType=NPC, civi=False)
 
     @property
     def civilians(self):
+        """Return a list of all of the ``Npc`` objects labeled as civilians."""
         return self.filter_objects(objType=NPC, civi=True)
 
     @property
     def score(self):
         """
         Return a pair which indicates the current score.
+
+        As implemented currently, the score is a pair of floats where the first
+        value is the percentage of enemies which have been killed and the second
+        value is the percentage of civilians remaining alive.
+
+        Arguments:
+            ``return``, *tuple*:
+                A pair of floats reflecting the percentage of enemies killed and
+                percentage of civilians still alive.
         """
         enemiesDead = len(self.filter_objects(civi=False, alive=False))
         civisAlive = len(self.filter_objects(civi=True, alive=True))
@@ -660,7 +674,30 @@ class World(object):
         return (enemyKillRatio, civiLiveRatio)
 
     def filter_objects(self, **kwargs):
-        """Return a list of known objects whose attributes fit the filters."""
+        """
+        Return a list of known objects whose attributes fit the filters.
+
+        This function allows the caller to select a subset of objects from in the
+        ``World`` which have attributes matching certain criteria. This makes it
+        much easier to find a specific subset, such as all living enemies or all
+        unlocked doors. There is no set list of arguments. Instead, the function
+        takes any number of keyword arguments and attempts to find objects which
+        have as attributes the keywords, and have as values for those attributes
+        the values assigned to the keywords. So, for example, if one argument is
+        ``alive=True``, the function looks through all of the objects in the
+        ``World`` looking for each object ``obj`` such that ``obj.alive == True``.
+        It then returns a list of such objects.
+
+        Arguments:
+            ``kwargs``:
+                Any keyword-value pair can be used as an argument, but if no
+                objects exist which both have the keyword as an attribute and the
+                appropriate value for it, then the returned list will be empty.
+
+            ``return``, *list*:
+                A list of ``WorldObject`` subclasses which match the filter kwargs
+                given.
+        """
         knownObjs = self.objects
         filteredObjs = []
         for obj in knownObjs:
@@ -676,6 +713,39 @@ class World(object):
         return filteredObjs
 
     def add_user(self, name, location, vision, userType):
+        """
+        Add a user (agent or operator) to the world with the given attributes.
+
+        This function creates a new user (techincally an ``Agent`` object, but
+        of either the agent or operator persuasion) and places it on the board
+        at the specified location, if this is possible. If the given location is
+        either not a valid location in the world or is already occupied, this
+        function raises an exception.
+
+        Arguments:
+            ``name``, *str*:
+                The name of the agent or operator being placed. This doesn't bear
+                much on the actual simulation, but all log files use this name.
+
+            ``location``, *tuple*:
+                The location in the ``World`` where the agent or operator should
+                be placed. Must be unoccupied.
+
+            ``vision``, *int*:
+                The distance which the agent or operator can "see". Currently,
+                an agent's vision is a square centered on the agent or operator,
+                with a side length equal to twice the ``vision`` argument. Any
+                object in that range can be perceived perfectly by the agent.
+
+            ``userType``, *str*:
+                This must be either ``"AGENT"`` or ``"OPERATOR"``, and indicates
+                which type of user the ``Agent`` object created by this method
+                will be.
+
+            ``return``, *Agent*:
+                The new ``Agent`` object which was created in the course of
+                running this method.
+        """
         if not self.loc_valid(location):
             raise Exception("Location {} is not valid".format(location))
 
@@ -690,6 +760,22 @@ class World(object):
         return newUser
 
     def get_user(self, userID):
+        """
+        Retrieve the ``Agent`` object with the given ID.
+
+        This function looks through all of the agents and operators in the ``World``
+        and returns the one which has the proper userID. If such a user doesn't
+        exist, this raises a KeyError.
+
+        Arguments:
+            ``userID``, *str*:
+                The unique ID of the agent or operator, specifically the name
+                given to it when it was created.
+
+            ``return``, *Agent*:
+                The agent in the ``World`` which has as its ID the given userID
+                argument.
+        """
         return self.users[userID]
 
     def user_at(self, loc):
@@ -812,6 +898,7 @@ class World(object):
         user.at = dest
 
         self.log.info("Teleported agent {} to {}".format(user, dest))
+        self.eventLog += "Teleported agent {} to {}".format(user, dest)
         return True
 
     def move_agent(self, moveDir, userID):
@@ -839,6 +926,7 @@ class World(object):
         user.move(moveDir)
 
         self.log.info("Agent {} moved {} to {}".format(user, moveDir, dest))
+        self.eventLog += "Agent {} moved {} to {}\n".format(user, moveDir, dest)
         return True
 
     def take_damage(self, loc, userID):
@@ -944,6 +1032,7 @@ class World(object):
         killed = self.bombed_at(target)
         user.bomb()
         self.log.info("Agent {} bombed {}, killing {}".format(user, target, killed))
+        self.eventLog += "Agent {} bombed {}, killing {}\n".format(user, target, killed)
         return killed
 
     def bombed_at(self, target):
@@ -957,6 +1046,7 @@ class World(object):
                     obj.alive = False
                     obj.passable = True
                     self.log.info("Bomb at {} killed {}".format(target, obj))
+                    self.eventLog += "\tBomb at {} killed {}\n".format(target, obj)
         return killed
 
     def unlock(self, target, key=None):
@@ -1124,9 +1214,9 @@ class World(object):
 
         elif actType == 'arm':
             agent = self.get_user(userID)
-            self.log.info("Agent {} arming from {}".format(userID, agent.armed))
             agent.arm()
             self.log.info("Agent {} armed to {}".format(userID, agent.armed))
+            self.eventLog += "Agent {} armed to {}\n".format(userID, agent.armed)
             return True
 
         else:
@@ -1150,6 +1240,7 @@ class World(object):
     def get_closest_adjacent(self, loc1, loc2):
         """Return the location pair which is adjacent to loc1 and closest to loc2."""
         adjacentTiles = self.get_adjacent(loc1)
+        assert adjacentTiles is not None, "WATTTT"
         dist = (loc2[0]-loc1[0], loc2[1]-loc1[1])
         preffedNS = 'n' if dist[0] < 0 else 's'
         preffedWE = 'w' if dist[0] < 0 else 'e'
@@ -1157,13 +1248,16 @@ class World(object):
             adjTile = adjacentTiles[preffedWE]
             if self.check_passable(adjTile):
                 return adjTile
-        if preffedNS in adjacentTiles:
+        elif preffedNS in adjacentTiles:
             adjTile = adjacentTiles[preffedNS]
             if self.check_passable(adjTile):
                 return adjTile
         for loc in adjacentTiles:
+            adjTile = adjacentTiles[loc]
             if self.check_passable(adjTile):
                 return adjTile
+        print("No adjacent tile to {}".format(loc1))
+        return None
 
     def get_adjacent(self, loc):
         """Return the 2-4 tiles adjacent to the given one and their direction."""
@@ -1360,6 +1454,18 @@ class World(object):
 
         return finalDisplay
 
+    def shuffle_actors(self):
+        """Randomly move the agents and operators on the board."""
+        for agent in self.agents:
+            newLoc = self.random_loc()
+            while not self.teleport_agent(newLoc, agent.id):
+                newLoc = self.random_loc()
+
+        for oprtr in self.operators:
+            newLoc = self.random_loc()
+            while not self.teleport_agent(newLoc, oprtr.id):
+                newLoc = self.random_loc()
+
     def loc_valid(self, loc):
         x = loc[0]
         y = loc[1]
@@ -1367,7 +1473,7 @@ class World(object):
         if not 0 <= y < self.dim: return False
         return True
 
-    def MIDCA_state_str(self):
+    def midca_state_str(self):
         """Return a string which MIDCA can interpret as a state."""
 
         def gen_user_decls(self):
@@ -1476,6 +1582,12 @@ class World(object):
         y = randint(0, self.dim-1)
         return (x, y)
 
+    def copy(self):
+        """Return a new ``World`` object identical to this one."""
+        newWorld = build_World_from_str(repr(self))
+        newWorld.log = self.log
+        return newWorld
+
     def save(self, filename):
         """
         Save the current world as a file.
@@ -1504,11 +1616,16 @@ class World(object):
 
     def __str__(self):
         """
-        Convert the World to a string representation.
+        Convert the World to string form.
 
-        The World is returned as an ascii representation of the board state.
-        This is merely a display, board state cannot be exactly recreated by
-        this method. May implement a __rerpr__ later.
+        This function returns a human-readable form of the ``World`` as a string.
+        Specifically, it returns an ASCII grid which shows the current state
+        of the ``World`` including the locations of each actor, NPC, and object.
+
+        Arguments:
+            ``return``, *str*:
+                An ASCII grid with indicators for the location of actors and
+                objects.
         """
         ascii_board = "  "
         for cNum in range(self.dim):
@@ -1522,11 +1639,48 @@ class World(object):
         return ascii_board
 
     def __eq__(self, other):
-        """Check if two Worlds are the same."""
-        return str(self) == str(other)
+        """
+        Check if two ``World`` objects are the equivalent.
+
+        Since the string representation of a ``World`` encodes all relevant
+        information concerning its status, if the representations of two ``World``
+        objects are equivalent, then the ``World`` objects are too. Thus, this
+        function compares the representations of this and another ``World`` for
+        equality and returns the result of that comparison.
+
+        Arguments:
+            ``other``, *World*:
+                The ``World`` object to check for equivalence with this one.
+
+            ``return``, *bool*:
+                A boolean value indicating whether this and the other ``World``
+                are equivalent.
+        """
+        return repr(self) == repr(other)
 
     def __repr__(self):
-        """Return a string which allows for reconstructing the World."""
+        """
+        Return a string which clearly encodes all information about the ``World``.
+
+        The string returned by this function will included the size of the world
+        as well as the location and attributes of every object and actor on it.
+        Since the MIDCA cycle of actors (with the accompanying personality traits)
+        are not accesible to the ``World`` object, these are *not* included in
+        the string returned. Ultimately, the string returned can be used to
+        generate a duplicate ``World`` object.
+
+        The format of the returned string is fairly simple. The first line will
+        look like ::
+
+            dim:10
+
+        thereby encoding the size of the ``World``. Each line after that will
+        contain the string representation (``repr``) of an object on the board.
+
+        Arguments:
+            ``return``, *str*:
+                A string representation of the ``World``.
+        """
         retStr = "dim:{}\n".format(self.dim)
         for user in self.all_users:
             retStr += repr(user) + '\n'
@@ -1552,6 +1706,7 @@ class WorldMap(World):
         self.floor = {}
         self.users = {agent.id: agent}
         self.agent = agent
+        self.eventLog = ""
         self.log = DummyLog()
 
     def teleport_agent(self, dest):
@@ -1802,6 +1957,7 @@ class Agent(object):
         if self.can_move(moveDir):
             self.at = dest
             self.map.agentLoc = dest
+            self.armed = UNARMED
             return True
         else:
             print("Can't move {} to {}. Agent at {}".format(moveDir, dest, self.at))
@@ -1894,6 +2050,9 @@ class Agent(object):
 
         elif actType == 'bomb':
             succeeded = self.map.bombed_at(self.at)
+
+        elif actType == 'arm':
+            succeeded = self.arm()
 
         else:
             raise NotImplementedError("Action type {} is not implemented".format(actType))
@@ -2056,7 +2215,8 @@ def generate_random_drone_demo(dim, civilians, enemies, operators, agents,
 
     The function first creates a world of size ``dim`` with the given ``Logger``,
     then randomly places civilians, enemies, operators, and agents. Agents and
-    operators are randomly assigned a vision range between 1 and ``MAX_VISION_RANGE``.
+    operators are randomly assigned a vision distance within the range given by
+    ``visionRange``, and agent bombs kill all NPCs within ``bombRange`` tiles.
 
     Arguments:
         ``dim``, *int*:
@@ -2118,8 +2278,14 @@ def build_World_from_str(worldStr):
     Take in a string and create a new ``World`` from it.
 
     The string should be the output of the built-in ``repr`` function on a
-    ``World`` object, and is interpreted by looking at each line and recreating
-    the object whose representation is on the line.
+    ``World`` object. As described in the documentation for the ``World`` object,
+    each line of the string will be the representation of an individual object,
+    NPC, or actor in the world, with the exception of the first line, which will
+    indicate the dimensions of the world. This function reads that string line by
+    line, adding the object represented on each line to the world. This results
+    in a new ``World`` with identical objects and actors. Since the MIDCA cycles
+    of the actors are decoupled from the ``World``, this method does *not* restore
+    a simulation, just a ``World``.
 
     Arguments:
         ``worldStr``, *str*:
@@ -2216,6 +2382,9 @@ def build_World_from_file(filename, MIDCA=False):
     our own representation of a ``World`` (generated by calling ``repr``), not
     a MIDCA state, unless specified.
 
+    *Note*: MIDCA state strings have not been updated in a while, and cannot
+    account for everything now included in a ``World``.
+
     Arguments:
         ``filename``, *str*:
             The name of the file which contains the world's string.
@@ -2291,16 +2460,16 @@ def interactive_World_maker():
                 A valid ID for the existing object which is to be removed.
 
         ``save``:
-        The ``save`` command saves the current world to a file specified by the
-        user in two different formats: a format unique to this domain, and a less
-        powerful but more generalizable MIDCA state. The files will be saved in
-        ``dng_files/``. The general format looks like::
+            The ``save`` command saves the current world to a file specified by the
+            user in two different formats: a format unique to this domain, and a less
+            powerful but more generalizable MIDCA state. The files will be saved in
+            ``dng_files/``. The general format looks like::
 
-            save filename
+                save filename
 
-        ``filename``:
-            The name of the file which the world should be saved to, **without**
-            a file type extension at the end.
+            ``filename``:
+                The name of the file which the world should be saved to, **without**
+                a file type extension at the end.
 
     Arguments:
         ``return``, *bool*:
@@ -2588,7 +2757,23 @@ def goal_from_str(string):
 
 
 def goals_equal(goal1, goal2):
-    """Indicate whether two goals are equal."""
+    """
+    Indicate whether two goals are equal.
+
+    Since the string form of a ``Goal`` includes all pertinent information and
+    is predictable, this function compares the strings of the two ``Goal``
+    objects to check for equivalence.
+
+    Arguments:
+        ``goal1``, *Goal*:
+            The first of the two goals to check for equivalence.
+
+        ``goal2``, *Goal*:
+            The second of the two goals to check for equivalence.
+
+        ``return``, *bool*:
+            A boolean value indicating whether the two goals are equal.
+    """
     return str(goal1) == str(goal2)
 
 
