@@ -5,6 +5,18 @@ Progress Report
 Milestones
 ==========
 
+August 21
+---------
+
+We have upgraded the testing code to incorporate proactive rebellions, the ratio
+between the size of the world and the number of NPCs and the ratio between the
+number of enemies and civilians. We also added more detailed logging to the testing
+code, so that the results of each tests are captured more explicitly and are
+easier to use. Finally, we've filled out the documentation both at the code level
+and the broader usage and overview documentation. The documentation we've generated
+should allow anyone else who comes to work on this project to easily pick up where
+we left off.
+
 August 9
 --------
 
@@ -215,6 +227,14 @@ order they are run:
 
 Changes to Previous Version
 ===========================
+
+August 21
+---------
+
+Improved testing
+~~~~~~~~~~~~~~~~
+
+
 
 August 9
 --------

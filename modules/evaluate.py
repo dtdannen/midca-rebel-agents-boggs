@@ -1,9 +1,3 @@
-# uncompyle6 version 2.11.4
-# Python bytecode 2.7 (62211)
-# Decompiled from: Python 2.7.13 (default, Jun 21 2017, 15:43:56) 
-# [GCC 4.8.4]
-# Embedded file name: /home/jamesboggs/Desktop/MIDCA_Testing/modules/evaluate.py
-# Compiled at: 2017-08-21 09:45:15
 import copy
 from random import random
 import logging
@@ -56,7 +50,7 @@ class Rebellion(object):
 class GoalManager(base.BaseModule):
     """
     Allows MIDCA to manage goals given its percepts.
-    
+
     This module checks to ensure all goals are still valid, and whether we need
     new goals in order to accomplish a goal we already have.
     """
@@ -78,7 +72,7 @@ class GoalManager(base.BaseModule):
     def findDoorsFor(self, goal):
         """
         Return a list of door objects which need to be opened to reach the goal.
-        
+
         Navigates to the goal by pretending all doors are open, then looks along
         the generated path for door objects and stores them in a list. Not super
         efficient, but it works and I can't think of a better solution.
@@ -203,13 +197,13 @@ class GoalManager(base.BaseModule):
 class HandleRebellion(base.BaseModule):
     """
     Allow MIDCA to rebel against goals it deems unworthy.
-    
+
     This module examines each rebellion created in the :py:class:``GoalManager``
     module and then either follows through by rebelling against the operator or
     ignoring the rebellion. An agent will only ignore a rebellion if it has
     attempted to rebel against the goal before and the operator rejected the
     rebellion.
-    
+
     The module first gets all of the goals which have been rebeled against but
     subsequently enforced by the operator, then it recalls of the rebellions
     which it created in the previous module (:py:class:``GoalManager``). For each
@@ -224,12 +218,12 @@ class HandleRebellion(base.BaseModule):
     operator does choose to reject the rebellion, how the agent handles that
     depends on its compliance. The more compliant it is, the more likely it is
     to accept the rejection and carryout the goal.
-    
+
     Arguments:
         ``logger=logging.getLogger("dummy")``, *logging.Logger*:
             The ``Logger`` object which the module will use to log its actions.
             It defaults to a dummy logger which does nothing.
-    
+
         ``compliance=1.0``, *float*:
             The probability that the agent will accept the rejection of its
             rebellion and finish its goal. If it does comply, it will add the
@@ -351,7 +345,7 @@ class HandleRebellion(base.BaseModule):
     def relate_rebellion(self, altGoals, senderID, rebellion, informOthers=False):
         """
         Indicate to operator and other agents that agent is rebelling.
-        
+
         This function generates a string which relates the full details of the
         rebellion and the alternative goals the agent has come up with, then gives
         this to the operator who created the goal. It also tells other agents that
@@ -423,7 +417,7 @@ class ProactiveRebellion(base.BaseModule):
     def run(self, cycle, verbose=2):
         """
         Make sure all allied agent goals are valid, report if not.
-        
+
         This module looks through all of the agent-goal pairs in memory and
         ensures each goal is valid. If it isn't, the module informs the other
         agent as to why and asks it to rebel.
@@ -452,7 +446,7 @@ class ProactiveRebellion(base.BaseModule):
 class OperatorHandleRebelsStochastic(base.BaseModule):
     """
     Interact with agents which are rebelling by delivering a response.
-    
+
     This module handles any rebellions the operator heard by choosing whether
     to assign a new goal suggested by the agent, reject the agent's rebellion,
     or allow the rebellion but not give the agent an alternative. If the module
@@ -474,7 +468,7 @@ class OperatorHandleRebelsStochastic(base.BaseModule):
     def run(self, cycle, verbose=2):
         """
         Run the handle rebellion module.
-        
+
         This function looks through MIDCA's memory to see if there are any
         pending rebellions, and handles them individually.
         """
@@ -497,7 +491,7 @@ class OperatorHandleRebelsStochastic(base.BaseModule):
     def handle_rebellion(self, rebellion, verbose=2):
         """
         Handle an individual rebellion from interpreting it to replying.
-        
+
         This function extracts the core information from the rebellion, then
         decides on an appropriate response to the rebelling agent. For this
         module, the response is determined by whether the operator is willing
@@ -505,15 +499,15 @@ class OperatorHandleRebelsStochastic(base.BaseModule):
         Should the operator accept the rebellion, an alternative goal is chosen
         from those suggested by the agent, should it reject the rebellion, the
         operator will restore the goal to the agent.
-        
+
         Arguments:
-        
+
         ``rebellion``, *tuple*:
             A tuple containing for important pieces of rebellion information. The
             first is the rejected goal, the sceond is the reason for rejection,
             the third is miscellaneous information about the rebellion, and the
             fourth is the rebel agent.
-        
+
         ``return``:, *None*
         """
         self.logger.info('Handling rebellion\n{}'.format(rebellion))
@@ -559,4 +553,3 @@ class OperatorHandleRebelsStochastic(base.BaseModule):
         if verbose >= 1:
             print 'Marked rebellion goal {} as invalid for {}'.format(goal, agt)
         self.mem.add('INVALID_GOALS', (agt, goal))
-# okay decompiling evaluate.pyc
