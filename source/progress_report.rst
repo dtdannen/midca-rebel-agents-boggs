@@ -1,3 +1,5 @@
+.. _progress-report:
+
 ===============
 Progress Report
 ===============
@@ -74,157 +76,6 @@ number of other features which allow for more clear rebellion and easier
 testing, such as simulating the world separately from MIDCA and allowing
 multiple operators and agents.
 
-Use of MIDCA
-============
-
-MIDCA proper offers a skeleton for a cognitive process, allowing the
-user to create custom cognitive modules and then handling the running of
-a cognitive cycle and maintaining the agent's memory.
-
-Changes to MIDCA
-----------------
-
-We have made minimal changes to this core functionality, as MIDCA itself
-has not needed any adjustments in order to handle rebellion. Instead,
-nearly all of the modules which an agent or operator's MIDCA cycle will
-use have been written by us, although several are based heavily on
-example modules from the NBeacons example included in MIDCA. The only
-one that isn't custom-made is the planning module, since we wrote PyHop
-methods and operators for the domain instead. As briefly touched on
-above, we only made a minimal change to the core MIDCA code. We adjusted
-the ``run`` method of the PhaseManager object (the method which runs the
-MIDCA cycle) to allow the caller to specify a time delay between phases
-if the interface isn't needed. We utilize the MIDCA architecture in two
-very different ways: to run agents and to run automatic operators.
-
-Agent MIDCA cycle
------------------
-
-An agent's MIDCA cycle perceives the world state, reasons about goals
-based on that percept, and then acts on plans to accomplish goals. This
-is all fairly standard for MIDCA cycles, and is adapted in large part
-from the NBeacons demos which MIDCA comes with. Our major addition was
-adding and modifying modules which allow the agent to check whether it
-should rebel and then rebel properly. These particular modules are the
-Interpret phase's ``GoalValidityChecker`` and ``DiscrepancyExplainer``
-modules, and the Eval phase's ``GoalManager`` and ``HandleRebellion``
-modules.
-
-An agent MIDCA has the following phases and modules, listed in the order
-they are run:
-
-#. Perceive phase
-
-    -  :py:class:`~modules.perceive.RemoteObserver` module
-
-#. Interpret phase
-
-    -  :py:class:`~modules.interpret.RemoteUserGoalInput` module
-    -  :py:class:`~modules.interpret.CompletionEvaluator` module
-    -  :py:class:`~modules.interpret.StateDiscrepancyDetector` module
-    -  :py:class:`~modules.interpret.GoalValidityChecker` module
-    -  :py:class:`~modules.interpret.DiscrepancyExplainer` module
-    -  :py:class:`~modules.interpret.GoalRecognition` module
-
-#. Eval phase
-
-    -  :py:class:`~modules.evaluate.GoalManager` module
-    -  :py:class:`~modules.evaluate.HandleRebellion` module
-    -  :py:class:`~modules.evaluate.ProactiveRebellion` module
-
-#. Intend phase
-
-    -  :py:class:`~modules.intend.QuickIntend` module
-
-#. Plan phase
-
-    -  :py:class:`~modules.plan.GenericPyhopPlanner` module
-
-#. Act phase
-
-    -  :py:class:`~modules.act.SimpleAct` module
-
-Operator MIDCA cycle
---------------------
-
-The MIDCA cycle of an operator is significantly atypical, because it
-does not perform any explicit goal reasoning. The goal graph is never
-used, nor is there any mention of operator goals in the modules. The use
-of MIDCA for running the automatic operators is that it provides a
-modular platform for cyclical processes. In this case, we used MIDCA to
-break down the process of perceiving the world state, listening to
-messages from agents, generating goals for the agents, and then
-assigning each agent a goal. In some respects this is similar to goal
-reasoning, however the goals are not the operator's but the agents'. The
-operator does limited reasoning: it tracks agents which already have
-goals so it won't give them new ones, it keeps track of enemies which
-can't be killed by bombs so it does assign them as a goal, and it
-assigns an agent's goals based on the proximity of the target to the
-agent. It also primitively reasons about the alternative goals suggested
-by rebelling agents, choosing the first goal, if possible, and otherwise
-choosing not to give the agent a new goal. It avoids ever rejecting the
-rebellion and reaffirming orders, which is possible.
-
-The operator's MIDCA cycle begins in the Perceive phase, which informs
-the operator about the state of the world, and any messages from other
-agents or operators. These, along with all living enemies in the world,
-are stored in the operator's memory, and the interpreted in the next
-phase. The Interpret phase first looks at messages given to the
-operator, scanning for messages confirming goal acceptance, indicating
-goal completion or invalidation, or indicating rebellion. In the first
-two cases, the operator either remembers that the sending agent now has
-a goal or remembers that the sending agent is now goal-free,
-respectively. In the latter case, the operator extracts information from
-the rebellion message about the goal rejected, the reason why, and any
-alternative goals, and then remembers those details along with the
-identity of the rebelling agent.
-
-The third phase, Eval, specifically handles any rebellions. It checks to
-see if there are any fresh rebellions in the operator's memory, and if
-there are it handles each one. The operator handles rebellions by
-remembering which enemy was the cause of the rebellion and responding to
-the agent by assigning an alternate goal or no goal at all. The operator
-remembers the enemy so as not to give that enemy as a goal target again.
-If the operator ends up giving an agent no alternative goal, it also
-removes the agent from the list of busy agents in its memory and
-restores it to the list of available agents.
-
-The operator does not use the Intend phase at all; since no goals are
-generated there is no need for choosing one. The Plan phase recalls all
-of the enemies which are still alive and all the agents which don't have
-goals, then maps each available agent to a target, crafting a goal and
-remembering each goal-agent pair. The Act phase remembers the plans just
-made, and gives each plan to its intended agent, along with any
-necessary info.
-
-Because MIDCA is modular, we can swap the current Eval module with a
-different one which reacts differently to rebellions. For example, we
-could create an operator which always overrides rebellions, or an
-operator which allows rebellions at first but later chooses not to.
-
-An operator MIDCA has the following phases and modules, listed in the
-order they are run:
-
-#. Perceive phase
-
-    -  :py:class:`~modules.perceive.OperatorObserver` module
-
-#. Interpret phase
-
-    -  :py:class:`~modules.interpret.OperatorInterpret` module
-
-#. Eval phase
-
-    -  :py:class:`~modules.evaluate.OperatorHandleRebelsStochastic` module
-
-#. Plan phase
-
-    -  :py:class:`~modules.plan.OperatorPlanGoals` module
-
-#. Act phase
-
-    -  :py:class:`~modules.act.OperatorGiveGoals` module
-
 Changes to Previous Version
 ===========================
 
@@ -234,7 +85,21 @@ August 21
 Improved testing
 ~~~~~~~~~~~~~~~~
 
+We added rebellion and proactive rebellion toggling to the testing code, which
+allows us to see what effect rebellion and proactive rebellion actually have on
+the simulation. The most significant upgrade, however, was the way in which test
+runs are recorded. We added logging which captures and records the results of
+all runs under a specific set of test parameters, logging which records each event
+in the world, and logging which records each instance of rebellion. The cumulative
+results of a batch of tests are recorded in ``testRecords.csv``, the record of
+each simulation is in ``logs/eventLogs``, and each recorded rebellion is in
+``logs/rebellions``. Additionally, the :py:class:`~testing.TestRecords` object which is used to
+collect most of this data is pickled and stored in ``testRecords.txt``.
 
+Documentation
+~~~~~~~~~~~~~
+We wrote a nice :ref:`user-guide` which should help new researchers get acquainted
+with the rebel agent code.
 
 August 9
 --------

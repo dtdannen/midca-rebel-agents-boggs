@@ -5,8 +5,10 @@ from time import asctime
 from MIDCA import base, goals
 import world_utils as wu
 
+
 class Rebellion(object):
     """Holds information pertaining to an agent's rebellion against a specific goal."""
+    
     rebellionList = []
 
     def __init__(self, goal, **kwargs):

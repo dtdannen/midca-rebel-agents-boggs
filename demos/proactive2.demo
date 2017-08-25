@@ -1,0 +1,6 @@
+world="maps/proactiveTest2.dng"
+mapStatic=True
+agentsRandomPosition=False
+agents=(0.0, 0.0)
+proacRebel=(True, False)
+runsPerTest=1

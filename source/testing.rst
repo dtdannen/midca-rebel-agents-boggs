@@ -1,5 +1,8 @@
+.. _testing-ref:
+
+=============================
 Testing Classes and Functions
-*****************************
+=============================
 
 .. automodule:: testing
 
@@ -12,6 +15,6 @@ Testing Classes and Functions
    testing_classes/test_records
 
 Functions
----------
+=========
 .. autofunction:: testing.generate_agent_modules
 .. autofunction:: testing.generate_optr_modules

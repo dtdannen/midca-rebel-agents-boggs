@@ -1,10 +1,5 @@
 """
-This module contains all socket communication related classes and methods.
-
-In order to allow agents and operators to interact with the world and each other
-concurrently, we use socket communications and run each agent and operator, as
-well as the world simulation, in a separate process. The classes in this module
-facilitate that.
+This module contains classes which simulate the world and run agents and operators.
 """
 from cPickle import dumps, loads
 import SocketServer as SS
@@ -19,14 +14,14 @@ import world_utils
 import world_operators as d_ops
 import world_methods as d_mthds
 from modules import perceive, interpret, evaluate, intend, act, plan
-WORLD_STATE_REQ = 1
-ACTION_SEND = 2
-UPDATE_SEND = 3
-GOAL_SEND = 4
-GOAL_REQ = 5
-AGENT_REQ = 6
-DIALOG_SEND = 7
-DIALOG_REQ = 8
+WORLD_STATE_REQ = 1  #:
+ACTION_SEND = 2  #:
+UPDATE_SEND = 3  #:
+GOAL_SEND = 4  #:
+GOAL_REQ = 5  #:
+AGENT_REQ = 6  #:
+DIALOG_SEND = 7  #:
+DIALOG_REQ = 8  #:
 DECLARE_METHODS_FUNC = d_mthds.declare_methods
 DECLARE_OPERATORS_FUNC = d_ops.declare_operators
 PLAN_VALIDATOR = plan.worldPlanValidator
@@ -83,6 +78,7 @@ class WorldServer(SS.TCPServer):
     can receive an action before the server quits and the simulation ends, allowing
     us to limit the length of the simulations.
     """
+    # TODO Add communications formats
 
     class HandlerClass(SS.StreamRequestHandler):
         """Custom handler class for a world server."""
@@ -187,7 +183,7 @@ class WorldServer(SS.TCPServer):
                     raise NotImplementedError('UPDATE_SEND prefix {}'.format(cmd))
             elif msgType == GOAL_SEND:
                 recipientID = msgData[0]
-                if recipientID not in [ a.id for a in dng.agents ]:
+                if recipientID not in [a.id for a in dng.agents]:
                     if userID in msgs:
                         msgs[userID].append('Sending error: {} not found'.format(recipientID))
                         log.warn('\tRecipient {} not found to give goal'.format(recipientID))
@@ -524,7 +520,7 @@ class RemoteAgent(object):
         A dictionary assigning MIDCA module objects to a phase.
     """
 
-    def __init__(self, addr, port, userID, modules=AGENT_MODULES):
+    def __init__(self, addr, port, userID, modules):
         """Instantiate ``RemoteAgent`` object by creating appropriate MIDCA cycle."""
         self.conAddr = (
          addr, int(port))
@@ -585,7 +581,7 @@ class AutoOperator(object):
         A dictionary assigning MIDCA module objects to a phase.
     """
 
-    def __init__(self, addr, port, userID, modules=AUTO_OP_MODULES):
+    def __init__(self, addr, port, userID, modules):
         """Instantiate ``AutoOperator`` object by creating appropriate MIDCA cycle."""
         self.conAddr = (
          addr, int(port))

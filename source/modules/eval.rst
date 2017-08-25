@@ -2,4 +2,4 @@ Evaluate Modules
 ****************
 
 .. automodule:: modules.evaluate
-    :members:
+    :members: GoalManager, HandleRebellion, ProactiveRebellion, OperatorHandleRebelsStochastic, Rebellion

@@ -1,4 +1,17 @@
-"""FILL THIS IN."""
+"""
+This module contains all of the code used easy testing, including the
+:py:class:`~testing.Testbed` class, which serves as the primary vehicle for
+performing batches of tests.
+
+The ultimate goal of this module is to provide easy and modular testing for our
+rebel agent code. The :py:class:`~testing.Testbed` class is the solution we
+developed, and allows the user to set the values of several different parameters
+for testing. As explained in the :ref:`user-guide-results` section of the
+:ref:`user-guide`, we can build batches of tests by creating a :py:class:`~testing.Testbed`
+class with the values of the parameters we want. The parameters and their meanings
+are listed both in the documentation of the :py:class:`~testing.Testbed` class
+and in the :ref:`user-guide-demo-params` subsection of the :ref:`user-guide`.
+"""
 import subprocess
 import threading
 from multiprocessing import Process
@@ -206,7 +219,7 @@ class Testbed(object):
             This dictates how many times each combination of parameters is
             tested.
 
-        ``world = None``, *World*:
+        ``world = None``, *World* or *list*:
             If the tests should be run on a pre-generated world, pass that world
             through this parameter. If ``world`` is not ``None``, then any parameter
             dealing with the creation of a ``World`` (e.g. ``agents``, ``civilians``,
@@ -216,8 +229,12 @@ class Testbed(object):
             This dictates how many seconds each run of a test goes.
     """
 
-    def __init__(self, worldSize=10, civilians=10, enemies=10, agents=(0.0, 0.0, 0.0, 0.0, 0.0), operators=(1.0, ), civiEnemyRatio=-1.0, NPCSizeRatio=-1.0, visionRange=(1, 3), bombRange=2, rebel=(True,) * 5, proacRebel=(
- True,) * 5, agentsRandomPosition=False, mapStatic=False, runsPerTest=3, world=None, timeLimit=60):
+    def __init__(self, worldSize=10, civilians=10, enemies=10,
+                 agents=(0.0, 0.0, 0.0, 0.0, 0.0), operators=(1.0, ),
+                 civiEnemyRatio=-1.0, NPCSizeRatio=-1.0, visionRange=(1, 3),
+                 bombRange=2, rebel=(True,) * 5, proacRebel=(True,) * 5,
+                 agentsRandomPosition=False, mapStatic=False, runsPerTest=3,
+                 world=None, timeLimit=60):
         """Instantiate a new Testbed with the given parameters."""
         self.worldSizeList = self.__handle_parameter(worldSize)
         self.NPCSizeRatioList = self.__handle_parameter(NPCSizeRatio)
@@ -230,6 +247,7 @@ class Testbed(object):
         self.bombRangeList = self.__handle_parameter(bombRange)
         self.rebelList = self.__handle_parameter(rebel)
         self.proacRebelList = self.__handle_parameter(proacRebel)
+        self.worldList = self.__handle_parameter(world)
         self.agentsRandomPosition = agentsRandomPosition
         self.mapStatic = mapStatic
         self.runsPerTest = runsPerTest
@@ -241,11 +259,19 @@ class Testbed(object):
         hdlr.setFormatter(fmtr)
         self.log.addHandler(hdlr)
         self.log.setLevel(logging.INFO)
-        if self.mapStatic or world:
-            if world:
-                self.world = world
+        if self.mapStatic:
+            if self.worldList[0]:
+                self.worldList = [self.worldList[0]]
             else:
-                self.world = wu.generate_random_drone_demo(dim=self.worldSizeList[0], civilians=self.civilians[0], enemies=self.enemies[0], operators=len(self.operators[0]), agents=len(self.agents[0]), visionRange=self.visionRange[0], bombRange=self.bombRange[0], log=self.log)
+                world = wu.generate_random_drone_demo(dim=self.worldSizeList[0],
+                                                      civilians=self.civilians[0],
+                                                      enemies=self.enemies[0],
+                                                      operators=len(self.operators[0]),
+                                                      agents=len(self.agents[0]),
+                                                      visionRange=self.visionRange[0],
+                                                      bombRange=self.bombRange[0],
+                                                      log=self.log)
+                self.worldList = [world]
         else:
             self.world = None
         self.testList = self.generate_tests()
@@ -265,7 +291,12 @@ class Testbed(object):
                 combination of the paramters given to this object at instantiation.
         """
         tests = []
-        permutations = product(self.worldSizeList, self.NPCSizeRatioList, self.civiEnemyRatioList, self.enemiesList, self.civiliansList, self.agentsList, self.operatorsList, self.visionRangeList, self.bombRangeList, self.rebelList, self.proacRebelList)
+        permutations = product(self.worldSizeList, self.NPCSizeRatioList,
+                               self.civiEnemyRatioList, self.enemiesList,
+                               self.civiliansList, self.agentsList,
+                               self.operatorsList, self.visionRangeList,
+                               self.bombRangeList, self.rebelList,
+                               self.proacRebelList, self.worldList)
         for perm in permutations:
             print 'permutation: {}'.format(perm)
             tests.append(self.generate_test(perm))
@@ -427,8 +458,11 @@ class Test(object):
             This dictates how many seconds each run of a test goes.
     """
 
-    def __init__(self, log, worldSize=10, civilians=10, enemies=10, agents=(0.0, 0.0, 0.0, 0.0, 0.0), operators=1.0, visionRange=(1, 3), bombRange=2, rebel=(True,) * 5, proacRebel=(
- True,) * 5, runs=3, agentsRandomPosition=False, world=None, timeLimit=60):
+    def __init__(self, log, worldSize=10, civilians=10, enemies=10,
+                 agents=(0.0, 0.0, 0.0, 0.0, 0.0), operators=1.0,
+                 visionRange=(1, 3), bombRange=2, rebel=(True,) * 5,
+                 proacRebel=(True,) * 5, runs=3, agentsRandomPosition=False,
+                 world=None, timeLimit=60):
         """Instantiate a ``Test`` object with the given paramters."""
         self.log = log
         self.worldSize = worldSize
@@ -530,11 +564,12 @@ class Test(object):
         return a score value.
         """
         assert isinstance(world, wu.World), 'run_test input must be World, is {}'.format(world)
-        results = {'initWorld': None,'score': None,
-           'eventLog': None,
-           'rebelList': None,
-           'startTime': None
-           }
+        results = {'initWorld': None,
+                   'score': None,
+                   'eventLog': None,
+                   'rebelList': None,
+                   'startTime': None
+                   }
         serverExists = False
         for port in SERVER_PORTS:
             try:
@@ -677,15 +712,3 @@ class TestRecords(object):
     def __str__(self):
         """Return a string version of this object."""
         return str(self.testDict)
-
-
-if __name__ == '__main__':
-    world = wu.build_World_from_file('dng_files/test.dng')
-    tBed = Testbed(NPCSizeRatio=[0.1, 0.2, 0.3], civiEnemyRatio=[
-     0.5, 0.1, 1.5], agents=[
-     (
-      0.0, 0.0, 0.0), (0.5, 0.5, 0.5), (1.0, 1.0, 1.0)], operators=[
-     (
-      0.0,), (0.5,), (1.0,)], agentsRandomPosition=False, runsPerTest=4)
-    result = tBed.run_tests()
-    tBed.testRecords.save_records()
