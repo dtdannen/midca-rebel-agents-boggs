@@ -17,21 +17,23 @@ def run_demos(demos):
         ``return``, *None*
     """
     for demo in demos:
+        print("Running demos {}".format(demos))
         if '/' not in demo:
             # If a folder isn't specified, default to the demos folder.
             demo = 'demos/{}.demo'.format(demo)
-            kwargs = {}
-            with open(demo, 'r') as demoFile:
-                for line in demoFile:
-                    line = line.strip()
-                    arg, opt = line.split('=')
-                    opt = eval(opt)
-                    kwargs[arg] = opt
-            if 'world' in kwargs:
-                kwargs['world'] = build_World_from_file(kwargs['world'])
-            tBed = Testbed(**kwargs)
-            tBed.run_tests()
-            tBed.testRecords.save_records()
+        kwargs = {}
+        print("Running demo {}".format(demo))
+        with open(demo, 'r') as demoFile:
+            for line in demoFile:
+                line = line.strip()
+                arg, opt = line.split('=')
+                opt = eval(opt)
+                kwargs[arg] = opt
+        if 'world' in kwargs:
+            kwargs['world'] = build_World_from_file(kwargs['world'])
+        tBed = Testbed(**kwargs)
+        tBed.run_tests()
+        tBed.testRecords.save_records()
 
 
 if __name__ == '__main__':

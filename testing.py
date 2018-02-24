@@ -1,3 +1,4 @@
+#/usr/bin/python
 """
 This module contains all of the code used easy testing, including the
 :py:class:`~testing.Testbed` class, which serves as the primary vehicle for
@@ -36,7 +37,7 @@ LOG_DATE_FMT = '%M:%S'
 DECLARE_METHODS_FUNC = w_mthds.declare_methods
 DECLARE_OPERATORS_FUNC = w_ops.declare_operators
 PLAN_VALIDATOR = plan.worldPlanValidator
-VERBOSITY = 2
+VERBOSITY = 0
 PHASES = ['Perceive', 'Interpret', 'Eval', 'Intend', 'Plan', 'Act']
 AGENT_MODULES = {'Perceive': [perceive.RemoteObserver],'Interpret': [
                interpret.RemoteUserGoalInput,

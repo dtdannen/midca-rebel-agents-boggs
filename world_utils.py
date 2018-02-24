@@ -2683,7 +2683,7 @@ def interactive_World_maker():
                 print("{}".format(repr(objsMade[objID])))
             else:
                 col += 1
-                print "{}\t|\t".format(repr(objsMade[objID])),
+                print("{}\t|\t".format(repr(objsMade[objID])))
         command = raw_input("\nCommand>> ")
         if command.lower() in ['q', 'quit']:
             print("Exiting world maker...")
