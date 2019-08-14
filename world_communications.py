@@ -8,8 +8,8 @@ import os
 from time import sleep, time, strftime
 import sys
 import logging
-from MIDCA import base
-from MIDCA.modules import planning
+from midca import base
+from midca.modules import planning
 import world_utils
 import world_operators as d_ops
 import world_methods as d_mthds
@@ -42,7 +42,7 @@ AGENT_MODULES = {'Perceive': [perceive.RemoteObserver(),
    'Intend': [
             intend.QuickIntend()],
    'Plan': [
-          planning.GenericPyhopPlanner(DECLARE_METHODS_FUNC, DECLARE_OPERATORS_FUNC, PLAN_VALIDATOR, verbose=VERBOSITY)],
+          planning.GenericPyhopPlanner(DECLARE_METHODS_FUNC, DECLARE_OPERATORS_FUNC, plan_validator=PLAN_VALIDATOR)],
    'Act': [
          act.SimpleAct()]
    }
@@ -544,7 +544,7 @@ class RemoteAgent(object):
         """
         self.MIDCACycle.init()
         self.MIDCACycle.initGoalGraph(cmpFunc=plan.worldGoalComparator)
-        self.MIDCACycle.run(phaseDelay=0.25, verbose=VERBOSITY)
+        self.MIDCACycle.run(phaseDelay=0.25, usingInterface=False)
 
 
 class AutoOperator(object):
@@ -605,7 +605,7 @@ class AutoOperator(object):
         """
         self.MIDCACycle.init()
         self.MIDCACycle.initGoalGraph(cmpFunc=plan.worldGoalComparator)
-        self.MIDCACycle.run(phaseDelay=0.25, verbose=VERBOSITY)
+        self.MIDCACycle.run(phaseDelay=0.25, usingInterface=False)
 
 
 if __name__ == '__main__':

@@ -9,5 +9,6 @@ Demos/*
 archive/*
 *.log
 logs/*
+log/*
 *.csv
 *.txt

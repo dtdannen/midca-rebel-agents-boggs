@@ -12,7 +12,7 @@ import copy
 import os
 import logging
 
-from MIDCA import base
+from midca import base
 
 
 class Observer(base.BaseModule):
@@ -53,7 +53,7 @@ class Observer(base.BaseModule):
             trace.add_data("CURR WORLD", agentCopy)
 
 
-class ShowMap(base.BaseModule):
+class ShowMap(base.BaseModule, object):
     """Displays the MIDCA agent's perception of the world map."""
 
     def __init__(self, logger=logging.getLogger("dummy")):
@@ -73,7 +73,7 @@ class ShowMap(base.BaseModule):
         self.logger.info("\n" + str(agent.map))
 
 
-class RemoteObserver(base.BaseModule):
+class RemoteObserver(base.BaseModule, object):
     """
     Copies the agent state to MIDCA memory, allowing for custom fog-of-war.
 
@@ -142,7 +142,7 @@ class RemoteObserver(base.BaseModule):
             trace.add_data("MESSAGES", msgs)
 
 
-class OperatorObserver(base.BaseModule):
+class OperatorObserver(base.BaseModule, object):
     """
     Observation and update module for an operator running automatically.
 

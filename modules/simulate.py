@@ -1,7 +1,7 @@
 """Collection of world-specific simulator modules for MIDCA."""
 import socket
 
-from MIDCA import base
+from midca import base
 from PIL import Image
 
 

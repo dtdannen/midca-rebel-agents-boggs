@@ -5,7 +5,7 @@ All methods interact solely with the Agent as state, and never see the World as
 a whole. This ensures that the planning is completely reliant on the Agent's
 knowledge.
 """
-from MIDCA.modules._plan import pyhop
+from midca.modules._plan import pyhop
 
 def move_to(state, dest):
     """Move the agent to the target destination."""

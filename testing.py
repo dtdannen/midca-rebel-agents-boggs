@@ -249,6 +249,7 @@ class Testbed(object):
         self.rebelList = self.__handle_parameter(rebel)
         self.proacRebelList = self.__handle_parameter(proacRebel)
         self.worldList = self.__handle_parameter(world)
+        self.world = world
         self.agentsRandomPosition = agentsRandomPosition
         self.mapStatic = mapStatic
         self.runsPerTest = runsPerTest
@@ -675,7 +676,7 @@ class TestRecords(object):
                 for testResults in allTestResults:
                     startTime = testResults['startTime']
                     eLogFilename = 'event-log_{}'.format(startTime)
-                    with open('logs/eventLogs/{}'.format(eLogFilename), 'w') as eLogFile:
+                    with open('log/eventLogs/{}'.format(eLogFilename), 'w') as eLogFile:
                         eLogFile.write(testResults['eventLog'])
                     print testResults['rebelList']
 

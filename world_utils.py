@@ -14,7 +14,7 @@ import logging
 import os
 import traceback
 import StringIO
-from MIDCA import plans, goals
+from midca import plans, goals
 
 AGENT = "AGENT"  #: Easily check if an Agent object is an agent
 OPERATOR = "OPERATOR"  #: Easily check if an Agent object is an operator

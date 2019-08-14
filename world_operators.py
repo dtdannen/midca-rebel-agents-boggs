@@ -5,7 +5,7 @@ All operators interact solely with the Agent as state, and never see the World a
 a whole. This ensures that the planning is completely reliant on the Agent's
 knowledge.
 """
-from MIDCA.modules._plan import pyhop
+from midca.modules._plan import pyhop
 
 
 # Movement operator

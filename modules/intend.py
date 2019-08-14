@@ -2,10 +2,10 @@
 
 import copy
 import logging
-from MIDCA import base
+from midca import base
 
 
-class QuickIntend(base.BaseModule):
+class QuickIntend(base.BaseModule, object):
     """Chooses a goal to pursue based on how fast it can be completed."""
 
     def __init__(self, logger=logging.getLogger("dummy")):

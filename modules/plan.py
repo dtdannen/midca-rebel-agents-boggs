@@ -3,8 +3,8 @@ import copy
 import math
 import logging
 import traceback
-from MIDCA import base, goals, plans
-from MIDCA.modules import _plan
+from midca import base, goals, plans
+from midca.modules import _plan
 
 def worldPlanValidator(state, plan):
     """
@@ -43,7 +43,7 @@ def worldGoalComparator(goal1, goal2):
     return 0
 
 
-class OperatorPlanGoals(base.BaseModule):
+class OperatorPlanGoals(base.BaseModule, object):
     """
     Generate goals for various inactive agents and preliminarily assign them.
 

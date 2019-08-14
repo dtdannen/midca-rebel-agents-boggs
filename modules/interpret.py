@@ -1,11 +1,11 @@
 """Contains the MIDCA modules which relate to interpreting the world state."""
-from MIDCA import base, goals
+from midca import base, goals
 import re
 import socket
 import world_utils as wu
 import logging
 
-class StateDiscrepancyDetector(base.BaseModule):
+class StateDiscrepancyDetector(base.BaseModule, object):
     """
     Allows MIDCA to identify discrepancies between expected and actual state.
 
@@ -91,7 +91,7 @@ class StateDiscrepancyDetector(base.BaseModule):
         return
 
 
-class GoalValidityChecker(base.BaseModule):
+class GoalValidityChecker(base.BaseModule, object):
     """
     Allows MIDCA to determine whether all current goals are still valid.
 
@@ -148,7 +148,7 @@ class GoalValidityChecker(base.BaseModule):
             return
 
 
-class DiscrepancyExplainer(base.BaseModule):
+class DiscrepancyExplainer(base.BaseModule, object):
     """Allows MIDCA to explain discrepancies in the state."""
 
     def __init__(self, logger=logging.getLogger('dummy')):
@@ -395,7 +395,7 @@ class PrimitiveRemoteUserGoalInput(base.BaseModule):
         return data
 
 
-class RemoteUserGoalInput(base.BaseModule):
+class RemoteUserGoalInput(base.BaseModule, object):
     """Allows the agent to receive goals from the server."""
 
     def __init__(self, logger=logging.getLogger('dummy')):
@@ -513,7 +513,7 @@ class RemoteUserGoalInput(base.BaseModule):
              goal, '')
 
 
-class CompletionEvaluator(base.BaseModule):
+class CompletionEvaluator(base.BaseModule, object):
     """Evaluates whether goals have been completed and new goals are needed."""
 
     def __init__(self, logger=logging.getLogger('dummy')):
@@ -574,7 +574,7 @@ class CompletionEvaluator(base.BaseModule):
             trace.add_data('GOALS', goals)
 
 
-class GoalRecognition(base.BaseModule):
+class GoalRecognition(base.BaseModule, object):
     """Recgonizes and stores the goals of other agents, for proactive rebellion."""
 
     def __init__(self, logger=logging.getLogger('dummy')):
@@ -636,7 +636,7 @@ class GoalRecognition(base.BaseModule):
             return agentGoal
 
 
-class OperatorInterpret(base.BaseModule):
+class OperatorInterpret(base.BaseModule, object):
     """
     A module which allows an automatic operator to interpret world state.
 

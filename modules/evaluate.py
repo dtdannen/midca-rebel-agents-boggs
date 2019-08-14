@@ -2,7 +2,7 @@ import copy
 from random import random
 import logging
 from time import asctime
-from MIDCA import base, goals
+from midca import base, goals
 import world_utils as wu
 
 
@@ -49,7 +49,7 @@ class Rebellion(object):
             sF.write(str(self))
 
 
-class GoalManager(base.BaseModule):
+class GoalManager(base.BaseModule, object):
     """
     Allows MIDCA to manage goals given its percepts.
 
@@ -196,7 +196,7 @@ class GoalManager(base.BaseModule):
             self.mem.trace.add_data('GOALS', goalGraph)
 
 
-class HandleRebellion(base.BaseModule):
+class HandleRebellion(base.BaseModule, object):
     """
     Allow MIDCA to rebel against goals it deems unworthy.
 
@@ -333,7 +333,7 @@ class HandleRebellion(base.BaseModule):
 
         self.logger.info('User response: {}'.format(response))
         while response not in goalKey:
-            self.relate_alt_goals(altGoals, user)
+            #self.relate_alt_goals(altGoals, user)
             response = self.world.wait_for_dialogs(user)[0]
             self.logger.info('User response: {}'.format(response))
             try:
@@ -403,7 +403,7 @@ class HandleRebellion(base.BaseModule):
         goalGraph.add(goal)
 
 
-class ProactiveRebellion(base.BaseModule):
+class ProactiveRebellion(base.BaseModule, object):
     """If other agents have goals which seem incorrect, ask them to rebel."""
 
     def __init__(self, logger=logging.getLogger('dummy')):
@@ -445,7 +445,7 @@ class ProactiveRebellion(base.BaseModule):
             self.world.inform(agent.id, civi.id)
 
 
-class OperatorHandleRebelsStochastic(base.BaseModule):
+class OperatorHandleRebelsStochastic(base.BaseModule, object):
     """
     Interact with agents which are rebelling by delivering a response.
 
@@ -519,7 +519,8 @@ class OperatorHandleRebelsStochastic(base.BaseModule):
         rejection = random() < self.rejectionProb
         self.logger.info('Rejection: {}'.format(rejection))
         if rejection:
-            responseOption = altGoals.index(rebGoal)
+            temp_altgoals = [str(each) for each in altGoals]
+            responseOption = temp_altgoals.index(str(rebGoal))
             if verbose >= 1:
                 print 'Rejected rebellion, responseOption={}'.format(responseOption)
             self.logger.info('Rejected rebellion, responseOption={}'.format(responseOption))

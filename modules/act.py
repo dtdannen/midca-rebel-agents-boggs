@@ -1,10 +1,10 @@
 import copy
 import logging
 
-from MIDCA import base
+from midca import base
 
 
-class SimpleAct(base.BaseModule):
+class SimpleAct(base.BaseModule, object):
     """Allows MIDCA to execute actions in a plan by affecting the World."""
 
     def __init__(self, logger=logging.getLogger("dummy")):
@@ -105,7 +105,7 @@ class SimpleAct(base.BaseModule):
                 trace.add_data("ACTION", None)
 
 
-class OperatorGiveGoals(base.BaseModule):
+class OperatorGiveGoals(base.BaseModule, object):
     """
     Allows an automatic operator to impart generated goals on agents.
 
